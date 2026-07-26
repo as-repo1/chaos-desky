@@ -168,6 +168,22 @@ async function sendNotificationPopup() {
     showToast("Live Notification Pushed to Display!");
 }
 
+// Simulate Smartwatch Phone Call Notification
+async function simulatePhoneNotif() {
+    const formData = new URLSearchParams();
+    formData.append('sender', 'Rahul (iPhone Call)');
+    formData.append('text', 'Incoming Call - Swipe or Answer');
+    formData.append('category', '2'); // NOTIF_CALL
+
+    await fetch('/api/ancs/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+
+    showToast("Phone Call Notification Pushed!");
+}
+
 // Image Preview & HTML5 Canvas Processing
 function previewUserImage(e) {
     const file = e.target.files[0];
