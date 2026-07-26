@@ -29,6 +29,7 @@ unsigned long lastPressureSampleMs = 0;
 
 String localIpStr = "0.0.0.0";
 String timeStr    = "00:00:00";
+unsigned long carouselIntervalMs = CAROUSEL_INTERVAL_MS;
 
 // Helper: Format NTP time
 String getFormattedNtpTime() {
@@ -123,8 +124,8 @@ void loop() {
         weatherMgr.fetchWeather(OPENWEATHER_API_KEY, OPENWEATHER_CITY, OPENWEATHER_COUNTRY);
     }
 
-    // 5. TFT Carousel Page Switcher (Every 10 seconds)
-    if (CAROUSEL_INTERVAL_MS > 0 && (currentMs - lastCarouselMs >= CAROUSEL_INTERVAL_MS)) {
+    // 5. TFT Carousel Page Switcher
+    if (carouselIntervalMs > 0 && (currentMs - lastCarouselMs >= carouselIntervalMs)) {
         lastCarouselMs = currentMs;
         tftMgr.nextPage();
     }

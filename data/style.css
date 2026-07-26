@@ -2,18 +2,18 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background: #0f172a;
-    color: #f8fafc;
+    background: #090d16;
+    color: #f1f5f9;
     min-height: 100vh;
     padding: 20px;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
 }
 
@@ -22,13 +22,14 @@ body {
     justify-content: space-between;
     align-items: center;
     padding-bottom: 20px;
-    border-bottom: 1px solid #334155;
+    border-bottom: 1px solid #1e293b;
     margin-bottom: 25px;
 }
 
 .logo h1 {
     font-size: 1.8rem;
     color: #38bdf8;
+    letter-spacing: 1px;
 }
 
 .logo span {
@@ -38,36 +39,49 @@ body {
 .badge {
     font-size: 0.75rem;
     background: #1e293b;
-    padding: 3px 8px;
+    padding: 3px 10px;
     border-radius: 12px;
     color: #94a3b8;
 }
 
 .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: #064e3b;
     color: #34d399;
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34d399;
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
 }
 
 .glass {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .glass h2 {
     font-size: 1.1rem;
-    margin-bottom: 15px;
+    margin-bottom: 16px;
     color: #38bdf8;
 }
 
@@ -78,9 +92,10 @@ body {
 }
 
 .metric {
-    background: #0f172a;
+    background: #090d16;
     padding: 12px;
     border-radius: 10px;
+    border: 1px solid #1e293b;
 }
 
 .metric .label {
@@ -90,9 +105,16 @@ body {
 }
 
 .metric .val {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
     color: #f8fafc;
+    margin: 2px 0;
+}
+
+.metric .sub-val {
+    display: block;
+    font-size: 0.7rem;
+    color: #64748b;
 }
 
 .weather-box {
@@ -101,20 +123,28 @@ body {
 }
 
 .city-name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     color: #94a3b8;
+    font-weight: 500;
 }
 
 .outdoor-temp {
-    font-size: 2.8rem;
-    font-weight: bold;
+    font-size: 3rem;
+    font-weight: 800;
     color: #f43f5e;
-    margin: 8px 0;
+    margin: 6px 0;
 }
 
 .condition {
     font-size: 1.1rem;
     color: #38bdf8;
+    font-weight: 600;
+}
+
+.weather-sub {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-top: 6px;
 }
 
 .pomo-box {
@@ -122,68 +152,143 @@ body {
 }
 
 .pomo-state {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     letter-spacing: 2px;
     color: #fbbf24;
-    margin-bottom: 5px;
+    font-weight: 700;
+
+    margin-bottom: 4px;
 }
 
 .pomo-timer {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: bold;
     font-family: monospace;
     color: #34d399;
 }
 
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #1e293b;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #34d399;
+    transition: width 0.3s ease;
+}
+
+.pomo-stats {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 12px;
+}
+
 .pomo-controls {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
-    margin-top: 15px;
+    flex-wrap: wrap;
 }
 
 .btn {
-    background: #334155;
+    background: #1e293b;
     color: white;
-    border: none;
-    padding: 8px 16px;
+    border: 1px solid #334155;
+    padding: 8px 14px;
     border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
+    transition: 0.2s ease;
 }
 
 .btn:hover {
-    background: #475569;
+    background: #334155;
+    border-color: #475569;
 }
 
-.btn-green { background: #059669; }
-.btn-yellow { background: #d97706; }
-.btn-red { background: #dc2626; }
+.btn-green { background: #065f46; border-color: #047857; }
+.btn-blue  { background: #1e40af; border-color: #1d4ed8; }
+.btn-yellow{ background: #92400e; border-color: #b45309; }
+.btn-red   { background: #991b1b; border-color: #b91c1c; }
+.btn-primary { background: #0284c7; border-color: #0369a1; }
 
 .btn-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.control-row {
+    display: flex;
     gap: 10px;
-    margin-bottom: 15px;
 }
 
-.theme-select {
-    margin-top: 10px;
+.control-col {
+    flex: 1;
 }
 
-select {
+.form-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 6px;
+}
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+input, select {
     width: 100%;
-    padding: 8px;
-    background: #0f172a;
+    padding: 9px 12px;
+    background: #090d16;
     color: white;
     border: 1px solid #334155;
     border-radius: 8px;
-    margin-top: 5px;
+    font-size: 0.9rem;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #38bdf8;
+}
+
+.full-width {
+    width: 100%;
+    margin-top: 6px;
+}
+
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #0284c7;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 footer {
     text-align: center;
     margin-top: 30px;
-    color: #64748b;
+    color: #475569;
     font-size: 0.8rem;
 }

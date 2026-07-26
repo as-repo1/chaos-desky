@@ -5,11 +5,15 @@
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <WiFi.h>
 #include "config.h"
 #include "sensors.h"
 #include "weather_api.h"
 #include "pomodoro.h"
 #include "display_tft.h"
+
+extern String localIpStr;
+extern unsigned long carouselIntervalMs;
 
 class WebServerManager {
 public:
@@ -40,8 +44,8 @@ public:
             doc["dewPointC"]    = d.dewPointC;
             doc["pressureHpa"]  = d.pressureHpa;
             doc["altitudeM"]    = d.altitudeM;
-            doc["minTempC"]     = d.minTempC;
-            doc["maxTempC"]     = d.maxTempC;
+            doc["minTempC"]     = (d.minTempC < 90.0f) ? d.minTempC : d.tempC;
+            doc["maxTempC"]     = (d.maxTempC > -90.0f) ? d.maxTempC : d.tempC;
             doc["dhtValid"]     = d.dhtValid;
             doc["bmpValid"]     = d.bmpValid;
 
@@ -111,6 +115,38 @@ public:
             if (request->hasParam("theme")) {
                 int t = request->getParam("theme")->value().toInt();
                 tftManager->applyTheme((TFTTheme)t);
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: GET /api/wifi/scan
+        server.on("/api/wifi/scan", HTTP_GET, [](AsyncWebServerRequest* request) {
+            int n = WiFi.scanNetworks();
+            StaticJsonDocument<1024> doc;
+            JsonArray networks = doc.createNestedArray("networks");
+
+            for (int i = 0; i < n; ++i) {
+                JsonObject net = networks.createNestedObject();
+                net["ssid"] = WiFi.SSID(i);
+                net["rssi"] = WiFi.RSSI(i);
+                net["enc"]  = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
+            }
+
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/config (Update Weather City / API Key / Carousel timing)
+        server.on("/api/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("city", true)) {
+                String city = request->getParam("city", true)->value();
+                String apiKey = request->hasParam("apiKey", true) ? request->getParam("apiKey", true)->value() : OPENWEATHER_API_KEY;
+                weatherMgr->fetchWeather(apiKey, city, "IN");
+            }
+            if (request->hasParam("carouselSec", true)) {
+                int sec = request->getParam("carouselSec", true)->value().toInt();
+                carouselIntervalMs = (unsigned long)sec * 1000;
             }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
