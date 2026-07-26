@@ -40,8 +40,8 @@
 // ==========================================
 // 🌐 WIFI & NETWORK CONFIGURATION
 // ==========================================
-#define DEFAULT_WIFI_SSID     "YOUR_WIFI_SSID"
-#define DEFAULT_WIFI_PASS     "YOUR_WIFI_PASS"
+#define DEFAULT_WIFI_SSID     "Airtel_a204"
+#define DEFAULT_WIFI_PASS     "rahulkhanki"
 #define AP_SSID               "ChaosDesky-AP"
 #define AP_PASS               "chaos1234"
 
