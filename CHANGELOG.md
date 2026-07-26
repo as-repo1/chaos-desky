@@ -2,34 +2,41 @@
 
 All notable changes to the **chaos-desky** project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+---
+
+## [1.1.0] - 2026-07-27
+
+### ✨ Added
+- **11 Design System Themes** (TFT & Web UI Synchronized):
+  - `0`: Cyberpunk Synthwave (Neon Cyan/Magenta)
+  - `1`: Matrix Hacker (Terminal Green)
+  - `2`: Dark Glass (Charcoal Slate)
+  - `3`: Retro Arcade (8-Bit Yellow/Red)
+  - `4`: Dracula Theme (Purple/Pink)
+  - `5`: Nord Arctic (Frost Pastels)
+  - `6`: Gruvbox Retro (Earthy Amber/Aqua)
+  - `7`: Monochrome High-Contrast (Stark White/Black)
+  - `8`: Nothing UI (Dot-Matrix Red/White)
+  - `9`: One UI (Samsung Blue)
+  - `10`: Material You (Google Lavender)
+- **🖼️ HTML5 Canvas Image Uploader**:
+  - Web portal converts any image file into 16-bit RGB565 binary for TFT or 1-bit bitmap for OLED and flashes it to LittleFS storage.
+- **💾 Persistent Configuration Engine (`/config.json`)**:
+  - Automatically loads and saves all Wi-Fi, OpenWeather API, OLED mode, TFT rotation, custom text, and Pomodoro configurations across reboots.
+- **🖥️ Granular OLED Modes & Controls**:
+  - 5 Modes: Telemetry HUD, Big Clock & Date, Temperature/Humidity Sparklines, Custom Text Marquee, Uploaded 128x64 Bitmap.
+  - Live Contrast Slider (0-255) & Screen Inversion Toggle.
+- **📺 Granular TFT Customizer**:
+  - Added Page 4 Custom Media Page (renders uploaded custom image or custom text banner).
+  - TFT Screen Rotation toggle (0°, 90°, 180°, 270°).
+  - Page Bitmask filtering (enable/disable specific pages).
+- **⏱️ Custom Pomodoro Sliders**:
+  - Web portal sliders for custom Work (1-120m) and Break (1-60m) durations.
 
 ---
 
 ## [1.0.0] - 2026-07-27
 
-### ✨ Added
-- **Dual Display System**:
-  - Monochrome OLED (SSD1306 128x64) real-time sensor HUD displaying local temperature, humidity, pressure, altitude, heat index, dew point, WiFi RSSI, and NTP clock.
-  - Color TFT (ST7735 128x160) 4-page dynamic carousel engine (10-second auto-switch or web remote control).
-- **Page 1 (Outdoor Internet Weather)**:
-  - Integration with OpenWeatherMap API fetching live outdoor temperature, min/max forecast, humidity, wind speed, and weather condition graphics.
-- **Page 2 (Pressure Graph & Zambretti Predictor)**:
-  - 24-sample barometric pressure sparkline trend graph.
-  - Zambretti storm prediction algorithm determining atmospheric trends ($\Delta P / \Delta t$) and printing local predictions (*"Settled Fine"*, *"Showers Likely"*, *"Storm Warning"*).
-  - Comfort Index meter (Ideal / Humid / Dry).
-- **Page 3 (Cyberpunk Pomodoro Hub)**:
-  - Digital clock synced via NTP.
-  - 25m Work / 5m Rest Pomodoro focus timer with visual progress bar and completed session counter.
-- **Page 4 (System Telemetry & Dynamic QR Code)**:
-  - ESP32 RAM free heap meter, CPU clock frequency, uptime.
-  - On-the-fly generated **QR Code** using `ricmoo/QRCode` pointing directly to `http://<ESP32_IP>`.
-- **Embedded Web Dashboard (LittleFS + AsyncWebServer)**:
-  - Dark glassmorphism responsive web UI.
-  - REST API endpoints for sensor metrics, weather, pomodoro timer control, page switcher, and color theme engine (*Cyberpunk*, *Matrix*, *Dark Glass*, *Retro Arcade*).
-- **Firmware & Build Configuration**:
-  - FreeRTOS dual-core task division (Core 0 for Network & Web Server, Core 1 for Sensor sampling & Display rendering).
-  - PlatformIO configuration (`platformio.ini`) supporting `esp32dev` with LittleFS filesystem integration.
-- **Comprehensive Documentation**:
-  - `README.md`, `README_ARCHITECTURE.md`, `README_PIN_DIAGRAM.md`, and `CHANGELOG.md`.
+### ✨ Initial Release
+- Standalone ESP32 Firmware with Dual-Display Architecture (SSD1306 OLED + ST7735 TFT).
+- OpenWeatherMap API integration, Zambretti Barometric Storm Predictor, and AsyncWebServer dashboard.
