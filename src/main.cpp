@@ -54,6 +54,11 @@ void setupWiFi() {
     String ssid = configMgr.config.wifiSsid;
     String pass = configMgr.config.wifiPass;
 
+    if (ssid.isEmpty() || ssid == "YOUR_WIFI_SSID") {
+        ssid = DEFAULT_WIFI_SSID;
+        pass = DEFAULT_WIFI_PASS;
+    }
+
     Serial.println("🌐 Connecting to WiFi: " + ssid);
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), pass.c_str());

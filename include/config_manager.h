@@ -58,8 +58,16 @@ public:
             return false;
         }
 
-        config.wifiSsid        = doc["wifiSsid"] | DEFAULT_WIFI_SSID;
-        config.wifiPass        = doc["wifiPass"] | DEFAULT_WIFI_PASS;
+        String s = doc["wifiSsid"] | DEFAULT_WIFI_SSID;
+        String p = doc["wifiPass"] | DEFAULT_WIFI_PASS;
+
+        if (s.isEmpty() || s == "YOUR_WIFI_SSID") {
+            s = DEFAULT_WIFI_SSID;
+            p = DEFAULT_WIFI_PASS;
+        }
+
+        config.wifiSsid        = s;
+        config.wifiPass        = p;
         config.openWeatherKey  = doc["openWeatherKey"] | OPENWEATHER_API_KEY;
         config.openWeatherCity = doc["openWeatherCity"] | OPENWEATHER_CITY;
         config.openWeatherCountry = doc["openWeatherCountry"] | OPENWEATHER_COUNTRY;
