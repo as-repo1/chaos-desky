@@ -13,6 +13,8 @@
 #include "zambretti.h"
 #include "pomodoro.h"
 #include "ble_manager.h"
+#include "notification_manager.h"
+#include "gfx_icons.h"
 
 enum TFTTheme {
     THEME_CYBERPUNK = 0,
@@ -299,10 +301,11 @@ private:
     }
 
     void drawPageHeader() {
-        tft.fillRect(0, 0, 128, 16, COLOR_PRIMARY);
+        tft.fillRoundRect(2, 2, 124, 16, 4, COLOR_PRIMARY);
+        tft.drawRoundRect(2, 2, 124, 16, 4, COLOR_ACCENT);
         tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
         tft.setTextSize(1);
-        tft.setCursor(4, 4);
+        tft.setCursor(6, 6);
 
         switch (currentPage) {
             case 0: tft.print("1/10 OUTDOOR WEATHER"); break;
@@ -314,9 +317,8 @@ private:
             case 6: tft.print("7/10 BLE RADAR HUD  "); break;
             case 7: tft.print("8/10 BIG DIGITAL CLK"); break;
             case 8: tft.print("9/10 NETWORK MONITOR"); break;
-            case 9: tft.print("10/10 SYSTEM HARDWARE"); break;
+            case 9: tft.print("10/10 HARDWARE INFO "); break;
         }
-        tft.drawFastHLine(0, 16, 128, COLOR_ACCENT);
     }
 
     // --- Page 0: Outdoor Weather ---
