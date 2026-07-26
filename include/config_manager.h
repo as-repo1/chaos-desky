@@ -25,6 +25,11 @@ struct SystemConfig {
 
     int pomoWorkMins       = POMODORO_WORK_MINS;
     int pomoBreakMins      = POMODORO_BREAK_MINS;
+
+    bool bleEnabled        = true;
+    bool bleAutoWake       = true;
+    int bleThreshold       = -75;
+    String bleTargetMac    = "";
 };
 
 class ConfigManager {
@@ -74,6 +79,11 @@ public:
         config.pomoWorkMins    = doc["pomoWorkMins"] | POMODORO_WORK_MINS;
         config.pomoBreakMins   = doc["pomoBreakMins"] | POMODORO_BREAK_MINS;
 
+        config.bleEnabled      = doc["bleEnabled"] | true;
+        config.bleAutoWake     = doc["bleAutoWake"] | true;
+        config.bleThreshold    = doc["bleThreshold"] | -75;
+        config.bleTargetMac    = doc["bleTargetMac"] | "";
+
         Serial.println("✅ Configuration loaded successfully from LittleFS!");
         return true;
     }
@@ -104,6 +114,11 @@ public:
 
         doc["pomoWorkMins"]     = config.pomoWorkMins;
         doc["pomoBreakMins"]    = config.pomoBreakMins;
+
+        doc["bleEnabled"]       = config.bleEnabled;
+        doc["bleAutoWake"]      = config.bleAutoWake;
+        doc["bleThreshold"]     = config.bleThreshold;
+        doc["bleTargetMac"]     = config.bleTargetMac;
 
         if (serializeJson(doc, file) == 0) {
             Serial.println("❌ Failed to write JSON to /config.json!");

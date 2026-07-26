@@ -253,12 +253,53 @@ async function saveConfig(e) {
     updateWeather();
 }
 
+// Fetch BLE Radar API
+async function updateBleRadar() {
+    try {
+        const res = await fetch('/api/ble/radar');
+        if (res.ok) {
+            const data = await res.json();
+            const stateNames = ["AWAY", "NEAR DESK", "IMMEDIATE"];
+            const stateEl = document.getElementById('ble-state-val');
+            stateEl.innerText = stateNames[data.state] || "SEARCHING";
+
+            if (data.state === 1 || data.state === 2) {
+                stateEl.style.color = "#34d399";
+            } else {
+                stateEl.style.color = "#94a3b8";
+            }
+
+            document.getElementById('ble-rssi-val').innerText = `${data.rssi} dBm`;
+        }
+    } catch (e) {
+        console.error("BLE API error:", e);
+    }
+}
+
+function setBleThreshold(val) {
+    document.getElementById('ble-thresh-label').innerText = `${val} dBm`;
+}
+
+async function saveBleConfig() {
+    const thresh = document.getElementById('ble-thresh-slider').value;
+    const formData = new URLSearchParams();
+    formData.append('threshold', thresh);
+    await fetch('/api/ble/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+    showToast("BLE Proximity Threshold Saved!");
+}
+
 // Auto-refresh timers
 setInterval(updateSensors, 2000);
 setInterval(updateWeather, 10000);
 setInterval(updatePomodoro, 1000);
+setInterval(updateBleRadar, 2000);
 
 // Initial Load
 updateSensors();
 updateWeather();
 updatePomodoro();
+updateBleRadar();

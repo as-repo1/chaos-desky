@@ -176,7 +176,27 @@
                 <button onclick="savePomodoroConfig()" class="btn btn-primary full-width margin-top">Save Timer Settings</button>
             </section>
 
-            <!-- Card 7: Location & OpenWeather API -->
+            <!-- Card 7: iPhone BLE Proximity Radar -->
+            <section class="card glass">
+                <h2>📡 iPhone BLE Proximity Radar</h2>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="label">Proximity State</span>
+                        <span class="val" id="ble-state-val">SEARCHING</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Signal (RSSI)</span>
+                        <span class="val" id="ble-rssi-val">-- dBm</span>
+                    </div>
+                </div>
+                <div class="form-group margin-top">
+                    <label class="form-label">Near Desk Threshold: <span id="ble-thresh-label">-75 dBm</span></label>
+                    <input type="range" id="ble-thresh-slider" min="-95" max="-45" value="-75" oninput="setBleThreshold(this.value)">
+                </div>
+                <button onclick="saveBleConfig()" class="btn btn-primary full-width">Save BLE Proximity Settings</button>
+            </section>
+
+            <!-- Card 8: Location & OpenWeather API -->
             <section class="card glass">
                 <h2>⚙️ Location & OpenWeather API</h2>
                 <form id="config-form" onsubmit="saveConfig(event)">

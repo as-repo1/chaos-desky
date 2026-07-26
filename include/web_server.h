@@ -13,11 +13,13 @@
 #include "pomodoro.h"
 #include "display_oled.h"
 #include "display_tft.h"
+#include "ble_manager.h"
 
 extern String localIpStr;
 extern unsigned long carouselIntervalMs;
 extern ConfigManager configMgr;
 extern OledDisplayManager oledMgr;
+extern BleRadarManager bleRadarMgr;
 
 class WebServerManager {
 public:
@@ -26,12 +28,14 @@ public:
     void begin(SensorManager* sensors, 
                WeatherApiClient* weatherClient, 
                PomodoroTimer* pomo, 
-               TftDisplayManager* tftMgr) {
+               TftDisplayManager* tftMgr,
+               BleRadarManager* bleMgr) {
         
         sensorMgr = sensors;
         weatherMgr = weatherClient;
         pomoTimer = pomo;
         tftManager = tftMgr;
+        bleManager = bleMgr;
 
         // REST API: GET /api/sensors
         server.on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -277,6 +281,48 @@ public:
             }
         });
 
+        // REST API: GET /api/ble/radar
+        server.on("/api/ble/radar", HTTP_GET, [this](AsyncWebServerRequest* request) {
+            StaticJsonDocument<256> doc;
+            doc["enabled"]      = bleManager->radar.enabled;
+            doc["autoWake"]     = bleManager->radar.autoWake;
+            doc["rssi"]         = bleManager->radar.currentRssi;
+            doc["threshold"]    = bleManager->radar.rssiThreshold;
+            doc["state"]        = (int)bleManager->radar.state;
+            doc["targetMac"]    = bleManager->radar.targetDeviceMac;
+
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/ble/config
+        server.on("/api/ble/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("enabled", true)) {
+                bool en = request->getParam("enabled", true)->value() == "true";
+                bleManager->radar.enabled = en;
+                configMgr.config.bleEnabled = en;
+            }
+            if (request->hasParam("autoWake", true)) {
+                bool wak = request->getParam("autoWake", true)->value() == "true";
+                bleManager->radar.autoWake = wak;
+                configMgr.config.bleAutoWake = wak;
+            }
+            if (request->hasParam("threshold", true)) {
+                int thresh = request->getParam("threshold", true)->value().toInt();
+                bleManager->radar.rssiThreshold = thresh;
+                configMgr.config.bleThreshold = thresh;
+            }
+            if (request->hasParam("targetMac", true)) {
+                String mac = request->getParam("targetMac", true)->value();
+                bleManager->radar.targetDeviceMac = mac;
+                configMgr.config.bleTargetMac = mac;
+            }
+
+            configMgr.saveConfig();
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
         // Serve Static LittleFS Files AFTER all /api handlers!
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
@@ -290,6 +336,7 @@ private:
     WeatherApiClient* weatherMgr = nullptr;
     PomodoroTimer* pomoTimer = nullptr;
     TftDisplayManager* tftManager = nullptr;
+    BleRadarManager* bleManager = nullptr;
 };
 
 #endif // WEB_SERVER_H

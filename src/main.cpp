@@ -11,6 +11,7 @@
 #include "pomodoro.h"
 #include "display_oled.h"
 #include "display_tft.h"
+#include "ble_manager.h"
 #include "web_server.h"
 
 // System Instances
@@ -20,6 +21,7 @@ WeatherApiClient    weatherMgr;
 PomodoroTimer       pomoTimer;
 OledDisplayManager  oledMgr;
 TftDisplayManager   tftMgr;
+BleRadarManager     bleRadarMgr;
 WebServerManager    webServerMgr(80);
 
 // Timing Variables
@@ -103,16 +105,22 @@ void setup() {
     pomoTimer.workDurationMins = configMgr.config.pomoWorkMins;
     pomoTimer.breakDurationMins = configMgr.config.pomoBreakMins;
 
+    bleRadarMgr.radar.enabled = configMgr.config.bleEnabled;
+    bleRadarMgr.radar.autoWake = configMgr.config.bleAutoWake;
+    bleRadarMgr.radar.rssiThreshold = configMgr.config.bleThreshold;
+    bleRadarMgr.radar.targetDeviceMac = configMgr.config.bleTargetMac;
+
     // Initialize Displays
     oledMgr.begin();
     tftMgr.begin();
 
-    // Initialize Sensors
+    // Initialize Sensors & BLE Radar
     sensorMgr.begin();
+    bleRadarMgr.begin();
 
     // Setup Network & Web Server
     setupWiFi();
-    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr);
+    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &bleRadarMgr);
 
     // Fetch initial Outdoor Weather
     weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
@@ -128,8 +136,9 @@ void setup() {
 void loop() {
     unsigned long currentMs = millis();
 
-    // 1. Update Pomodoro State Machine
+    // 1. Update Pomodoro & BLE Radar State Machines
     pomoTimer.update();
+    bleRadarMgr.update();
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
     if (currentMs - lastSensorReadMs >= 2000) {
