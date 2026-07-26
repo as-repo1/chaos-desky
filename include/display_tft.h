@@ -15,6 +15,9 @@
 #include "ble_manager.h"
 #include "notification_manager.h"
 #include "gfx_icons.h"
+#include "screensaver.h"
+
+extern ScreensaverEngine screensaverEngine;
 
 enum TFTTheme {
     THEME_CYBERPUNK = 0,
@@ -208,7 +211,7 @@ public:
     void renderCurrentPage(const OutdoorWeatherData& weather, 
                            SensorManager& sensors, 
                            PomodoroTimer& pomo, 
-                           const BleRadarData& bleRadar,
+                           const PhoneNotificationLog& phoneLog,
                            const NotificationManager& notifMgr,
                            const String& ipStr, 
                            const String& timeStr) {
@@ -235,10 +238,10 @@ public:
             case 3: renderSystemQrPage(ipStr, fullRedraw); break;
             case 4: renderCustomUserPage(fullRedraw); break;
             case 5: renderIndoorClimatePage(sensors.data, fullRedraw); break;
-            case 6: renderBleRadarPage(bleRadar, fullRedraw); break;
+            case 6: renderPhoneNotifPage(phoneLog, fullRedraw); break;
             case 7: renderBigClockPage(timeStr, fullRedraw); break;
             case 8: renderNetworkMonitorPage(ipStr, fullRedraw); break;
-            case 9: renderSystemHardwarePage(fullRedraw); break;
+            case 9: screensaverEngine.renderTftCosmicWarp(tft, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG); break;
         }
     }
 
@@ -317,7 +320,7 @@ private:
             case 6: tft.print("7/10 BLE RADAR HUD  "); break;
             case 7: tft.print("8/10 BIG DIGITAL CLK"); break;
             case 8: tft.print("9/10 NETWORK MONITOR"); break;
-            case 9: tft.print("10/10 HARDWARE INFO "); break;
+            case 9: tft.print("10/10 3D WARP SPACE "); break;
         }
     }
 
@@ -595,52 +598,36 @@ private:
         }
     }
 
-    // --- Page 6: BLE Proximity Radar HUD ---
-    void renderBleRadarPage(const BleRadarData& b, bool fullRedraw) {
+    // --- Page 6: Phone Notifications Log ---
+    void renderPhoneNotifPage(const PhoneNotificationLog& p, bool fullRedraw) {
         tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
         tft.setTextSize(1);
         tft.setCursor(4, 22);
-        tft.print("IPHONE BLE RADAR");
+        tft.printf("BLE: %s", p.connected ? "CONNECTED" : "PAIRING...");
 
-        tft.setTextSize(2);
+        tft.setTextColor(COLOR_ACCENT, COLOR_BG);
         tft.setCursor(4, 38);
-        if (b.state == PROX_IMMEDIATE) {
-            tft.setTextColor(COLOR_GOOD, COLOR_BG);
-            tft.print("IMMEDIATE");
-        } else if (b.state == PROX_NEAR) {
-            tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-            tft.print("NEAR DESK");
-        } else {
-            tft.setTextColor(COLOR_ALERT, COLOR_BG);
-            tft.print("AWAY MODE");
-        }
+        tft.printf("APP: %s", p.lastApp.c_str());
 
-        tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(4, 66);
-        tft.printf("SIGNAL:    %d dBm", b.currentRssi);
-        tft.setCursor(4, 82);
-        tft.printf("THRESHOLD: %d dBm", b.rssiThreshold);
-        tft.setCursor(4, 98);
-        tft.printf("AUTOWAKE:  %s", b.autoWake ? "ENABLED" : "OFF");
+        tft.setCursor(4, 54);
+        tft.printf("FROM: %s", p.lastSender.substring(0, 16).c_str());
 
-        if (fullRedraw) {
-            tft.drawRect(4, 114, 120, 14, COLOR_PRIMARY);
+        tft.setCursor(4, 70);
+        tft.print(p.lastMessage.substring(0, 18));
+        if (p.lastMessage.length() > 18) {
+            tft.setCursor(4, 84);
+            tft.print(p.lastMessage.substring(18, 36));
         }
-        int barWidth = (int)(((b.currentRssi + 100) / 60.0f) * 116.0f);
-        if (barWidth > 116) barWidth = 116;
-        if (barWidth < 0) barWidth = 0;
-        
-        tft.fillRect(6, 116, barWidth, 10, COLOR_GOOD);
-        if (barWidth < 116) {
-            tft.fillRect(6 + barWidth, 116, 116 - barWidth, 10, COLOR_BG);
-        }
+
+        tft.setCursor(4, 110);
+        tft.printf("TOTAL NOTIFS: %d", p.totalCount);
 
         if (fullRedraw) {
             tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
             tft.setTextColor(COLOR_BG, COLOR_ACCENT);
             tft.setCursor(4, 149);
-            tft.print("RADAR PROXIMITY HUD");
+            tft.print("PHONE NOTIF LOG    ");
         }
     }
 

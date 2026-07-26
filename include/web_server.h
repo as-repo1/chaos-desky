@@ -13,14 +13,14 @@
 #include "pomodoro.h"
 #include "display_oled.h"
 #include "display_tft.h"
-#include "ble_manager.h"
 #include "notification_manager.h"
+#include "ancs_client.h"
 
 extern String localIpStr;
 extern unsigned long carouselIntervalMs;
 extern ConfigManager configMgr;
 extern OledDisplayManager oledMgr;
-extern BleRadarManager bleRadarMgr;
+extern AncsNotificationClient ancsClientMgr;
 extern NotificationManager notificationMgr;
 
 class WebServerManager {
@@ -31,14 +31,14 @@ public:
                WeatherApiClient* weatherClient, 
                PomodoroTimer* pomo, 
                TftDisplayManager* tftMgr,
-               BleRadarManager* bleMgr,
+               AncsNotificationClient* ancsMgr,
                NotificationManager* notifMgr) {
         
         sensorMgr = sensors;
         weatherMgr = weatherClient;
         pomoTimer = pomo;
         tftManager = tftMgr;
-        bleManager = bleMgr;
+        ancsClient = ancsMgr;
         notificationEngine = notifMgr;
 
         // REST API: GET /api/sensors
@@ -285,45 +285,27 @@ public:
             }
         });
 
-        // REST API: GET /api/ble/radar
-        server.on("/api/ble/radar", HTTP_GET, [this](AsyncWebServerRequest* request) {
+        // REST API: GET /api/ancs/status
+        server.on("/api/ancs/status", HTTP_GET, [this](AsyncWebServerRequest* request) {
             StaticJsonDocument<256> doc;
-            doc["enabled"]      = bleManager->radar.enabled;
-            doc["autoWake"]     = bleManager->radar.autoWake;
-            doc["rssi"]         = bleManager->radar.currentRssi;
-            doc["threshold"]    = bleManager->radar.rssiThreshold;
-            doc["state"]        = (int)bleManager->radar.state;
-            doc["targetMac"]    = bleManager->radar.targetDeviceMac;
+            doc["connected"]    = ancsClient->phoneLog.connected;
+            doc["lastApp"]      = ancsClient->phoneLog.lastApp;
+            doc["lastSender"]   = ancsClient->phoneLog.lastSender;
+            doc["lastMessage"]  = ancsClient->phoneLog.lastMessage;
+            doc["totalCount"]   = ancsClient->phoneLog.totalCount;
 
             String json;
             serializeJson(doc, json);
             request->send(200, "application/json", json);
         });
 
-        // REST API: POST /api/ble/config
-        server.on("/api/ble/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
-            if (request->hasParam("enabled", true)) {
-                bool en = request->getParam("enabled", true)->value() == "true";
-                bleManager->radar.enabled = en;
-                configMgr.config.bleEnabled = en;
-            }
-            if (request->hasParam("autoWake", true)) {
-                bool wak = request->getParam("autoWake", true)->value() == "true";
-                bleManager->radar.autoWake = wak;
-                configMgr.config.bleAutoWake = wak;
-            }
-            if (request->hasParam("threshold", true)) {
-                int thresh = request->getParam("threshold", true)->value().toInt();
-                bleManager->radar.rssiThreshold = thresh;
-                configMgr.config.bleThreshold = thresh;
-            }
-            if (request->hasParam("targetMac", true)) {
-                String mac = request->getParam("targetMac", true)->value();
-                bleManager->radar.targetDeviceMac = mac;
-                configMgr.config.bleTargetMac = mac;
-            }
+        // REST API: POST /api/ancs/simulate
+        server.on("/api/ancs/simulate", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            String sender = request->hasParam("sender", true) ? request->getParam("sender", true)->value() : "WhatsApp";
+            String text = request->hasParam("text", true) ? request->getParam("text", true)->value() : "New Message Received";
+            int cat = request->hasParam("category", true) ? request->getParam("category", true)->value().toInt() : 1;
 
-            configMgr.saveConfig();
+            ancsClient->simulateNotification(sender, text, (NotificationCategory)cat);
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
@@ -352,7 +334,7 @@ private:
     WeatherApiClient* weatherMgr = nullptr;
     PomodoroTimer* pomoTimer = nullptr;
     TftDisplayManager* tftManager = nullptr;
-    BleRadarManager* bleManager = nullptr;
+    AncsNotificationClient* ancsClient = nullptr;
     NotificationManager* notificationEngine = nullptr;
 };
 

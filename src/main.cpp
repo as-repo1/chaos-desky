@@ -11,20 +11,21 @@
 #include "pomodoro.h"
 #include "display_oled.h"
 #include "display_tft.h"
-#include "ble_manager.h"
 #include "notification_manager.h"
+#include "ancs_client.h"
 #include "web_server.h"
 
 // System Instances
-ConfigManager       configMgr;
-SensorManager       sensorMgr;
-WeatherApiClient    weatherMgr;
-PomodoroTimer       pomoTimer;
-OledDisplayManager  oledMgr;
-TftDisplayManager   tftMgr;
-BleRadarManager     bleRadarMgr;
-NotificationManager notificationMgr;
-WebServerManager    webServerMgr(80);
+ConfigManager          configMgr;
+SensorManager          sensorMgr;
+WeatherApiClient       weatherMgr;
+PomodoroTimer          pomoTimer;
+OledDisplayManager     oledMgr;
+TftDisplayManager      tftMgr;
+NotificationManager    notificationMgr;
+AncsNotificationClient ancsClientMgr;
+ScreensaverEngine      screensaverEngine;
+WebServerManager       webServerMgr(80);
 
 // Timing Variables
 unsigned long lastSensorReadMs    = 0;
@@ -107,22 +108,17 @@ void setup() {
     pomoTimer.workDurationMins = configMgr.config.pomoWorkMins;
     pomoTimer.breakDurationMins = configMgr.config.pomoBreakMins;
 
-    bleRadarMgr.radar.enabled = configMgr.config.bleEnabled;
-    bleRadarMgr.radar.autoWake = configMgr.config.bleAutoWake;
-    bleRadarMgr.radar.rssiThreshold = configMgr.config.bleThreshold;
-    bleRadarMgr.radar.targetDeviceMac = configMgr.config.bleTargetMac;
-
     // Initialize Displays
     oledMgr.begin();
     tftMgr.begin();
 
-    // Initialize Sensors & BLE Radar
+    // Initialize Sensors & Smartwatch BLE ANCS Receiver
     sensorMgr.begin();
-    bleRadarMgr.begin();
+    ancsClientMgr.begin();
 
     // Setup Network & Web Server
     setupWiFi();
-    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &bleRadarMgr, &notificationMgr);
+    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &ancsClientMgr, &notificationMgr);
 
     // Fetch initial Outdoor Weather
     weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
@@ -140,7 +136,6 @@ void loop() {
 
     // 1. Update State Machines
     pomoTimer.update();
-    bleRadarMgr.update();
     notificationMgr.update();
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
@@ -176,6 +171,6 @@ void loop() {
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
         oledMgr.draw(sensorMgr.data, notificationMgr, localIpStr, timeStr, rssi);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, bleRadarMgr.radar, notificationMgr, localIpStr, timeStr);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, ancsClientMgr.phoneLog, notificationMgr, localIpStr, timeStr);
     }
 }

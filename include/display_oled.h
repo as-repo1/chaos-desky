@@ -8,6 +8,9 @@
 #include "config.h"
 #include "sensors.h"
 #include "notification_manager.h"
+#include "screensaver.h"
+
+extern ScreensaverEngine screensaverEngine;
 
 class OledDisplayManager {
 public:
@@ -59,6 +62,7 @@ public:
                 case 2: drawMode2_Sparklines(s); break;
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: drawMode4_CustomImage(); break;
+                case 5: screensaverEngine.renderOledCatMascot(oled); break;
                 default: drawMode0_HUD(s, ipStr, timeStr, rssi); break;
             }
         }

@@ -243,24 +243,21 @@
                 <button onclick="savePomodoroConfig()" class="btn btn-primary full-width margin-top">Save Timer Settings</button>
             </section>
 
-            <!-- Card 8: iPhone BLE Proximity Radar -->
+            <!-- Card 8: Smartwatch BLE Phone Pairing -->
             <section class="card glass">
-                <h2>📡 iPhone BLE Proximity Radar</h2>
+                <h2>⌚ Smartwatch iPhone BLE Pairing</h2>
+                <p class="card-desc">Pair your iPhone over Bluetooth with <strong>ChaosDesky-Watch</strong> to receive live phone calls, WhatsApps, and app alerts!</p>
                 <div class="metrics-grid">
                     <div class="metric">
-                        <span class="label">Proximity State</span>
-                        <span class="val" id="ble-state-val">SEARCHING</span>
+                        <span class="label">BLE Sync State</span>
+                        <span class="val" id="ancs-state-val">BLE READY</span>
                     </div>
                     <div class="metric">
-                        <span class="label">Signal (RSSI)</span>
-                        <span class="val" id="ble-rssi-val">-- dBm</span>
+                        <span class="label">Received Notifs</span>
+                        <span class="val" id="ancs-count-val">0</span>
                     </div>
                 </div>
-                <div class="form-group margin-top">
-                    <label class="form-label">Near Desk Threshold: <span id="ble-thresh-label">-75 dBm</span></label>
-                    <input type="range" id="ble-thresh-slider" min="-95" max="-45" value="-75" oninput="setBleThreshold(this.value)">
-                </div>
-                <button onclick="saveBleConfig()" class="btn btn-primary full-width">Save BLE Proximity Settings</button>
+                <button onclick="simulatePhoneNotif()" class="btn btn-primary full-width margin-top">Test Phone Call Popup</button>
             </section>
 
             <!-- Card 9: Location & OpenWeather API -->
