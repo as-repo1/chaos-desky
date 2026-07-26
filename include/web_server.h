@@ -14,12 +14,14 @@
 #include "display_oled.h"
 #include "display_tft.h"
 #include "ble_manager.h"
+#include "notification_manager.h"
 
 extern String localIpStr;
 extern unsigned long carouselIntervalMs;
 extern ConfigManager configMgr;
 extern OledDisplayManager oledMgr;
 extern BleRadarManager bleRadarMgr;
+extern NotificationManager notificationMgr;
 
 class WebServerManager {
 public:
@@ -29,13 +31,15 @@ public:
                WeatherApiClient* weatherClient, 
                PomodoroTimer* pomo, 
                TftDisplayManager* tftMgr,
-               BleRadarManager* bleMgr) {
+               BleRadarManager* bleMgr,
+               NotificationManager* notifMgr) {
         
         sensorMgr = sensors;
         weatherMgr = weatherClient;
         pomoTimer = pomo;
         tftManager = tftMgr;
         bleManager = bleMgr;
+        notificationEngine = notifMgr;
 
         // REST API: GET /api/sensors
         server.on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest* request) {
@@ -323,6 +327,18 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
+        // REST API: POST /api/notify (Trigger Display Notification Popup)
+        server.on("/api/notify", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            String title = request->hasParam("title", true) ? request->getParam("title", true)->value() : "Alert";
+            String msg = request->hasParam("message", true) ? request->getParam("message", true)->value() : "Notification Received";
+            int cat = request->hasParam("category", true) ? request->getParam("category", true)->value().toInt() : 0;
+            int target = request->hasParam("target", true) ? request->getParam("target", true)->value().toInt() : 2;
+            int duration = request->hasParam("duration", true) ? request->getParam("duration", true)->value().toInt() : 8;
+
+            notificationEngine->trigger(title, msg, (NotificationCategory)cat, (NotificationTarget)target, duration);
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
         // Serve Static LittleFS Files AFTER all /api handlers!
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
@@ -337,6 +353,7 @@ private:
     PomodoroTimer* pomoTimer = nullptr;
     TftDisplayManager* tftManager = nullptr;
     BleRadarManager* bleManager = nullptr;
+    NotificationManager* notificationEngine = nullptr;
 };
 
 #endif // WEB_SERVER_H

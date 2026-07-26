@@ -12,6 +12,7 @@
 #include "display_oled.h"
 #include "display_tft.h"
 #include "ble_manager.h"
+#include "notification_manager.h"
 #include "web_server.h"
 
 // System Instances
@@ -22,6 +23,7 @@ PomodoroTimer       pomoTimer;
 OledDisplayManager  oledMgr;
 TftDisplayManager   tftMgr;
 BleRadarManager     bleRadarMgr;
+NotificationManager notificationMgr;
 WebServerManager    webServerMgr(80);
 
 // Timing Variables
@@ -120,7 +122,7 @@ void setup() {
 
     // Setup Network & Web Server
     setupWiFi();
-    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &bleRadarMgr);
+    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &bleRadarMgr, &notificationMgr);
 
     // Fetch initial Outdoor Weather
     weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
@@ -136,9 +138,10 @@ void setup() {
 void loop() {
     unsigned long currentMs = millis();
 
-    // 1. Update Pomodoro & BLE Radar State Machines
+    // 1. Update State Machines
     pomoTimer.update();
     bleRadarMgr.update();
+    notificationMgr.update();
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
     if (currentMs - lastSensorReadMs >= 2000) {
@@ -161,7 +164,7 @@ void loop() {
     }
 
     // 5. TFT Carousel Page Switcher
-    if (carouselIntervalMs > 0 && (currentMs - lastCarouselMs >= carouselIntervalMs)) {
+    if (carouselIntervalMs > 0 && !notificationMgr.isTftActive() && (currentMs - lastCarouselMs >= carouselIntervalMs)) {
         lastCarouselMs = currentMs;
         tftMgr.nextPage();
     }
@@ -172,7 +175,7 @@ void loop() {
         timeStr = getFormattedNtpTime();
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
-        oledMgr.draw(sensorMgr.data, localIpStr, timeStr, rssi);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, bleRadarMgr.radar, localIpStr, timeStr);
+        oledMgr.draw(sensorMgr.data, notificationMgr, localIpStr, timeStr, rssi);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, bleRadarMgr.radar, notificationMgr, localIpStr, timeStr);
     }
 }

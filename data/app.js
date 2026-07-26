@@ -144,6 +144,30 @@ async function sendCustomText() {
     showToast("Custom Announcement Sent!");
 }
 
+// Send Notification Popup
+async function sendNotificationPopup() {
+    const title = document.getElementById('notif-title-input').value || "Alert";
+    const msg = document.getElementById('notif-msg-input').value || "Notification Received";
+    const target = document.getElementById('notif-target-select').value;
+    const cat = document.getElementById('notif-cat-select').value;
+    const duration = document.getElementById('notif-dur-slider').value;
+
+    const formData = new URLSearchParams();
+    formData.append('title', title);
+    formData.append('message', msg);
+    formData.append('target', target);
+    formData.append('category', cat);
+    formData.append('duration', duration);
+
+    await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+
+    showToast("Live Notification Pushed to Display!");
+}
+
 // Image Preview & HTML5 Canvas Processing
 function previewUserImage(e) {
     const file = e.target.files[0];

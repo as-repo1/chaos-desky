@@ -75,6 +75,45 @@
                 </div>
             </section>
 
+            <!-- Card 4: Send Live Notification Popups -->
+            <section class="card glass">
+                <h2>🔔 Push Live Display Notification</h2>
+                <p class="card-desc">Send instant popups to the TFT screen, OLED screen, or both with custom severity icons!</p>
+                <div class="form-group">
+                    <label class="form-label">Notification Title:</label>
+                    <input type="text" id="notif-title-input" placeholder="e.g. Incoming Call: Rahul">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message Body:</label>
+                    <input type="text" id="notif-msg-input" placeholder="e.g. Meeting starting in 5 minutes">
+                </div>
+                <div class="control-row">
+                    <div class="control-col">
+                        <label class="form-label">Target Screen:</label>
+                        <select id="notif-target-select">
+                            <option value="2">Both Displays (TFT + OLED)</option>
+                            <option value="0">TFT Screen Only</option>
+                            <option value="1">OLED Screen Only</option>
+                        </select>
+                    </div>
+                    <div class="control-col">
+                        <label class="form-label">Category Icon:</label>
+                        <select id="notif-cat-select">
+                            <option value="0">ℹ️ Info Alert</option>
+                            <option value="1">💬 Message</option>
+                            <option value="2">📞 Incoming Call</option>
+                            <option value="3">⚠️ Warning</option>
+                            <option value="4">🚨 Critical Alert</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group margin-top">
+                    <label class="form-label">Auto-Dismiss Duration: <span id="notif-dur-label">8s</span></label>
+                    <input type="range" id="notif-dur-slider" min="3" max="30" value="8" oninput="document.getElementById('notif-dur-label').innerText = this.value + 's'">
+                </div>
+                <button onclick="sendNotificationPopup()" class="btn btn-red full-width">Push Live Popup Alert</button>
+            </section>
+
             <!-- Card 4: Granular TFT Controls & 10-Page Carousel Toggles -->
             <section class="card glass">
                 <h2>📺 Granular TFT Controls & 10 Pages</h2>

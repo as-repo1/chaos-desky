@@ -207,9 +207,16 @@ public:
                            SensorManager& sensors, 
                            PomodoroTimer& pomo, 
                            const BleRadarData& bleRadar,
+                           const NotificationManager& notifMgr,
                            const String& ipStr, 
                            const String& timeStr) {
         
+        if (notifMgr.isTftActive()) {
+            renderNotificationOverlay(notifMgr.currentNotif, notifMgr.getProgress());
+            pageNeedsFullRedraw = true; // Request full redraw when notification disappears
+            return;
+        }
+
         bool fullRedraw = pageNeedsFullRedraw || (currentPage != lastRenderedPage);
 
         if (fullRedraw) {
@@ -237,6 +244,59 @@ private:
     Adafruit_ST7735 tft;
     int lastRenderedPage = -1;
     bool pageNeedsFullRedraw = true;
+
+    void renderNotificationOverlay(const NotificationItem& n, float progress) {
+        uint16_t headerColor = COLOR_PRIMARY;
+        if (n.category == NOTIF_WARNING) headerColor = COLOR_WARN;
+        else if (n.category == NOTIF_ALERT || n.category == NOTIF_CALL) headerColor = COLOR_ALERT;
+
+        tft.fillRect(4, 20, 120, 120, COLOR_BG);
+        tft.drawRect(4, 20, 120, 120, headerColor);
+
+        tft.fillRect(4, 20, 120, 18, headerColor);
+        tft.setTextColor(COLOR_BG, headerColor);
+        tft.setTextSize(1);
+        tft.setCursor(8, 25);
+
+        switch (n.category) {
+            case NOTIF_INFO:    tft.print("ℹ️ INFO ALERT"); break;
+            case NOTIF_MESSAGE: tft.print("💬 NEW MESSAGE"); break;
+            case NOTIF_CALL:    tft.print("📞 INCOMING CALL"); break;
+            case NOTIF_WARNING: tft.print("⚠️ WARNING!"); break;
+            case NOTIF_ALERT:   tft.print("🚨 CRITICAL ALERT"); break;
+        }
+
+        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+        tft.setTextSize(1);
+        tft.setCursor(10, 44);
+        tft.print(n.title.substring(0, 18));
+
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(10, 60);
+        tft.print(n.message.substring(0, 18));
+
+        if (n.message.length() > 18) {
+            tft.setCursor(10, 75);
+            tft.print(n.message.substring(18, 36));
+        }
+
+        if (n.message.length() > 36) {
+            tft.setCursor(10, 90);
+            tft.print(n.message.substring(36, 54));
+        }
+
+        // Progress bar
+        tft.drawRect(8, 120, 112, 10, headerColor);
+        int fillWidth = (int)((1.0f - progress) * 108.0f);
+        if (fillWidth > 0) {
+            tft.fillRect(10, 122, fillWidth, 6, headerColor);
+        }
+
+        tft.fillRect(0, 146, 128, 14, headerColor);
+        tft.setTextColor(COLOR_BG, headerColor);
+        tft.setCursor(4, 149);
+        tft.print("DISMISSING NOTIF...");
+    }
 
     void drawPageHeader() {
         tft.fillRect(0, 0, 128, 16, COLOR_PRIMARY);
