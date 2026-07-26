@@ -141,6 +141,16 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
+        // REST API: POST /api/tft/watchface
+        server.on("/api/tft/watchface", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("style", true)) {
+                int st = request->getParam("style", true)->value().toInt();
+                watchFaceEngine.activeStyle = st;
+                tftManager->setPage(7); // Auto-jump to Watch Face Page
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
         // REST API: POST /api/tft/theme?theme=0..10
         server.on("/api/tft/theme", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("theme")) {

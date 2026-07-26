@@ -16,8 +16,10 @@
 #include "ancs_client.h"
 #include "gfx_icons.h"
 #include "screensaver.h"
+#include "watchface_engine.h"
 
 extern ScreensaverEngine screensaverEngine;
+extern WatchFaceEngine watchFaceEngine;
 
 enum TFTTheme {
     THEME_CYBERPUNK = 0,
@@ -244,7 +246,7 @@ public:
             case 4: renderCustomUserPage(fullRedraw); break;
             case 5: renderIndoorClimatePage(sensors.data, fullRedraw); break;
             case 6: renderPhoneNotifPage(phoneLog, fullRedraw); break;
-            case 7: renderBigClockPage(timeStr, fullRedraw); break;
+            case 7: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
             case 8: renderNetworkMonitorPage(ipStr, fullRedraw); break;
             case 9: screensaverEngine.renderTftCosmicWarp(tft, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG); break;
         }
@@ -636,34 +638,22 @@ private:
         }
     }
 
-    // --- Page 7: Big Digital Clock & Date ---
-    void renderBigClockPage(const String& timeStr, bool fullRedraw) {
-        tft.setTextColor(COLOR_ACCENT, COLOR_BG);
-        tft.setTextSize(3);
-        tft.setCursor(8, 30);
-        tft.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+    // --- Page 7: Custom Watch Face Dial ---
+    void renderBigClockPage(const String& timeStr, const OutdoorWeatherData& weather, SensorManager& sensors, bool fullRedraw) {
+        int h = 0, m = 0, s = 0;
+        if (timeStr.length() >= 8) {
+            h = timeStr.substring(0, 2).toInt();
+            m = timeStr.substring(3, 5).toInt();
+            s = timeStr.substring(6, 8).toInt();
+        }
 
-        tft.setTextSize(1);
-        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-        tft.setCursor(102, 44);
-        tft.print(timeStr.length() >= 8 ? timeStr.substring(6, 8) : "00");
-
-        tft.drawFastHLine(4, 68, 120, COLOR_PRIMARY);
-
-        tft.setTextSize(2);
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(16, 84);
-        tft.print("DESK CLK");
-
-        tft.setTextSize(1);
-        tft.setCursor(10, 112);
-        tft.print("NTP TIME SYNC OK");
+        watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG);
 
         if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
-            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
+            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
             tft.setCursor(4, 149);
-            tft.print("DIGITAL DESK CLOCK ");
+            tft.print("WATCH FACE STUDIO  ");
         }
     }
 

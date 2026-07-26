@@ -142,51 +142,96 @@ body {
     margin: 0 auto;
 }
 
+/* --- HEADER STYLES --- */
 .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 20px;
+    padding: 20px 0;
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 25px;
+    margin-bottom: 15px;
 }
 
 .logo h1 {
     font-size: 1.8rem;
-    color: var(--primary-color);
-    letter-spacing: 1px;
+    font-weight: 800;
+    color: var(--text-color);
+    margin: 0;
 }
 
 .logo span {
-    color: var(--accent-color);
+    color: var(--primary-color);
 }
 
 .badge {
     font-size: 0.75rem;
-    background: var(--button-bg);
-    padding: 3px 10px;
-    border-radius: 12px;
     color: var(--subtext-color);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .status-pill {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #064e3b;
-    color: #34d399;
     padding: 6px 14px;
     border-radius: 20px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
 }
 
-.dot {
+.status-pill.online .dot {
     width: 8px;
     height: 8px;
-    background: #34d399;
     border-radius: 50%;
-    box-shadow: 0 0 8px #34d399;
+    background: var(--success-color);
+    box-shadow: 0 0 10px var(--success-color);
+}
+
+/* --- TABBED NAVIGATION STYLES --- */
+.nav-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-tab {
+    padding: 10px 18px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--subtext-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.nav-tab.active {
+    background: var(--primary-color);
+    color: #000000;
+    font-weight: 700;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 12px var(--primary-color);
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
 }
 
 .grid {

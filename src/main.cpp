@@ -25,6 +25,7 @@ TftDisplayManager      tftMgr;
 NotificationManager    notificationMgr;
 AncsNotificationClient ancsClientMgr;
 ScreensaverEngine      screensaverEngine;
+WatchFaceEngine        watchFaceEngine;
 WebServerManager       webServerMgr(80);
 
 // Timing Variables

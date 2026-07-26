@@ -15,282 +15,303 @@
         <header class="header">
             <div class="logo">
                 <h1>⚡ CHAOS<span>DESKY</span></h1>
-                <span class="badge">ESP32 Dual-Display Hub</span>
+                <span class="badge">ESP32 Dual-Display Command Station</span>
             </div>
             <div class="status-pill online" id="wifi-status">
                 <span class="dot"></span> ONLINE
             </div>
         </header>
 
-        <!-- Dashboard Grid -->
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('tab-telemetry')">📊 Telemetry</button>
+            <button class="nav-tab" onclick="switchTab('tab-watchfaces')">⌚ Watch Faces</button>
+            <button class="nav-tab" onclick="switchTab('tab-smartwatch')">🔔 Smartwatch</button>
+            <button class="nav-tab" onclick="switchTab('tab-media')">📝 Media</button>
+            <button class="nav-tab" onclick="switchTab('tab-settings')">⚙️ Settings</button>
+        </nav>
+
+        <!-- Main Content Body -->
         <main class="grid">
-            <!-- Card 1: Indoor Sensor Metrics -->
-            <section class="card glass">
-                <h2>🏠 Indoor Climate (Sensors)</h2>
-                <div class="metrics-grid">
-                    <div class="metric">
-                        <span class="label">Temperature</span>
-                        <span class="val" id="temp-val">-- °C</span>
-                        <span class="sub-val" id="minmax-temp">Min: -- | Max: --</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Humidity</span>
-                        <span class="val" id="humid-val">-- %</span>
-                        <span class="sub-val" id="comfort-val">Comfort: --</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Pressure</span>
-                        <span class="val" id="press-val">-- hPa</span>
-                        <span class="sub-val" id="alt-val">Alt: -- m</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Heat Index</span>
-                        <span class="val" id="hi-val">-- °C</span>
-                        <span class="sub-val" id="dew-val">Dew: -- °C</span>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Card 2: Outdoor Weather -->
-            <section class="card glass">
-                <h2>☀️ Outdoor Weather (Internet API)</h2>
-                <div class="weather-box">
-                    <div class="city-name" id="city-val">Loading...</div>
-                    <div class="outdoor-temp" id="out-temp-val">-- °C</div>
-                    <div class="condition" id="cond-val">--</div>
-                    <div class="weather-sub" id="wind-val">Wind: -- m/s</div>
-                </div>
-            </section>
+            <!-- TAB 1: LIVE TELEMETRY & WEATHER -->
+            <div id="tab-telemetry" class="tab-pane active">
+                <!-- Card 1: Indoor Sensor Metrics -->
+                <section class="card glass">
+                    <h2>🏠 Indoor Climate Telemetry</h2>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="label">Temperature</span>
+                            <span class="val" id="temp-val">-- °C</span>
+                            <span class="sub-val" id="minmax-temp">Min: -- | Max: --</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Humidity</span>
+                            <span class="val" id="humid-val">-- %</span>
+                            <span class="sub-val" id="comfort-val">Comfort: --</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Pressure</span>
+                            <span class="val" id="press-val">-- hPa</span>
+                            <span class="sub-val" id="alt-val">Alt: -- m</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Heat Index</span>
+                            <span class="val" id="hi-val">-- °C</span>
+                            <span class="sub-val" id="dew-val">Dew: -- °C</span>
+                        </div>
+                    </div>
+                </section>
 
-            <!-- Card 3: Custom Text Web Editor -->
-            <section class="card glass">
-                <h2>📝 Custom Text Banner Editor</h2>
-                <p class="card-desc">Type your custom text message below to update the OLED marquee ticker and TFT Page 5 banner in real time!</p>
-                <div class="form-group">
-                    <label class="form-label">Custom Banner Text:</label>
-                    <div class="input-with-btn">
-                        <input type="text" id="marquee-input" placeholder="Type custom announcement text...">
-                        <button onclick="sendCustomText()" class="btn btn-primary">Publish Text</button>
+                <!-- Card 2: Hinjewadi Pune Outdoor Weather -->
+                <section class="card glass margin-top">
+                    <h2>☀️ Hinjewadi Pune Weather (OpenWeather API)</h2>
+                    <div class="weather-box">
+                        <div class="city-name" id="city-val">Loading...</div>
+                        <div class="outdoor-temp" id="out-temp-val">-- °C</div>
+                        <div class="condition" id="cond-val">--</div>
+                        <div class="weather-sub" id="wind-val">Wind: -- m/s</div>
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
 
-            <!-- Card 4: Send Live Notification Popups -->
-            <section class="card glass">
-                <h2>🔔 Push Live Display Notification</h2>
-                <p class="card-desc">Send instant popups to the TFT screen, OLED screen, or both with custom severity icons!</p>
-                <div class="form-group">
-                    <label class="form-label">Notification Title:</label>
-                    <input type="text" id="notif-title-input" placeholder="e.g. Incoming Call: Rahul">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Message Body:</label>
-                    <input type="text" id="notif-msg-input" placeholder="e.g. Meeting starting in 5 minutes">
-                </div>
-                <div class="control-row">
-                    <div class="control-col">
-                        <label class="form-label">Target Screen:</label>
-                        <select id="notif-target-select">
-                            <option value="2">Both Displays (TFT + OLED)</option>
-                            <option value="0">TFT Screen Only</option>
-                            <option value="1">OLED Screen Only</option>
-                        </select>
-                    </div>
-                    <div class="control-col">
-                        <label class="form-label">Category Icon:</label>
-                        <select id="notif-cat-select">
-                            <option value="0">ℹ️ Info Alert</option>
-                            <option value="1">💬 Message</option>
-                            <option value="2">📞 Incoming Call</option>
-                            <option value="3">⚠️ Warning</option>
-                            <option value="4">🚨 Critical Alert</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group margin-top">
-                    <label class="form-label">Auto-Dismiss Duration: <span id="notif-dur-label">8s</span></label>
-                    <input type="range" id="notif-dur-slider" min="3" max="30" value="8" oninput="document.getElementById('notif-dur-label').innerText = this.value + 's'">
-                </div>
-                <button onclick="sendNotificationPopup()" class="btn btn-red full-width">Push Live Popup Alert</button>
-            </section>
 
-            <!-- Card 4: Granular TFT Controls & 10-Page Carousel Toggles -->
-            <section class="card glass">
-                <h2>📺 Granular TFT Controls & 10 Pages</h2>
-                <label class="form-label">Instant Page Jump:</label>
-                <div class="btn-group">
-                    <button onclick="setTftPage(0)" class="btn">P1: Weather</button>
-                    <button onclick="setTftPage(1)" class="btn">P2: Baro</button>
-                    <button onclick="setTftPage(2)" class="btn">P3: Pomo</button>
-                    <button onclick="setTftPage(3)" class="btn">P4: QR</button>
-                    <button onclick="setTftPage(4)" class="btn">P5: Custom</button>
-                    <button onclick="setTftPage(5)" class="btn">P6: Indoor</button>
-                    <button onclick="setTftPage(6)" class="btn">P7: Phone</button>
-                    <button onclick="setTftPage(7)" class="btn">P8: Clock</button>
-                    <button onclick="setTftPage(8)" class="btn">P9: Network</button>
-                    <button onclick="setTftPage(9)" class="btn">P10: 3D Warp</button>
-                </div>
-                
-                <hr class="divider">
-                <label class="form-label">Toggle Enabled Carousel Pages:</label>
-                <div class="checkbox-grid">
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-0" checked onchange="savePageMask()"> P1: Weather</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-1" checked onchange="savePageMask()"> P2: Baro</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-2" checked onchange="savePageMask()"> P3: Pomodoro</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-3" checked onchange="savePageMask()"> P4: System QR</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-4" checked onchange="savePageMask()"> P5: Custom Text</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-5" checked onchange="savePageMask()"> P6: Indoor Climate</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-6" checked onchange="savePageMask()"> P7: BLE Radar</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-7" checked onchange="savePageMask()"> P8: Big Clock</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-8" checked onchange="savePageMask()"> P9: Network</label>
-                    <label class="checkbox-item"><input type="checkbox" id="chk-page-9" checked onchange="savePageMask()"> P10: Hardware</label>
-                </div>
+            <!-- TAB 2: WATCH FACES & DISPLAY CUSTOMIZER -->
+            <div id="tab-watchfaces" class="tab-pane">
+                <!-- Card: Watch Face Studio Customizer -->
+                <section class="card glass">
+                    <h2>⌚ Watch Face Studio Customizer</h2>
+                    <p class="card-desc">Select and customize watch face styles rendered on TFT Page 8!</p>
+                    <div class="btn-group">
+                        <button onclick="setWatchface(0)" class="btn btn-primary">🕒 Swiss Analog</button>
+                        <button onclick="setWatchface(1)" class="btn">⏱️ Cyber Chrono</button>
+                        <button onclick="setWatchface(2)" class="btn">☀️ Modern Digital</button>
+                        <button onclick="setWatchface(3)" class="btn">🔴 Neon Nixie</button>
+                    </div>
+                </section>
 
-                <hr class="divider">
-                <div class="control-row">
-                    <div class="control-col">
-                        <label class="form-label">11 System Themes:</label>
-                        <select id="theme-dropdown" onchange="setTftTheme(this.value)">
-                            <option value="0">🌌 Cyberpunk Synthwave</option>
-                            <option value="1">📟 Matrix Hacker</option>
-                            <option value="2">🧊 Dark Glass</option>
-                            <option value="3">👾 Retro Arcade</option>
-                            <option value="4">🧛 Dracula Theme</option>
-                            <option value="5">❄️ Nord Arctic</option>
-                            <option value="6">🍂 Gruvbox Retro</option>
-                            <option value="7">🔳 Monochrome High-Contrast</option>
-                            <option value="8">🔴 Nothing UI (Dot Matrix)</option>
-                            <option value="9">📱 One UI (Samsung Blue)</option>
-                            <option value="10">🎨 Material You (Google Purple)</option>
-                        </select>
+                <!-- Card: Granular TFT Controls & Themes -->
+                <section class="card glass margin-top">
+                    <h2>📺 TFT Display Themes & Rotation</h2>
+                    <div class="control-row">
+                        <div class="control-col">
+                            <label class="form-label">Color Theme (11 Themes):</label>
+                            <select id="theme-dropdown" onchange="setTftTheme(this.value)">
+                                <option value="0">⚡ Cyberpunk Neon</option>
+                                <option value="1">🟢 Matrix Hacker</option>
+                                <option value="2">🌌 Dark Glass Minimal</option>
+                                <option value="3">📻 Retro Amber</option>
+                                <option value="4">🧛 Dracula Theme</option>
+                                <option value="5">❄️ Nord Frost</option>
+                                <option value="6">🍂 Gruvbox Retro</option>
+                                <option value="7">🔳 Monochrome High-Contrast</option>
+                                <option value="8">🔴 Nothing UI (Dot Matrix)</option>
+                                <option value="9">📱 One UI (Samsung Blue)</option>
+                                <option value="10">🎨 Material You (Google Purple)</option>
+                            </select>
+                        </div>
+                        <div class="control-col">
+                            <label class="form-label">Screen Rotation:</label>
+                            <select id="rotation-dropdown" onchange="setTftRotation(this.value)">
+                                <option value="0">0° (Portrait)</option>
+                                <option value="1">90° (Landscape)</option>
+                                <option value="2" selected>180° (Inverted Portrait - Default)</option>
+                                <option value="3">270° (Inverted Landscape)</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="control-col">
-                        <label class="form-label">Screen Rotation:</label>
-                        <select id="rotation-dropdown" onchange="setTftRotation(this.value)">
-                            <option value="0">0° (Portrait)</option>
-                            <option value="1">90° (Landscape)</option>
-                            <option value="2" selected>180° (Inverted Portrait - Default)</option>
-                            <option value="3">270° (Inverted Landscape)</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- Card 5: Granular OLED Controls -->
-            <section class="card glass">
-                <h2>📟 Granular OLED Screen Customizer</h2>
-                <div class="form-group">
-                    <label class="form-label">OLED Display Mode:</label>
-                    <select id="oled-mode-dropdown" onchange="setOledMode(this.value)">
-                        <option value="0">0: Full Telemetry HUD</option>
-                        <option value="1">1: Big Digital Clock & Date</option>
-                        <option value="2">2: Temp & Humidity Sparklines</option>
-                        <option value="3">3: Custom Text Marquee Ticker</option>
-                        <option value="4">4: Uploaded 128x64 Bitmap Image</option>
-                        <option value="5">🐱 5: Cute Cyber Cat Mascot Screensaver</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">OLED Contrast (Brightness): <span id="contrast-label">255</span></label>
-                    <input type="range" id="contrast-slider" min="0" max="255" value="255" oninput="setOledContrast(this.value)">
-                </div>
-            </section>
-
-            <!-- Card 6: Custom Image Uploader -->
-            <section class="card glass">
-                <h2>🖼️ Upload Custom Image to Displays</h2>
-                <p class="card-desc">Select any PNG, JPG, or BMP photo. The browser will convert it and flash it directly to your screens!</p>
-                <div class="form-group">
-                    <label class="form-label">Select Image File:</label>
-                    <input type="file" id="image-file-input" accept="image/*" onchange="previewUserImage(event)">
-                </div>
-                <div class="preview-box">
-                    <canvas id="preview-canvas" width="128" height="160"></canvas>
-                </div>
-                <div class="btn-group">
-                    <button onclick="uploadImageToTft()" class="btn btn-blue">Upload to TFT Screen</button>
-                    <button onclick="uploadImageToOled()" class="btn btn-yellow">Upload to OLED Screen</button>
-                </div>
-            </section>
-
-            <!-- Card 7: Pomodoro Customizer -->
-            <section class="card glass">
-                <h2>⏱️ Pomodoro Focus Hub</h2>
-                <div class="pomo-box">
-                    <div class="pomo-state" id="pomo-state">READY</div>
-                    <div class="pomo-timer" id="pomo-timer">25:00</div>
-                    <div class="progress-bar-container">
-                        <div class="progress-bar-fill" id="pomo-progress"></div>
-                    </div>
-                    <div class="pomo-stats" id="pomo-sessions">Completed Sessions: 0</div>
-                    <div class="pomo-controls">
-                        <button onclick="pomoAction('start')" class="btn btn-green">▶ Work</button>
-                        <button onclick="pomoAction('break')" class="btn btn-blue">☕ Rest</button>
-                        <button onclick="pomoAction('pause')" class="btn btn-yellow">⏸ Pause</button>
-                        <button onclick="pomoAction('reset')" class="btn btn-red">🔄 Reset</button>
-                    </div>
-                </div>
-                <hr class="divider">
-                <div class="control-row">
-                    <div class="control-col">
-                        <label class="form-label">Work Mins:</label>
-                        <input type="number" id="work-mins-input" value="25" min="1" max="120">
-                    </div>
-                    <div class="control-col">
-                        <label class="form-label">Break Mins:</label>
-                        <input type="number" id="break-mins-input" value="5" min="1" max="60">
-                    </div>
-                </div>
-                <button onclick="savePomodoroConfig()" class="btn btn-primary full-width margin-top">Save Timer Settings</button>
-            </section>
-
-            <!-- Card 8: Smartwatch BLE Phone Pairing -->
-            <section class="card glass">
-                <h2>⌚ Smartwatch iPhone BLE Pairing</h2>
-                <p class="card-desc">Pair your iPhone over Bluetooth with <strong>ChaosDesky-Watch</strong> to receive live phone calls, WhatsApps, and app alerts!</p>
-                <div class="metrics-grid">
-                    <div class="metric">
-                        <span class="label">BLE Sync State</span>
-                        <span class="val" id="ancs-state-val">BLE READY</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Received Notifs</span>
-                        <span class="val" id="ancs-count-val">0</span>
-                    </div>
-                </div>
-                <button onclick="simulatePhoneNotif()" class="btn btn-primary full-width margin-top">Test Phone Call Popup</button>
-            </section>
-
-            <!-- Card 9: Location & OpenWeather API -->
-            <section class="card glass">
-                <h2>⚙️ Location & OpenWeather API</h2>
-                <form id="config-form" onsubmit="saveConfig(event)">
+                <!-- Card: Granular OLED Customizer -->
+                <section class="card glass margin-top">
+                    <h2>📟 OLED Display Customizer</h2>
                     <div class="form-group">
-                        <label class="form-label">City Name or Postal PIN Code:</label>
-                        <input type="text" id="city-input" placeholder="e.g. 411057 or Hinjewadi" value="411057">
+                        <label class="form-label">OLED Display Mode:</label>
+                        <select id="oled-mode-dropdown" onchange="setOledMode(this.value)">
+                            <option value="0">0: Full Telemetry HUD</option>
+                            <option value="1">1: Big Digital Clock & Date</option>
+                            <option value="2">2: Temp & Humidity Sparklines</option>
+                            <option value="3">3: Custom Text Marquee Ticker</option>
+                            <option value="4">4: Uploaded 128x64 Bitmap Image</option>
+                            <option value="5">🐱 5: Cute Cyber Cat Mascot Screensaver</option>
+                        </select>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label">OLED Contrast: <span id="contrast-label">255</span></label>
+                        <input type="range" id="contrast-slider" min="0" max="255" value="255" oninput="setOledContrast(this.value)">
+                    </div>
+                </section>
+            </div>
+
+
+            <!-- TAB 3: SMARTWATCH & LIVE NOTIFICATIONS -->
+            <div id="tab-smartwatch" class="tab-pane">
+                <!-- Card: Smartwatch BLE Phone Pairing -->
+                <section class="card glass">
+                    <h2>⌚ Smartwatch iPhone BLE Pairing</h2>
+                    <p class="card-desc">Pair your iPhone over Bluetooth with <strong>ChaosDesky-Watch</strong> to receive live phone calls, WhatsApps, and app alerts!</p>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="label">BLE Sync State</span>
+                            <span class="val" id="ancs-state-val">BLE READY</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Received Notifs</span>
+                            <span class="val" id="ancs-count-val">0</span>
+                        </div>
+                    </div>
+                    <button onclick="simulatePhoneNotif()" class="btn btn-primary full-width margin-top">Test Phone Call Popup</button>
+                </section>
+
+                <!-- Card: Push Live Display Notification -->
+                <section class="card glass margin-top">
+                    <h2>🔔 Push Live Display Notification</h2>
+                    <p class="card-desc">Send instant popups to the TFT screen, OLED screen, or both with custom severity icons!</p>
+                    <div class="form-group">
+                        <label class="form-label">Notification Title:</label>
+                        <input type="text" id="notif-title-input" placeholder="e.g. Incoming Call: Rahul">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Message Body:</label>
+                        <input type="text" id="notif-msg-input" placeholder="e.g. Meeting starting in 5 minutes">
+                    </div>
+                    <div class="control-row">
+                        <div class="control-col">
+                            <label class="form-label">Target Screen:</label>
+                            <select id="notif-target-select">
+                                <option value="2">Both Displays (TFT + OLED)</option>
+                                <option value="0">TFT Screen Only</option>
+                                <option value="1">OLED Screen Only</option>
+                            </select>
+                        </div>
+                        <div class="control-col">
+                            <label class="form-label">Category Icon:</label>
+                            <select id="notif-cat-select">
+                                <option value="0">ℹ️ Info Alert</option>
+                                <option value="1">💬 Message</option>
+                                <option value="2">📞 Incoming Call</option>
+                                <option value="3">⚠️ Warning</option>
+                                <option value="4">🚨 Critical Alert</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group margin-top">
+                        <label class="form-label">Auto-Dismiss Duration: <span id="notif-dur-label">8s</span></label>
+                        <input type="range" id="notif-dur-slider" min="3" max="30" value="8" oninput="document.getElementById('notif-dur-label').innerText = this.value + 's'">
+                    </div>
+                    <button onclick="sendNotificationPopup()" class="btn btn-red full-width margin-top">Push Live Popup Alert</button>
+                </section>
+            </div>
+
+
+            <!-- TAB 4: CUSTOM MEDIA & TEXT -->
+            <div id="tab-media" class="tab-pane">
+                <!-- Card: Custom Text Web Editor -->
+                <section class="card glass">
+                    <h2>📝 Custom Text Banner Editor</h2>
+                    <p class="card-desc">Type custom text below to update the OLED marquee ticker and TFT Page 5 banner in real time!</p>
+                    <div class="form-group">
+                        <label class="form-label">Custom Banner Text:</label>
+                        <div class="input-with-btn">
+                            <input type="text" id="marquee-input" placeholder="Type custom announcement text...">
+                            <button onclick="sendCustomText()" class="btn btn-primary">Publish Text</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Card: Custom Image Uploader -->
+                <section class="card glass margin-top">
+                    <h2>🖼️ Upload Custom Image to Displays</h2>
+                    <p class="card-desc">Select any image (PNG, JPG, BMP). Our HTML5 engine automatically resizes & converts it for TFT (128x128 16-bit RGB565) or OLED (128x64 1-bit Mono)!</p>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Select Photo File:</label>
+                        <input type="file" id="image-file-input" accept="image/*" onchange="previewUserImage(event)">
+                    </div>
+
+                    <div class="preview-box">
+                        <canvas id="preview-canvas" width="128" height="128"></canvas>
+                    </div>
+
+                    <div class="btn-group margin-top">
+                        <button onclick="uploadToTft()" class="btn btn-primary">Upload to TFT (Page 5)</button>
+                        <button onclick="uploadToOled()" class="btn btn-accent">Upload to OLED (Mode 4)</button>
+                    </div>
+                </section>
+            </div>
+
+
+            <!-- TAB 5: SYSTEM & SETTINGS -->
+            <div id="tab-settings" class="tab-pane">
+                <!-- Card: Carousel Page Bitmask & Instant Jump -->
+                <section class="card glass">
+                    <h2>📺 Carousel Pages & Instant Jump</h2>
+                    <label class="form-label">Instant Page Jump:</label>
+                    <div class="btn-group">
+                        <button onclick="setTftPage(0)" class="btn">P1: Weather</button>
+                        <button onclick="setTftPage(1)" class="btn">P2: Baro</button>
+                        <button onclick="setTftPage(2)" class="btn">P3: Pomo</button>
+                        <button onclick="setTftPage(3)" class="btn">P4: QR</button>
+                        <button onclick="setTftPage(4)" class="btn">P5: Custom</button>
+                        <button onclick="setTftPage(5)" class="btn">P6: Indoor</button>
+                        <button onclick="setTftPage(6)" class="btn">P7: Phone</button>
+                        <button onclick="setTftPage(7)" class="btn">P8: Watchface</button>
+                        <button onclick="setTftPage(8)" class="btn">P9: Network</button>
+                        <button onclick="setTftPage(9)" class="btn">P10: 3D Warp</button>
+                    </div>
+                    
+                    <hr class="divider">
+                    <label class="form-label">Toggle Enabled Carousel Pages:</label>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-0" checked onchange="savePageMask()"> P1: Weather</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-1" checked onchange="savePageMask()"> P2: Baro</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-2" checked onchange="savePageMask()"> P3: Pomodoro</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-3" checked onchange="savePageMask()"> P4: System QR</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-4" checked onchange="savePageMask()"> P5: Custom Banner</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-5" checked onchange="savePageMask()"> P6: Indoor Climate</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-6" checked onchange="savePageMask()"> P7: Phone Notifs</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-7" checked onchange="savePageMask()"> P8: Watchface</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-8" checked onchange="savePageMask()"> P9: Network</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-9" checked onchange="savePageMask()"> P10: 3D Warp</label>
+                    </div>
+                </section>
+
+                <!-- Card: OpenWeather Location Config -->
+                <section class="card glass margin-top">
+                    <h2>⚙️ OpenWeather Location & API Config</h2>
                     <div class="form-group">
                         <label class="form-label">OpenWeather API Key:</label>
-                        <input type="password" id="apikey-input" placeholder="Paste OpenWeather API Key">
+                        <input type="text" id="owm-key-input" placeholder="Paste OpenWeather API key...">
+                    </div>
+                    <div class="control-row">
+                        <div class="control-col">
+                            <label class="form-label">City / Postal PIN:</label>
+                            <input type="text" id="owm-city-input" value="411057">
+                        </div>
+                        <div class="control-col">
+                            <label class="form-label">Country Code:</label>
+                            <input type="text" id="owm-country-input" value="IN">
+                        </div>
+                    </div>
+                    <button onclick="saveWeatherConfig()" class="btn btn-primary margin-top full-width">Save Weather Location</button>
+                </section>
+
+                <!-- Card: Pomodoro Timer Sliders -->
+                <section class="card glass margin-top">
+                    <h2>⏱️ Pomodoro Work & Break Timer</h2>
+                    <div class="form-group">
+                        <label class="form-label">Work Duration: <span id="pomo-work-label">25 mins</span></label>
+                        <input type="range" id="pomo-work-slider" min="5" max="60" value="25" oninput="document.getElementById('pomo-work-label').innerText = this.value + ' mins'">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">TFT Auto-Carousel Speed:</label>
-                        <select id="carousel-dropdown">
-                            <option value="10">10 Seconds</option>
-                            <option value="5">5 Seconds</option>
-                            <option value="15">15 Seconds</option>
-                            <option value="30">30 Seconds</option>
-                            <option value="0">Pause Auto-Switch</option>
-                        </select>
+                        <label class="form-label">Break Duration: <span id="pomo-break-label">5 mins</span></label>
+                        <input type="range" id="pomo-break-slider" min="1" max="30" value="5" oninput="document.getElementById('pomo-break-label').innerText = this.value + ' mins'">
                     </div>
-                    <button type="submit" class="btn btn-primary full-width">Save Location & API</button>
-                </form>
-            </section>
-        </main>
+                    <button onclick="savePomodoroConfig()" class="btn btn-primary full-width margin-top">Save Pomodoro Timers</button>
+                </section>
+            </div>
 
-        <footer>
-            <p>ChaosDesky ESP32 Standalone Station • 10 Carousel Pages & Granular Displays Engine</p>
-        </footer>
+        </main>
     </div>
 
     <script src="app.js"></script>

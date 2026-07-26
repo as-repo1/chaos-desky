@@ -339,6 +339,29 @@ async function saveBleConfig() {
     showToast("BLE Proximity Threshold Saved!");
 }
 
+// Tab Navigation Switcher
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+    const targetTab = document.getElementById(tabId);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+
+    event.currentTarget.classList.add('active');
+}
+
+// Watch Face Customizer Switcher
+async function setWatchface(style) {
+    await fetch('/api/tft/watchface', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `style=${style}`
+    });
+    showToast("Watch Face Updated!");
+}
+
 // Auto-refresh timers
 setInterval(updateSensors, 2000);
 setInterval(updateWeather, 10000);
