@@ -187,7 +187,7 @@ private:
         oled.setCursor(scrollX, 28);
         oled.print(text);
 
-        scrollX -= 4;
+        scrollX -= 1;
         int textWidth = text.length() * 12;
         if (scrollX < -textWidth) {
             scrollX = 128;

@@ -225,7 +225,12 @@ public:
         bool fullRedraw = pageNeedsFullRedraw || (currentPage != lastRenderedPage);
 
         if (fullRedraw) {
-            tft.fillScreen(COLOR_BG);
+            // Creamy Laser Wipe Page Transition
+            for (int y = 0; y < 160; y += 16) {
+                tft.fillRect(0, y, 128, 16, COLOR_PRIMARY);
+                delay(2);
+                tft.fillRect(0, y, 128, 16, COLOR_BG);
+            }
             drawPageHeader();
             lastRenderedPage = currentPage;
             pageNeedsFullRedraw = false;
