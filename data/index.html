@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChaosDesky - ESP32 Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>⚡ CHAOS<span>DESKY</span></h1>
+                <span class="badge">ESP32 Dual-Display Hub</span>
+            </div>
+            <div class="status-pill" id="wifi-status">
+                <span class="dot"></span> Connected
+            </div>
+        </header>
+
+        <!-- Main Dashboard Grid -->
+        <main class="grid">
+            <!-- Card 1: Indoor Sensor Metrics -->
+            <section class="card glass">
+                <h2>🏠 Indoor Climate (Sensors)</h2>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span class="label">Temperature</span>
+                        <span class="val" id="temp-val">-- °C</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Humidity</span>
+                        <span class="val" id="humid-val">-- %</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Pressure</span>
+                        <span class="val" id="press-val">-- hPa</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Heat Index</span>
+                        <span class="val" id="hi-val">-- °C</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 2: Outdoor Weather -->
+            <section class="card glass">
+                <h2>☀️ Outdoor Weather (Internet)</h2>
+                <div class="weather-box">
+                    <div class="city-name" id="city-val">Loading...</div>
+                    <div class="outdoor-temp" id="out-temp-val">-- °C</div>
+                    <div class="condition" id="cond-val">--</div>
+                </div>
+            </section>
+
+            <!-- Card 3: Pomodoro Focus Controls -->
+            <section class="card glass">
+                <h2>⏱️ Pomodoro Focus Timer</h2>
+                <div class="pomo-box">
+                    <div class="pomo-state" id="pomo-state">READY</div>
+                    <div class="pomo-timer" id="pomo-timer">25:00</div>
+                    <div class="pomo-controls">
+                        <button onclick="pomoAction('start')" class="btn btn-green">Start</button>
+                        <button onclick="pomoAction('pause')" class="btn btn-yellow">Pause</button>
+                        <button onclick="pomoAction('reset')" class="btn btn-red">Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 4: TFT Display Controls -->
+            <section class="card glass">
+                <h2>📺 TFT Display Page Switcher</h2>
+                <div class="btn-group">
+                    <button onclick="setTftPage(0)" class="btn">1: Weather</button>
+                    <button onclick="setTftPage(1)" class="btn">2: Pressure</button>
+                    <button onclick="setTftPage(2)" class="btn">3: Pomodoro</button>
+                    <button onclick="setTftPage(3)" class="btn">4: System QR</button>
+                </div>
+                <div class="theme-select">
+                    <label>Theme: </label>
+                    <select id="theme-dropdown" onchange="setTftTheme(this.value)">
+                        <option value="0">Cyberpunk Synthwave</option>
+                        <option value="1">Matrix Hacker</option>
+                        <option value="2">Dark Glass</option>
+                        <option value="3">Retro Arcade</option>
+                    </select>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>ChaosDesky ESP32 Dashboard • Powered by LittleFS & AsyncWebServer</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

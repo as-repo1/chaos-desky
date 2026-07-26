@@ -1,0 +1,189 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #334155;
+    margin-bottom: 25px;
+}
+
+.logo h1 {
+    font-size: 1.8rem;
+    color: #38bdf8;
+}
+
+.logo span {
+    color: #f43f5e;
+}
+
+.badge {
+    font-size: 0.75rem;
+    background: #1e293b;
+    padding: 3px 8px;
+    border-radius: 12px;
+    color: #94a3b8;
+}
+
+.status-pill {
+    background: #064e3b;
+    color: #34d399;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.glass {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.glass h2 {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #38bdf8;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.metric {
+    background: #0f172a;
+    padding: 12px;
+    border-radius: 10px;
+}
+
+.metric .label {
+    display: block;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.metric .val {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #f8fafc;
+}
+
+.weather-box {
+    text-align: center;
+    padding: 10px;
+}
+
+.city-name {
+    font-size: 1rem;
+    color: #94a3b8;
+}
+
+.outdoor-temp {
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: #f43f5e;
+    margin: 8px 0;
+}
+
+.condition {
+    font-size: 1.1rem;
+    color: #38bdf8;
+}
+
+.pomo-box {
+    text-align: center;
+}
+
+.pomo-state {
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    color: #fbbf24;
+    margin-bottom: 5px;
+}
+
+.pomo-timer {
+    font-size: 2.5rem;
+    font-weight: bold;
+    font-family: monospace;
+    color: #34d399;
+}
+
+.pomo-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.btn {
+    background: #334155;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn:hover {
+    background: #475569;
+}
+
+.btn-green { background: #059669; }
+.btn-yellow { background: #d97706; }
+.btn-red { background: #dc2626; }
+
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.theme-select {
+    margin-top: 10px;
+}
+
+select {
+    width: 100%;
+    padding: 8px;
+    background: #0f172a;
+    color: white;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #64748b;
+    font-size: 0.8rem;
+}
