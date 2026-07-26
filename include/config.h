@@ -40,21 +40,21 @@
 // ==========================================
 // 🌐 WIFI & NETWORK CONFIGURATION
 // ==========================================
-#define DEFAULT_WIFI_SSID     "Airtel_a204"
-#define DEFAULT_WIFI_PASS     "rahulkhanki"
+#define DEFAULT_WIFI_SSID     "YOUR_WIFI_SSID"
+#define DEFAULT_WIFI_PASS     "YOUR_WIFI_PASSWORD"
 #define AP_SSID               "ChaosDesky-AP"
-#define AP_PASS               "chaos1234"
-
-// NTP Time Configuration (Default: IST UTC +5:30 = 19800 seconds offset)
+#define AP_PASS               "12345678"
 #define NTP_SERVER_1          "pool.ntp.org"
 #define NTP_SERVER_2          "time.nist.gov"
-#define GMT_OFFSET_SEC        19800
+#define GMT_OFFSET_SEC        19800 // GMT+5:30 (adjust to your timezone)
 #define DAYLIGHT_OFFSET_SEC   0
 
-// OpenWeatherMap API Configuration
+// ==========================================
+// ☀️ OPENWEATHER API CONFIGURATION
+// ==========================================
 #define OPENWEATHER_API_KEY   "YOUR_OPENWEATHER_API_KEY"
-#define OPENWEATHER_CITY      "411057"
-#define OPENWEATHER_COUNTRY   "IN"
+#define OPENWEATHER_CITY      "London"
+#define OPENWEATHER_COUNTRY   "UK"
 #define OPENWEATHER_UNITS     "metric" // "metric" (°C) or "imperial" (°F)
 #define WEATHER_UPDATE_MS     (10 * 60 * 1000) // Fetch every 10 minutes
 

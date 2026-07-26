@@ -187,7 +187,7 @@ private:
         gfx.setCursor(12, 92);
         gfx.print("NIXIE TUBE FACE");
         gfx.setCursor(12, 108);
-        gfx.printf("PUNE: %s", w.condition.c_str());
+        gfx.printf("CITY: %s", w.condition.c_str());
         gfx.setCursor(12, 124);
         gfx.printf("TEMP: %.1f C", w.tempC);
     }

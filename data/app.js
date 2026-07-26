@@ -171,7 +171,7 @@ async function sendNotificationPopup() {
 // Simulate Smartwatch Phone Call Notification
 async function simulatePhoneNotif() {
     const formData = new URLSearchParams();
-    formData.append('sender', 'Rahul (iPhone Call)');
+    formData.append('sender', 'John (iPhone Call)');
     formData.append('text', 'Incoming Call - Swipe or Answer');
     formData.append('category', '2'); // NOTIF_CALL
 

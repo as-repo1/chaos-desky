@@ -13,8 +13,8 @@ struct OutdoorWeatherData {
     float tempMaxC = 0.0f;
     float humidity = 0.0f;
     float windSpeedMs = 0.0f;
-    String cityName = "Hinjewadi";
-    String condition = "Unknown";
+    String cityName = "City";
+    String condition = "Loading...";
     String iconCode = "01d";
     bool valid = false;
     unsigned long lastFetchMs = 0;
@@ -69,22 +69,22 @@ public:
 
         if (apiKey.isEmpty() || apiKey == "YOUR_OPENWEATHER_API_KEY") {
             Serial.println("⚠️ OpenWeather API Key not configured!");
-            weather.cityName = "Hinjewadi";
-            weather.condition = "Configure API Key";
+            weather.cityName = "City";
+            weather.condition = "Config Needed";
             weather.valid = false;
             return false;
         }
 
-        String targetInput = cityQuery.isEmpty() ? "411057" : cityQuery;
+        String targetInput = cityQuery.isEmpty() ? OPENWEATHER_CITY : cityQuery;
         String pinCode = extract6DigitPin(targetInput);
         String url;
 
         if (pinCode.length() == 6) {
-            // Query by 6-digit Indian Postal PIN Code (e.g. 411057 for Hinjewadi Phase 1)
+            // Query by 6-digit Postal PIN Code
             url = "http://api.openweathermap.org/data/2.5/weather?zip=" + pinCode + "," + country + 
                   "&units=metric&appid=" + apiKey;
         } else {
-            // Query by City Name (e.g. Hinjewadi or Pune)
+            // Query by City Name
             url = "http://api.openweathermap.org/data/2.5/weather?q=" + urlEncode(targetInput) + "," + country + 
                   "&units=metric&appid=" + apiKey;
         }
@@ -107,7 +107,7 @@ public:
                 weather.humidity    = doc["main"]["humidity"] | 0.0f;
                 weather.windSpeedMs = doc["wind"]["speed"] | 0.0f;
                 
-                String rawName      = doc["name"] | "Hinjewadi";
+                String rawName      = doc["name"] | "City";
                 weather.cityName    = rawName;
                 
                 JsonObject wObj     = doc["weather"][0];
@@ -128,11 +128,11 @@ public:
             String errResponse = http.getString();
             Serial.println("❌ Response: " + errResponse);
 
-            // Fallback: If 411057 or custom text failed, retry with "Pune"
-            if (targetInput != "Pune") {
-                Serial.println("🔄 Retrying OpenWeather API with Fallback City: Pune...");
+            // Fallback: If custom text failed, retry with default city
+            if (targetInput != OPENWEATHER_CITY) {
+                Serial.println("🔄 Retrying OpenWeather API with Default City...");
                 http.end();
-                return fetchWeather(apiKey, "Pune", country);
+                return fetchWeather(apiKey, OPENWEATHER_CITY, country);
             }
         }
 

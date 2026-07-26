@@ -10,7 +10,7 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 - **⌚ Watch Face Studio Engine (`include/watchface_engine.h`)**:
   - **Classic Swiss Luxury Analog Dial**: Round bezel, 12-hour tick marks, hour/minute/sweeping second hands, weather badge.
   - **Cyberpunk Dual Chronograph**: Analog dial + digital timestamp, indoor telemetry, RAM status gauge.
-  - **Modern Minimalist Digital Weather**: Big digital clock + OpenWeather condition icon & Hinjewadi (411057) stats.
+  - **Modern Minimalist Digital Weather**: Big digital clock + OpenWeather condition icon & location stats.
   - **Retro Neon Nixie Tube**: Bold nixie digits + notification count badge.
 - **📱 Smartwatch BLE iPhone Notification Receiver (`include/ancs_client.h`)**:
   - Connects over BLE as ANCS GATT client (`ChaosDesky-Watch`).

@@ -8,7 +8,7 @@
 
 - 🖥️ **Dual Display Setup**:
   - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page carousel display (default 180° rotation) with laser wipe page transitions:
-    1. Outdoor Weather & OpenWeatherMap Forecast (Hinjewadi Phase 1, Pune, 411057).
+    1. Outdoor Weather & OpenWeatherMap Forecast (Configurable Location).
     2. Barometric Pressure Graph & Zambretti Forecast.
     3. Pomodoro Timer & Clock.
     4. Free Heap RAM Status & Web QR Code.
