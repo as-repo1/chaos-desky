@@ -89,10 +89,17 @@ async function savePomodoroConfig() {
     showToast(`Pomodoro Timer updated: ${w}m Work / ${b}m Rest`);
 }
 
-// Switch TFT Page
-async function setTftPage(page) {
-    await fetch(`/api/tft/page?page=${page}`, { method: 'POST' });
-    showToast(`Switched TFT to Page ${page + 1}`);
+// Save 10-Page Enabled Carousel Bitmask
+async function savePageMask() {
+    let mask = 0;
+    for (let i = 0; i < 10; i++) {
+        const chk = document.getElementById(`chk-page-${i}`);
+        if (chk && chk.checked) {
+            mask |= (1 << i);
+        }
+    }
+    await fetch(`/api/tft/pagemask?mask=${mask}`, { method: 'POST' });
+    showToast("Page Carousel Filter Updated!");
 }
 
 // Switch TFT Theme (11 Themes)

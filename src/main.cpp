@@ -173,6 +173,6 @@ void loop() {
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
         oledMgr.draw(sensorMgr.data, localIpStr, timeStr, rssi);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, localIpStr, timeStr);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, bleRadarMgr.radar, localIpStr, timeStr);
     }
 }

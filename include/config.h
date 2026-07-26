@@ -62,7 +62,7 @@
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
 #define CAROUSEL_INTERVAL_MS  10000 // Switch page every 10 seconds (0 = pause)
-#define TOTAL_TFT_PAGES       5     // 0:Weather, 1:Pressure, 2:Pomodoro, 3:System QR, 4:Custom User Page
+#define TOTAL_TFT_PAGES       10    // 10 Total TFT Carousel Pages
 #define TOTAL_THEMES          11    // 11 Themes Supported
 
 // Pressure Trend History Buffer

@@ -12,6 +12,7 @@
 #include "weather_api.h"
 #include "zambretti.h"
 #include "pomodoro.h"
+#include "ble_manager.h"
 
 enum TFTTheme {
     THEME_CYBERPUNK = 0,
@@ -31,7 +32,7 @@ class TftDisplayManager {
 public:
     int currentPage = 0;
     TFTTheme activeTheme = THEME_CYBERPUNK;
-    uint8_t enabledPagesMask = 0x1F; // Bitmask for pages 0..4 (default: all enabled)
+    uint16_t enabledPagesMask = 0x03FF; // Bitmask for pages 0..9 (default: all 10 enabled)
     int currentRotation = TFT_ROTATION;
     String customBannerText = "ChaosDesky Standalone Station";
 
@@ -185,7 +186,7 @@ public:
 
     void nextPage() {
         int next = (currentPage + 1) % TOTAL_TFT_PAGES;
-        // Skip disabled pages in mask
+        // Skip disabled pages in bitmask
         int safety = 0;
         while (((enabledPagesMask & (1 << next)) == 0) && safety < TOTAL_TFT_PAGES) {
             next = (next + 1) % TOTAL_TFT_PAGES;
@@ -205,6 +206,7 @@ public:
     void renderCurrentPage(const OutdoorWeatherData& weather, 
                            SensorManager& sensors, 
                            PomodoroTimer& pomo, 
+                           const BleRadarData& bleRadar,
                            const String& ipStr, 
                            const String& timeStr) {
         
@@ -218,21 +220,16 @@ public:
         }
 
         switch (currentPage) {
-            case 0:
-                renderOutdoorWeatherPage(weather, fullRedraw);
-                break;
-            case 1:
-                renderPressureGraphPage(sensors, fullRedraw);
-                break;
-            case 2:
-                renderPomodoroPage(pomo, timeStr, fullRedraw);
-                break;
-            case 3:
-                renderSystemQrPage(ipStr, fullRedraw);
-                break;
-            case 4:
-                renderCustomUserPage(fullRedraw);
-                break;
+            case 0: renderOutdoorWeatherPage(weather, fullRedraw); break;
+            case 1: renderPressureGraphPage(sensors, fullRedraw); break;
+            case 2: renderPomodoroPage(pomo, timeStr, fullRedraw); break;
+            case 3: renderSystemQrPage(ipStr, fullRedraw); break;
+            case 4: renderCustomUserPage(fullRedraw); break;
+            case 5: renderIndoorClimatePage(sensors.data, fullRedraw); break;
+            case 6: renderBleRadarPage(bleRadar, fullRedraw); break;
+            case 7: renderBigClockPage(timeStr, fullRedraw); break;
+            case 8: renderNetworkMonitorPage(ipStr, fullRedraw); break;
+            case 9: renderSystemHardwarePage(fullRedraw); break;
         }
     }
 
@@ -248,11 +245,16 @@ private:
         tft.setCursor(4, 4);
 
         switch (currentPage) {
-            case 0: tft.print("1/5 OUTDOOR WEATHER"); break;
-            case 1: tft.print("2/5 BARO FORECASTER"); break;
-            case 2: tft.print("3/5 POMODORO HUB   "); break;
-            case 3: tft.print("4/5 SYSTEM & QR    "); break;
-            case 4: tft.print("5/5 CUSTOM MEDIA   "); break;
+            case 0: tft.print("1/10 OUTDOOR WEATHER"); break;
+            case 1: tft.print("2/10 BARO FORECASTER"); break;
+            case 2: tft.print("3/10 POMODORO HUB   "); break;
+            case 3: tft.print("4/10 SYSTEM & QR    "); break;
+            case 4: tft.print("5/10 CUSTOM MEDIA   "); break;
+            case 5: tft.print("6/10 INDOOR CLIMATE "); break;
+            case 6: tft.print("7/10 BLE RADAR HUD  "); break;
+            case 7: tft.print("8/10 BIG DIGITAL CLK"); break;
+            case 8: tft.print("9/10 NETWORK MONITOR"); break;
+            case 9: tft.print("10/10 SYSTEM HARDWARE"); break;
         }
         tft.drawFastHLine(0, 16, 128, COLOR_ACCENT);
     }
@@ -289,13 +291,10 @@ private:
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setCursor(4, 88);
         tft.printf("HUMIDITY: %2.0f%% ", w.humidity);
-
         tft.setCursor(4, 102);
         tft.printf("TEMP MIN: %4.1fC", w.tempMinC);
-
         tft.setCursor(4, 116);
         tft.printf("TEMP MAX: %4.1fC", w.tempMaxC);
-
         tft.setCursor(4, 130);
         tft.printf("WIND:     %4.1fm/s", w.windSpeedMs);
 
@@ -406,7 +405,6 @@ private:
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setCursor(10, 122);
         tft.printf("SESSIONS DONE: %-3d", pomo.completedSessions);
-
         tft.setCursor(10, 134);
         tft.printf("WORK:%2dm | REST:%2dm", pomo.workDurationMins, pomo.breakDurationMins);
 
@@ -449,18 +447,16 @@ private:
         tft.setCursor(4, 128);
         tft.printf("RAM FREE: %5u KB", ESP.getFreeHeap() / 1024);
 
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-            tft.setCursor(4, 149);
-            tft.print("SCAN QR FOR WEB DASH");
-        }
+        // USER REQUEST: Format RAM line as "RAM -f : <value> KB" and remove "SCAN QR FOR WEB DASH"
+        tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
+        tft.setTextColor(COLOR_BG, COLOR_ACCENT);
+        tft.setCursor(4, 149);
+        tft.printf("RAM -f : %u KB", ESP.getFreeHeap() / 1024);
     }
 
-    // --- Page 4: Custom Uploaded User Image / Banner Page ---
+    // --- Page 4: Custom User Image / Banner ---
     void renderCustomUserPage(bool fullRedraw) {
         if (fullRedraw) {
-            // Check if uploaded custom TFT raw image exists (128x144 pixels 16-bit RGB565)
             if (LittleFS.exists("/custom_tft.raw")) {
                 File f = LittleFS.open("/custom_tft.raw", "r");
                 if (f && f.size() >= 128 * 128 * 2) {
@@ -481,7 +477,6 @@ private:
                 }
             }
 
-            // Fallback Custom Text Banner Display
             tft.fillRect(4, 25, 120, 115, COLOR_PRIMARY);
             tft.drawRect(4, 25, 120, 115, COLOR_ACCENT);
             
@@ -503,7 +498,176 @@ private:
             tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
             tft.setTextColor(COLOR_BG, COLOR_ACCENT);
             tft.setCursor(4, 149);
-            tft.print("UPLOAD VIA WEB UI  ");
+            tft.print("WEB TEXT BANNER    ");
+        }
+    }
+
+    // --- Page 5: Detailed Indoor Climate Analysis ---
+    void renderIndoorClimatePage(const SensorData& s, bool fullRedraw) {
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setTextSize(1);
+
+        tft.setCursor(4, 22);
+        tft.printf("INDOOR TEMP: %4.1fC", s.tempC);
+        tft.setCursor(4, 38);
+        tft.printf("HUMIDITY:    %4.0f%%", s.humidity);
+        tft.setCursor(4, 54);
+        tft.printf("PRESSURE: %6.1fhPa", s.pressureHpa);
+        tft.setCursor(4, 70);
+        tft.printf("ALTITUDE:    %4.0fm", s.altitudeM);
+
+        tft.setCursor(4, 90);
+        tft.printf("HEAT INDEX:  %4.1fC", s.heatIndexC);
+        tft.setCursor(4, 106);
+        tft.printf("DEW POINT:   %4.1fC", s.dewPointC);
+        tft.setCursor(4, 122);
+        tft.printf("TEMP MIN:    %4.1fC", s.minTempC);
+        tft.setCursor(4, 134);
+        tft.printf("TEMP MAX:    %4.1fC", s.maxTempC);
+
+        if (fullRedraw) {
+            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.setCursor(4, 149);
+            tft.print("INDOOR CLIMATE HUD ");
+        }
+    }
+
+    // --- Page 6: BLE Proximity Radar HUD ---
+    void renderBleRadarPage(const BleRadarData& b, bool fullRedraw) {
+        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+        tft.setTextSize(1);
+        tft.setCursor(4, 22);
+        tft.print("IPHONE BLE RADAR");
+
+        tft.setTextSize(2);
+        tft.setCursor(4, 38);
+        if (b.state == PROX_IMMEDIATE) {
+            tft.setTextColor(COLOR_GOOD, COLOR_BG);
+            tft.print("IMMEDIATE");
+        } else if (b.state == PROX_NEAR) {
+            tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+            tft.print("NEAR DESK");
+        } else {
+            tft.setTextColor(COLOR_ALERT, COLOR_BG);
+            tft.print("AWAY MODE");
+        }
+
+        tft.setTextSize(1);
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(4, 66);
+        tft.printf("SIGNAL:    %d dBm", b.currentRssi);
+        tft.setCursor(4, 82);
+        tft.printf("THRESHOLD: %d dBm", b.rssiThreshold);
+        tft.setCursor(4, 98);
+        tft.printf("AUTOWAKE:  %s", b.autoWake ? "ENABLED" : "OFF");
+
+        if (fullRedraw) {
+            tft.drawRect(4, 114, 120, 14, COLOR_PRIMARY);
+        }
+        int barWidth = (int)(((b.currentRssi + 100) / 60.0f) * 116.0f);
+        if (barWidth > 116) barWidth = 116;
+        if (barWidth < 0) barWidth = 0;
+        
+        tft.fillRect(6, 116, barWidth, 10, COLOR_GOOD);
+        if (barWidth < 116) {
+            tft.fillRect(6 + barWidth, 116, 116 - barWidth, 10, COLOR_BG);
+        }
+
+        if (fullRedraw) {
+            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
+            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
+            tft.setCursor(4, 149);
+            tft.print("RADAR PROXIMITY HUD");
+        }
+    }
+
+    // --- Page 7: Big Digital Clock & Date ---
+    void renderBigClockPage(const String& timeStr, bool fullRedraw) {
+        tft.setTextColor(COLOR_ACCENT, COLOR_BG);
+        tft.setTextSize(3);
+        tft.setCursor(8, 30);
+        tft.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+
+        tft.setTextSize(1);
+        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+        tft.setCursor(102, 44);
+        tft.print(timeStr.length() >= 8 ? timeStr.substring(6, 8) : "00");
+
+        tft.drawFastHLine(4, 68, 120, COLOR_PRIMARY);
+
+        tft.setTextSize(2);
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(16, 84);
+        tft.print("DESK CLK");
+
+        tft.setTextSize(1);
+        tft.setCursor(10, 112);
+        tft.print("NTP TIME SYNC OK");
+
+        if (fullRedraw) {
+            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.setCursor(4, 149);
+            tft.print("DIGITAL DESK CLOCK ");
+        }
+    }
+
+    // --- Page 8: Network & Wi-Fi Monitor ---
+    void renderNetworkMonitorPage(const String& ipStr, bool fullRedraw) {
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setTextSize(1);
+
+        tft.setCursor(4, 22);
+        tft.printf("SSID: %-12s", WiFi.SSID().c_str());
+        tft.setCursor(4, 38);
+        tft.printf("IP:   %-15s", ipStr.c_str());
+        tft.setCursor(4, 54);
+        tft.printf("GATEWAY: %-11s", WiFi.gatewayIP().toString().c_str());
+        tft.setCursor(4, 70);
+        tft.printf("SUBNET:  %-11s", WiFi.subnetMask().toString().c_str());
+
+        tft.setCursor(4, 90);
+        tft.printf("MAC: %s", WiFi.macAddress().c_str());
+        tft.setCursor(4, 106);
+        tft.printf("RSSI: %d dBm", WiFi.RSSI());
+        tft.setCursor(4, 122);
+        tft.printf("CHANNEL: %d", WiFi.channel());
+
+        if (fullRedraw) {
+            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
+            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
+            tft.setCursor(4, 149);
+            tft.print("WIFI DIAGNOSTICS   ");
+        }
+    }
+
+    // --- Page 9: System Hardware & Performance ---
+    void renderSystemHardwarePage(bool fullRedraw) {
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setTextSize(1);
+
+        tft.setCursor(4, 22);
+        tft.printf("FREE HEAP: %u KB", ESP.getFreeHeap() / 1024);
+        tft.setCursor(4, 38);
+        tft.printf("MIN HEAP:  %u KB", ESP.getMinFreeHeap() / 1024);
+        tft.setCursor(4, 54);
+        tft.printf("CPU FREQ:  %d MHz", ESP.getCpuFreqMHz());
+        tft.setCursor(4, 70);
+        tft.printf("CHIP REV:  %d", ESP.getChipRevision());
+
+        tft.setCursor(4, 90);
+        tft.printf("FLASH SIZE:%u MB", ESP.getFlashChipSize() / (1024 * 1024));
+        tft.setCursor(4, 106);
+        tft.printf("UPTIME:    %lu s", millis() / 1000);
+        tft.setCursor(4, 122);
+        tft.print("BOARD: ESP32-D0WD");
+
+        if (fullRedraw) {
+            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.setCursor(4, 149);
+            tft.printf("RAM -f : %u KB", ESP.getFreeHeap() / 1024);
         }
     }
 

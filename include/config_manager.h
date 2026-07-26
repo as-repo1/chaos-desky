@@ -16,7 +16,7 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 10; // 0 = pause
-    uint8_t enabledPagesMask = 0x1F; // All 5 pages enabled by default (bitmask 0b11111)
+    uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
 
     int oledMode           = 0;  // 0: HUD, 1: Clock, 2: Sparklines, 3: Marquee Text, 4: Custom Bitmap
     uint8_t oledContrast   = 255;
@@ -69,7 +69,7 @@ public:
         config.tftTheme        = doc["tftTheme"] | 0;
         config.tftRotation     = doc["tftRotation"] | 2;
         config.carouselSpeedSec= doc["carouselSpeedSec"] | 10;
-        config.enabledPagesMask= doc["enabledPagesMask"] | 0x1F;
+        config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
 
         config.oledMode        = doc["oledMode"] | 0;
         config.oledContrast    = doc["oledContrast"] | 255;

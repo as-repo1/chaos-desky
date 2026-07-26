@@ -416,8 +416,29 @@ input:focus, select:focus {
     margin-top: 12px;
 }
 
-.full-width {
-    width: 100%;
+.checkbox-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-color);
+    background: var(--bg-color);
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+}
+
+.checkbox-item input {
+    width: auto;
+    cursor: pointer;
 }
 
 .toast {
