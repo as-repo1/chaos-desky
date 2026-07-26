@@ -1,96 +1,51 @@
-# ⚡ CHAOSDESKY — The Silicon Oracle & Reality Synthesizer
+# ⚡ chaos-desky — ESP32 Dual-Display Desktop Hub
 
-> *"Chaos is not the absence of order; it is the raw, uncarved marble of creation waiting for a dual-core mind to give it form."*
-
----
-
-## 👁️ The Manifesto: Philosophy, Mythos & Machine
-
-```
-              ┌─────────────────────────────────────────┐
-              │    JANUS TWIN-EYES OF SILICON & LIGHT    │
-              │                                         │
-              │   [ OLED: 128x64 ]    [ TFT: 128x160 ]   │
-              │   Micro-Monochrome    16-Bit RGB565     │
-              │   Sub-Pixel Oracle    Laser-Wipe Portal │
-              └────────────────────┬────────────────────┘
-                                   │
-                                   v
-             ┌───────────────────────────────────────────┐
-             │       FREERTOS 240MHz DUAL-CORE ENGINE    │
-             │   ANCS BLE Neural Link  •  Zambretti Storm │
-             └───────────────────────────────────────────┘
-```
-
-Welcome to **CHAOSDESKY** — a dual-display cybernetic desk artifact forged at the crossroads of **ancient myth, philosophical entropy, and relentless microchip engineering**.
-
-Where traditional hardware merely measures environment, **CHAOSDESKY** acts as a **Janus-faced Silicon Oracle**:
-- **The OLED Eye** peers inward, observing the micro-vibrations of atmospheric pressure, molecular humidity, and quantum sub-pixel clock drift.
-- **The Color TFT Eye** gazes outward into the digital void, parsing satellite weather streams from Hinjewadi Phase 1, warping through 3D cosmic starfields, and intercepting incoming cellular signals from your iPhone via BLE ANCS like a smartwatch bound in glass.
-
-### 🏛️ The Mythos of the Machine
-Like Prometheus stealing fire from Olympus, **CHAOSDESKY** steals raw electricity from 5V copper traces and ignites 240MHz of FreeRTOS silicon logic. It is named **CHAOS** because it thrives in entropy:
-- It balances 11 dynamic color design system realities (Dracula, Cyberpunk, Nord, Matrix, Material You).
-- It calculates atmospheric fate using the 100-year-old **Zambretti Barometric Algorithm**, predicting storms before the first drop falls.
-- It blinks with the soul of a **Cute Pixel Cyber Cat**, winking through 128x64 monochrome pixels while floating hearts drift up into the void.
-
-It is not just a desk clock. It is a **mindfuck of hardware and spirit** — a miniature monolith standing at the edge of your desk, reminding you that time is a construct, code is poetry, and order is born only when you tame the chaos.
+**chaos-desky** is a standalone ESP32 dual-display desktop companion device. It combines an ST7735 color TFT screen, an SSD1306 OLED display, environmental sensors (DHT11 and BMP180), BLE iPhone notification popups, watch faces, animated screensavers, and an embedded LittleFS web control dashboard.
 
 ---
 
-## ✨ Key Features
+## 🛠️ Features Overview
 
-- ⌚ **Smartwatch BLE iPhone Notification Receiver (`ChaosDesky-Watch`)**:
-  - Connects as an Apple Notification Center Service (ANCS) BLE client.
-  - Automatically receives live **iPhone Phone Calls, WhatsApp messages, iMessages, Gmail, Instagram, and iOS app notifications**!
-  - Displays high-contrast popup banners with countdown timers across TFT and OLED screens, just like an Apple Watch.
+- 🖥️ **Dual Display Setup**:
+  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page carousel display (default 180° rotation) with laser wipe page transitions:
+    1. Outdoor Weather & OpenWeatherMap Forecast (Hinjewadi Phase 1, Pune, 411057).
+    2. Barometric Pressure Graph & Zambretti Forecast.
+    3. Pomodoro Timer & Clock.
+    4. Free Heap RAM Status & Web QR Code.
+    5. Custom User Banner / Uploaded Image.
+    6. Indoor Climate Sensor Telemetry.
+    7. iPhone Phone Notifications Log.
+    8. Custom Watch Face Studio (Swiss Analog, Cyber Chrono, Modern Digital, Neon Nixie).
+    9. Network Monitor.
+    10. 3D Warp Space Screensaver.
+  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 display modes (Telemetry HUD, Digital Clock, Temp/Humidity Sparklines, Custom Text Ticker, Bitmap Viewer, Cyber Cat Mascot).
 
-- 🎨 **Watch Face Studio & Custom Dials (Page 8)**:
-  - **Swiss Luxury Analog Dial**: Round dial bezel, 12-hour tick marks, hour/minute hands, sweeping second hand, and live weather complication.
-  - **Cyberpunk Dual Chronograph**: Analog dial + digital timestamp, indoor telemetry, and RAM status gauge.
-  - **Modern Minimalist Digital Weather**: Large digital clock + OpenWeather condition icon & Hinjewadi (411057) telemetry.
-  - **Retro Neon Nixie Tube**: Neon-glowing digits + notification count badge.
+- 📱 **BLE iPhone Notification Sync (ANCS Client)**:
+  - ESP32 advertises over Bluetooth as `ChaosDesky-Watch`.
+  - Receives incoming phone calls, WhatsApp messages, iMessages, and app notifications from paired iPhones and displays popup banners on both screens.
 
-- 🐱 **Cute & Symbolic Animated Screensavers**:
-  - **OLED Mode 5 (`Cute Cyber Cat Mascot`)**: Frame-by-frame animated pixel cat with happy/wink expressions (`^ _ ^` $\rightarrow$ `- _ -` $\rightarrow$ `^ _ ~`), tail wiggling, and floating heart `♥️` / star `⭐` particles.
-  - **TFT Page 10 (`3D Warp Space`)**: 3D Warp Speed Starfield, orbiting cosmic planet & moon, and bouncing **CHAOS** logo!
+- 🌐 **Embedded Tabbed Web Dashboard**:
+  - Embedded web interface hosted on LittleFS with 5 tabs (Telemetry, Watch Faces, Smartwatch, Media, Settings).
+  - HTML5 Canvas converter for uploading custom images to TFT or OLED.
+  - Web controls for Pomodoro timers, 11 color themes, screen rotation, carousel page selection, and test notifications.
 
-- 🌊 **Creamy Laser Wipe Screen Transitions & 60 FPS Sub-Pixel Ticker**:
-  - Laser scan wipe line sweeps vertically across the TFT screen during page switches for buttery smooth, flicker-free transitions.
-  - Smooth 1-pixel sub-pixel scrolling ticker on the OLED marquee.
-
-- 🌐 **Clutter-Free Tabbed Web Portal**:
-  - Reorganized into 5 clean, easy-to-navigate tabs:
-    - 📊 **Telemetry**: Indoor climate HUD & Hinjewadi 411057 OpenWeather stats.
-    - ⌚ **Watch Faces & Displays**: Watch Face selector, 11 Theme palettes, Screen Rotation, OLED Modes.
-    - 🔔 **Smartwatch & Popups**: iPhone BLE Sync state, Test Phone Call Popup, Live Display Alert Sender.
-    - 📝 **Custom Media**: Custom Text Banner Publisher & HTML5 Image Converter.
-    - ⚙️ **Settings**: Wi-Fi, OpenWeather API Key, 10-Page Carousel Bitmask, Pomodoro Sliders.
-
-- 🖼️ **HTML5 Canvas Custom Image Uploader**:
-  - Web UI converts user photos into 16-bit RGB565 for TFT (Page 5) or 1-bit monochrome bitmap for OLED (Mode 4).
-
-- 🎨 **11 Design System Color Themes**:
+- 🎨 **11 Color Themes**:
   - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, Material You.
 
-- 📱 **Default 180° Inverted TFT Display Rotation**:
-  - Default hardware rotation configured to 180° (`setRotation(2)`).
-
 ---
 
-## 🛠️ Hardware Requirements
+## 🔌 Hardware Wiring
 
-| Component | Description | Protocol / Pins |
+| Component | Interface | ESP32 GPIO Pins |
 | :--- | :--- | :--- |
-| **Microcontroller** | ESP32 Dev Module (WROOM-32 / ESP32-D0WD) | 240MHz, 320KB RAM |
-| **Primary Display** | 1.8" SPI Color TFT LCD (ST7735, 128x160) | SPI (`CS: 15, DC: 16, RST: 17, MOSI: 13, SCK: 14`) |
-| **Secondary Display** | 0.96" I2C Monochrome OLED (SSD1306, 128x64) | I2C (`SDA: 21, SCL: 22`) |
-| **Climate Sensor** | DHT11 (Digital Temp & Humidity) | Digital IO (`GPIO 4`) |
-| **Pressure Sensor** | BMP180 or BMP280 (Barometric Pressure & Altitude) | I2C (`SDA: 21, SCL: 22`) |
+| **OLED Display (SSD1306)** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` |
+| **BMP180 Sensor** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` |
+| **DHT11 Sensor** | Digital | Data: `GPIO 4` |
+| **TFT Display (ST7735)** | SPI | CS: `GPIO 15`, DC: `GPIO 16`, RST: `GPIO 17`, MOSI: `GPIO 13`, SCK: `GPIO 14` |
 
 ---
 
-## 🔌 Circuit Diagram
+## ⚡ Circuit Diagram
 
 ```mermaid
 graph TD
@@ -99,7 +54,7 @@ graph TD
     subgraph I2C_Bus ["I2C Bus (Shared)"]
         ESP32 -- "GPIO 21 (SDA)" --> OLED["0.96 inch OLED SSD1306"]
         ESP32 -- "GPIO 22 (SCL)" --> OLED
-        ESP32 -- "GPIO 21 (SDA)" --> BMP["BMP180/280 Sensor"]
+        ESP32 -- "GPIO 21 (SDA)" --> BMP["BMP180 Pressure Sensor"]
         ESP32 -- "GPIO 22 (SCL)" --> BMP
     end
 
@@ -129,16 +84,15 @@ graph TD
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Building & Flashing
 
-1. Clone repository:
+1. Build firmware:
    ```bash
-   git clone https://github.com/chaos/chaos-desky.git
-   cd chaos-desky
+   pio run -t upload
    ```
-2. Build & Flash Firmware + LittleFS Filesystem:
+2. Upload LittleFS Web Dashboard:
    ```bash
-   pio run -t upload && pio run -t uploadfs
+   pio run -t uploadfs
    ```
-3. Open Web Dashboard:
-   - Connect to `http://<ESP32_IP>` or `http://192.168.1.6`.
+3. Open web dashboard in browser:
+   `http://<ESP32_IP>` (e.g. `http://192.168.1.6`).
