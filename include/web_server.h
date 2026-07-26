@@ -29,9 +29,6 @@ public:
         pomoTimer = pomo;
         tftManager = tftMgr;
 
-        // Serve Static LittleFS Web Files
-        server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-
         // REST API: GET /api/sensors
         server.on("/api/sensors", HTTP_GET, [this](AsyncWebServerRequest* request) {
             StaticJsonDocument<512> doc;
@@ -139,17 +136,24 @@ public:
 
         // REST API: POST /api/config (Update Weather City / API Key / Carousel timing)
         server.on("/api/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
-            if (request->hasParam("city", true)) {
-                String city = request->getParam("city", true)->value();
-                String apiKey = request->hasParam("apiKey", true) ? request->getParam("apiKey", true)->value() : OPENWEATHER_API_KEY;
-                weatherMgr->fetchWeather(apiKey, city, "IN");
-            }
+            String city = request->hasParam("city", true) ? request->getParam("city", true)->value() : "411057";
+            String apiKey = request->hasParam("apiKey", true) ? request->getParam("apiKey", true)->value() : OPENWEATHER_API_KEY;
+
             if (request->hasParam("carouselSec", true)) {
                 int sec = request->getParam("carouselSec", true)->value().toInt();
                 carouselIntervalMs = (unsigned long)sec * 1000;
             }
+
+            Serial.println("⚙️ Updating OpenWeather Config from Web UI:");
+            Serial.println("   City Query: " + city);
+            Serial.println("   API Key:    " + apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length() > 4 ? apiKey.length() - 4 : 0));
+
+            weatherMgr->fetchWeather(apiKey, city, "IN");
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
+
+        // Serve Static LittleFS Web Files AFTER all /api handlers!
+        server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
         server.begin();
         Serial.println("✅ Embedded Async Web Server Started!");

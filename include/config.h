@@ -53,7 +53,7 @@
 
 // OpenWeatherMap API Configuration
 #define OPENWEATHER_API_KEY   "YOUR_OPENWEATHER_API_KEY"
-#define OPENWEATHER_CITY      "New Delhi"
+#define OPENWEATHER_CITY      "411057"
 #define OPENWEATHER_COUNTRY   "IN"
 #define OPENWEATHER_UNITS     "metric" // "metric" (°C) or "imperial" (°F)
 #define WEATHER_UPDATE_MS     (10 * 60 * 1000) // Fetch every 10 minutes

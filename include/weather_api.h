@@ -24,24 +24,64 @@ class WeatherApiClient {
 public:
     OutdoorWeatherData weather;
 
-    bool fetchWeather(const String& apiKey, const String& city, const String& country) {
+    static String urlEncode(const String& str) {
+        String encoded = "";
+        for (size_t i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == ' ') {
+                encoded += "%20";
+            } else if (c == ',') {
+                encoded += "%2C";
+            } else if (isalnum(c) || c == '-' || c == '_' || c == '.') {
+                encoded += c;
+            } else {
+                char buf[4];
+                snprintf(buf, sizeof(buf), "%%%02X", (unsigned char)c);
+                encoded += buf;
+            }
+        }
+        return encoded;
+    }
+
+    static bool isNumericZip(const String& str) {
+        if (str.length() == 0) return false;
+        for (size_t i = 0; i < str.length(); i++) {
+            if (!isdigit(str.charAt(i))) return false;
+        }
+        return true;
+    }
+
+    bool fetchWeather(const String& apiKey, const String& cityQuery, const String& country = "IN") {
         if (WiFi.status() != WL_CONNECTED) {
+            Serial.println("⚠️ OpenWeather API: WiFi Not Connected!");
             weather.valid = false;
             return false;
         }
 
         if (apiKey.isEmpty() || apiKey == "YOUR_OPENWEATHER_API_KEY") {
             Serial.println("⚠️ OpenWeather API Key not configured!");
-            weather.cityName = city;
+            weather.cityName = cityQuery.isEmpty() ? "Hinjewadi" : cityQuery;
             weather.condition = "Configure API Key";
             weather.valid = false;
             return false;
         }
 
-        HTTPClient http;
-        String url = "http://api.openweathermap.org/data/2.5/weather?q=" + city + "," + country + 
-                     "&units=metric&appid=" + apiKey;
+        String targetCity = cityQuery.isEmpty() ? "Pune" : cityQuery;
+        String url;
 
+        if (isNumericZip(targetCity)) {
+            // Query by Postal PIN Code (e.g. 411057 for Hinjewadi)
+            url = "http://api.openweathermap.org/data/2.5/weather?zip=" + targetCity + "," + country + 
+                  "&units=metric&appid=" + apiKey;
+        } else {
+            // Query by City Name (URL Encoded)
+            url = "http://api.openweathermap.org/data/2.5/weather?q=" + urlEncode(targetCity) + "," + country + 
+                  "&units=metric&appid=" + apiKey;
+        }
+
+        Serial.println("🌐 OpenWeather HTTP GET Request: " + url);
+
+        HTTPClient http;
         http.begin(url);
         int httpCode = http.GET();
 
@@ -51,27 +91,37 @@ public:
             DeserializationError error = deserializeJson(doc, payload);
 
             if (!error) {
-                weather.tempC = doc["main"]["temp"] | 0.0f;
-                weather.tempMinC = doc["main"]["temp_min"] | 0.0f;
-                weather.tempMaxC = doc["main"]["temp_max"] | 0.0f;
-                weather.humidity = doc["main"]["humidity"] | 0.0f;
+                weather.tempC       = doc["main"]["temp"] | 0.0f;
+                weather.tempMinC    = doc["main"]["temp_min"] | 0.0f;
+                weather.tempMaxC    = doc["main"]["temp_max"] | 0.0f;
+                weather.humidity    = doc["main"]["humidity"] | 0.0f;
                 weather.windSpeedMs = doc["wind"]["speed"] | 0.0f;
-                weather.cityName = doc["name"] | city;
+                weather.cityName    = doc["name"] | targetCity;
                 
-                JsonObject wObj = doc["weather"][0];
-                weather.condition = wObj["main"].as<String>();
-                weather.iconCode = wObj["icon"].as<String>();
+                JsonObject wObj     = doc["weather"][0];
+                weather.condition   = wObj["main"].as<String>();
+                weather.iconCode    = wObj["icon"].as<String>();
                 
                 weather.valid = true;
                 weather.lastFetchMs = millis();
                 http.end();
-                Serial.println("✅ OpenWeather API fetch successful for: " + weather.cityName);
+                Serial.printf("✅ OpenWeather API Success for %s: %.1f°C, %s\n", 
+                              weather.cityName.c_str(), weather.tempC, weather.condition.c_str());
                 return true;
             } else {
-                Serial.println("❌ JSON Parse Error: " + String(error.c_str()));
+                Serial.println("❌ OpenWeather JSON Parse Error: " + String(error.c_str()));
             }
         } else {
-            Serial.printf("❌ OpenWeather HTTP Error: %d\n", httpCode);
+            Serial.printf("❌ OpenWeather HTTP Response Code: %d\n", httpCode);
+            String errResponse = http.getString();
+            Serial.println("❌ Response: " + errResponse);
+
+            // Fallback: If specific neighborhood name failed, retry with "Pune"
+            if (!isNumericZip(targetCity) && targetCity != "Pune") {
+                Serial.println("🔄 Retrying OpenWeather API with Fallback City: Pune...");
+                http.end();
+                return fetchWeather(apiKey, "Pune", country);
+            }
         }
 
         http.end();
