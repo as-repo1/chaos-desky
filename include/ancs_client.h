@@ -24,25 +24,26 @@ public:
     PhoneNotificationLog phoneLog;
 
     bool begin() {
-        BLEDevice::init("ChaosDesky-Watch");
+        BLEDevice::init("chaos-desky");
         pServer = BLEDevice::createServer();
         pServer->setCallbacks(this);
 
-        // Configure BLE Security for iPhone Pairing & ANCS
+        // Configure BLE Security for iPhone 15 Pairing & ANCS
         BLESecurity* pSecurity = new BLESecurity();
         pSecurity->setAuthenticationMode(ESP_LE_AUTH_BOND);
         pSecurity->setCapability(ESP_IO_CAP_NONE);
         pSecurity->setInitEncryptionKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
 
-        // Start Advertising as a BLE Smartwatch
+        // Start Advertising for iOS & Android Discovery
         pAdvertising = BLEDevice::getAdvertising();
         pAdvertising->addServiceUUID(BLEUUID("7905F431-B5CE-4E99-A40F-4B1E122D00D0")); // ANCS Service UUID
+        pAdvertising->setAppearance(0x00C0); // Generic Watch / Smartwatch appearance for iOS Settings
         pAdvertising->setScanResponse(true);
-        pAdvertising->setMinPreferred(0x06); // functions that help with iPhone connections
-        pAdvertising->setMinPreferred(0x12);
+        pAdvertising->setMinPreferred(0x06); // Helps iOS connection parameters
+        pAdvertising->setMaxPreferred(0x12);
         BLEDevice::startAdvertising();
 
-        Serial.println("✅ Smartwatch BLE ANCS Notification Receiver Started! Device: ChaosDesky-Watch");
+        Serial.println("✅ BLE ANCS Notification Receiver Started! Device: chaos-desky");
         return true;
     }
 
