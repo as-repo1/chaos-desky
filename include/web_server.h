@@ -7,13 +7,17 @@
 #include <ArduinoJson.h>
 #include <WiFi.h>
 #include "config.h"
+#include "config_manager.h"
 #include "sensors.h"
 #include "weather_api.h"
 #include "pomodoro.h"
+#include "display_oled.h"
 #include "display_tft.h"
 
 extern String localIpStr;
 extern unsigned long carouselIntervalMs;
+extern ConfigManager configMgr;
+extern OledDisplayManager oledMgr;
 
 class WebServerManager {
 public:
@@ -79,6 +83,8 @@ public:
             doc["remainingSec"] = pomoTimer->remainingSec;
             doc["progress"]     = pomoTimer->getProgress();
             doc["sessions"]     = pomoTimer->completedSessions;
+            doc["workMins"]     = pomoTimer->workDurationMins;
+            doc["breakMins"]    = pomoTimer->breakDurationMins;
 
             String json;
             serializeJson(doc, json);
@@ -98,7 +104,27 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
-        // REST API: POST /api/tft/page?page=0|1|2|3
+        // REST API: POST /api/pomodoro/config?work=25&break=5
+        server.on("/api/pomodoro/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("work", true)) {
+                int w = request->getParam("work", true)->value().toInt();
+                if (w > 0 && w <= 120) {
+                    pomoTimer->workDurationMins = w;
+                    configMgr.config.pomoWorkMins = w;
+                }
+            }
+            if (request->hasParam("break", true)) {
+                int b = request->getParam("break", true)->value().toInt();
+                if (b > 0 && b <= 60) {
+                    pomoTimer->breakDurationMins = b;
+                    configMgr.config.pomoBreakMins = b;
+                }
+            }
+            configMgr.saveConfig();
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/tft/page?page=0..4
         server.on("/api/tft/page", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("page")) {
                 int p = request->getParam("page")->value().toInt();
@@ -107,11 +133,71 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
-        // REST API: POST /api/tft/theme?theme=0|1|2|3
+        // REST API: POST /api/tft/theme?theme=0..10
         server.on("/api/tft/theme", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("theme")) {
                 int t = request->getParam("theme")->value().toInt();
-                tftManager->applyTheme((TFTTheme)t);
+                if (t >= 0 && t < TOTAL_THEMES) {
+                    tftManager->applyTheme((TFTTheme)t);
+                    configMgr.config.tftTheme = t;
+                    configMgr.saveConfig();
+                }
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/tft/rotation?rot=0..3
+        server.on("/api/tft/rotation", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("rot")) {
+                int r = request->getParam("rot")->value().toInt();
+                tftManager->setRotation(r);
+                configMgr.config.tftRotation = r;
+                configMgr.saveConfig();
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/tft/pagemask?mask=31
+        server.on("/api/tft/pagemask", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("mask")) {
+                uint8_t m = (uint8_t)request->getParam("mask")->value().toInt();
+                tftManager->enabledPagesMask = m;
+                configMgr.config.enabledPagesMask = m;
+                configMgr.saveConfig();
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/oled/mode?mode=0..4
+        server.on("/api/oled/mode", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("mode")) {
+                int m = request->getParam("mode")->value().toInt();
+                oledMgr.oledMode = m;
+                configMgr.config.oledMode = m;
+                configMgr.saveConfig();
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/oled/contrast?level=0..255
+        server.on("/api/oled/contrast", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("level")) {
+                int l = request->getParam("level")->value().toInt();
+                oledMgr.setContrast((uint8_t)l);
+                configMgr.config.oledContrast = (uint8_t)l;
+                configMgr.saveConfig();
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/oled/text (Set Custom Scrolling Text)
+        server.on("/api/oled/text", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("text", true)) {
+                String txt = request->getParam("text", true)->value();
+                oledMgr.customText = txt;
+                tftManager->customBannerText = txt;
+                configMgr.config.customText = txt;
+                configMgr.saveConfig();
             }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
@@ -134,25 +220,64 @@ public:
             request->send(200, "application/json", json);
         });
 
-        // REST API: POST /api/config (Update Weather City / API Key / Carousel timing)
+        // REST API: POST /api/config
         server.on("/api/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
-            String city = request->hasParam("city", true) ? request->getParam("city", true)->value() : "411057";
-            String apiKey = request->hasParam("apiKey", true) ? request->getParam("apiKey", true)->value() : OPENWEATHER_API_KEY;
-
+            if (request->hasParam("city", true)) {
+                configMgr.config.openWeatherCity = request->getParam("city", true)->value();
+            }
+            if (request->hasParam("apiKey", true)) {
+                configMgr.config.openWeatherKey = request->getParam("apiKey", true)->value();
+            }
             if (request->hasParam("carouselSec", true)) {
                 int sec = request->getParam("carouselSec", true)->value().toInt();
                 carouselIntervalMs = (unsigned long)sec * 1000;
+                configMgr.config.carouselSpeedSec = sec;
             }
 
-            Serial.println("⚙️ Updating OpenWeather Config from Web UI:");
-            Serial.println("   City Query: " + city);
-            Serial.println("   API Key:    " + apiKey.substring(0, 4) + "..." + apiKey.substring(apiKey.length() > 4 ? apiKey.length() - 4 : 0));
-
-            weatherMgr->fetchWeather(apiKey, city, "IN");
+            configMgr.saveConfig();
+            weatherMgr->fetchWeather(configMgr.config.openWeatherKey, configMgr.config.openWeatherCity, "IN");
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
-        // Serve Static LittleFS Web Files AFTER all /api handlers!
+        // Upload custom 128x64 OLED Bitmap raw binary
+        server.on("/api/upload/oled-image", HTTP_POST, [](AsyncWebServerRequest* request) {
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        }, [](AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
+            static File uploadFile;
+            if (index == 0) {
+                uploadFile = LittleFS.open("/custom_oled.raw", "w");
+            }
+            if (uploadFile) {
+                uploadFile.write(data, len);
+            }
+            if (final) {
+                if (uploadFile) uploadFile.close();
+                oledMgr.oledMode = 4; // Switch to Custom Image Mode
+                configMgr.config.oledMode = 4;
+                configMgr.saveConfig();
+                Serial.println("✅ Custom OLED Bitmap Uploaded Successfully!");
+            }
+        });
+
+        // Upload custom 128x160 TFT Image raw binary
+        server.on("/api/upload/tft-image", HTTP_POST, [](AsyncWebServerRequest* request) {
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        }, [this](AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
+            static File uploadFile;
+            if (index == 0) {
+                uploadFile = LittleFS.open("/custom_tft.raw", "w");
+            }
+            if (uploadFile) {
+                uploadFile.write(data, len);
+            }
+            if (final) {
+                if (uploadFile) uploadFile.close();
+                tftManager->setPage(4); // Switch TFT to Page 4 (Custom User Page)
+                Serial.println("✅ Custom TFT Image Uploaded Successfully!");
+            }
+        });
+
+        // Serve Static LittleFS Files AFTER all /api handlers!
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 
         server.begin();

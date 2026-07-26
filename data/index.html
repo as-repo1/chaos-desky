@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChaosDesky - ESP32 Smart Hub</title>
+    <title>ChaosDesky - ESP32 Command Hub</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="theme-cyberpunk">
     <div class="container">
-        <!-- Toast Notification Banner -->
-        <div id="toast" class="toast hidden">Settings Updated Successfully!</div>
+        <!-- Toast Notification -->
+        <div id="toast" class="toast hidden">Settings Updated!</div>
 
-        <!-- Header Bar -->
+        <!-- Header -->
         <header class="header">
             <div class="logo">
                 <h1>⚡ CHAOS<span>DESKY</span></h1>
@@ -51,7 +51,7 @@
                 </div>
             </section>
 
-            <!-- Card 2: Outdoor Internet Weather -->
+            <!-- Card 2: Outdoor Weather -->
             <section class="card glass">
                 <h2>☀️ Outdoor Weather (Internet API)</h2>
                 <div class="weather-box">
@@ -62,7 +62,90 @@
                 </div>
             </section>
 
-            <!-- Card 3: Pomodoro Focus Hub -->
+            <!-- Card 3: Granular OLED Controls -->
+            <section class="card glass">
+                <h2>📟 Granular OLED Screen Customizer</h2>
+                <div class="form-group">
+                    <label class="form-label">OLED Display Mode:</label>
+                    <select id="oled-mode-dropdown" onchange="setOledMode(this.value)">
+                        <option value="0">0: Full Telemetry HUD</option>
+                        <option value="1">1: Big Digital Clock & Date</option>
+                        <option value="2">2: Temp & Humidity Sparklines</option>
+                        <option value="3">3: Custom Text Marquee Ticker</option>
+                        <option value="4">4: Uploaded 128x64 Bitmap Image</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">OLED Contrast (Brightness): <span id="contrast-label">255</span></label>
+                    <input type="range" id="contrast-slider" min="0" max="255" value="255" oninput="setOledContrast(this.value)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Custom Marquee Text / Announcement:</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="marquee-input" placeholder="Type text to scroll on OLED...">
+                        <button onclick="sendCustomText()" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 4: Granular TFT Controls & 11 Themes -->
+            <section class="card glass">
+                <h2>📺 Granular TFT Screen Customizer</h2>
+                <label class="form-label">Active Page Jump:</label>
+                <div class="btn-group">
+                    <button onclick="setTftPage(0)" class="btn">1: Weather</button>
+                    <button onclick="setTftPage(1)" class="btn">2: Pressure</button>
+                    <button onclick="setTftPage(2)" class="btn">3: Pomodoro</button>
+                    <button onclick="setTftPage(3)" class="btn">4: QR Code</button>
+                    <button onclick="setTftPage(4)" class="btn">5: Custom Media</button>
+                </div>
+                <div class="control-row">
+                    <div class="control-col">
+                        <label class="form-label">11 System Themes:</label>
+                        <select id="theme-dropdown" onchange="setTftTheme(this.value)">
+                            <option value="0">🌌 Cyberpunk Synthwave</option>
+                            <option value="1">📟 Matrix Hacker</option>
+                            <option value="2">🧊 Dark Glass</option>
+                            <option value="3">👾 Retro Arcade</option>
+                            <option value="4">🧛 Dracula Theme</option>
+                            <option value="5">❄️ Nord Arctic</option>
+                            <option value="6">🍂 Gruvbox Retro</option>
+                            <option value="7">🔳 Monochrome High-Contrast</option>
+                            <option value="8">🔴 Nothing UI (Dot Matrix)</option>
+                            <option value="9">📱 One UI (Samsung Blue)</option>
+                            <option value="10">🎨 Material You (Google Purple)</option>
+                        </select>
+                    </div>
+                    <div class="control-col">
+                        <label class="form-label">Screen Rotation:</label>
+                        <select id="rotation-dropdown" onchange="setTftRotation(this.value)">
+                            <option value="0">0° (Portrait)</option>
+                            <option value="1">90° (Landscape)</option>
+                            <option value="2">180° (Inverted Portrait)</option>
+                            <option value="3">270° (Inverted Landscape)</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 5: Custom Image Uploader for TFT & OLED -->
+            <section class="card glass">
+                <h2>🖼️ Upload Custom Image to Displays</h2>
+                <p class="card-desc">Select any PNG, JPG, or BMP photo. The browser will convert it and flash it directly to your screens!</p>
+                <div class="form-group">
+                    <label class="form-label">Select Image File:</label>
+                    <input type="file" id="image-file-input" accept="image/*" onchange="previewUserImage(event)">
+                </div>
+                <div class="preview-box">
+                    <canvas id="preview-canvas" width="128" height="160"></canvas>
+                </div>
+                <div class="btn-group">
+                    <button onclick="uploadImageToTft()" class="btn btn-blue">Upload to TFT Screen</button>
+                    <button onclick="uploadImageToOled()" class="btn btn-yellow">Upload to OLED Screen</button>
+                </div>
+            </section>
+
+            <!-- Card 6: Pomodoro Customizer -->
             <section class="card glass">
                 <h2>⏱️ Pomodoro Focus Hub</h2>
                 <div class="pomo-box">
@@ -79,31 +162,35 @@
                         <button onclick="pomoAction('reset')" class="btn btn-red">🔄 Reset</button>
                     </div>
                 </div>
-            </section>
-
-            <!-- Card 4: TFT Remote Control -->
-            <section class="card glass">
-                <h2>📺 TFT Screen Remote Controller</h2>
-                <label class="form-label">Select Screen Page:</label>
-                <div class="btn-group">
-                    <button onclick="setTftPage(0)" class="btn">1: Weather</button>
-                    <button onclick="setTftPage(1)" class="btn">2: Pressure</button>
-                    <button onclick="setTftPage(2)" class="btn">3: Pomodoro</button>
-                    <button onclick="setTftPage(3)" class="btn">4: System QR</button>
-                </div>
+                <hr class="divider">
                 <div class="control-row">
                     <div class="control-col">
-                        <label class="form-label">TFT Theme:</label>
-                        <select id="theme-dropdown" onchange="setTftTheme(this.value)">
-                            <option value="0">Cyberpunk Synthwave</option>
-                            <option value="1">Matrix Hacker</option>
-                            <option value="2">Dark Glass</option>
-                            <option value="3">Retro Arcade</option>
-                        </select>
+                        <label class="form-label">Work Mins:</label>
+                        <input type="number" id="work-mins-input" value="25" min="1" max="120">
                     </div>
                     <div class="control-col">
-                        <label class="form-label">Carousel Speed:</label>
-                        <select id="carousel-dropdown" onchange="updateConfig()">
+                        <label class="form-label">Break Mins:</label>
+                        <input type="number" id="break-mins-input" value="5" min="1" max="60">
+                    </div>
+                </div>
+                <button onclick="savePomodoroConfig()" class="btn btn-primary full-width margin-top">Save Timer Settings</button>
+            </section>
+
+            <!-- Card 7: Location & OpenWeather API -->
+            <section class="card glass">
+                <h2>⚙️ Location & OpenWeather API</h2>
+                <form id="config-form" onsubmit="saveConfig(event)">
+                    <div class="form-group">
+                        <label class="form-label">City Name or Postal PIN Code:</label>
+                        <input type="text" id="city-input" placeholder="e.g. 411057 or Hinjewadi" value="411057">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OpenWeather API Key:</label>
+                        <input type="password" id="apikey-input" placeholder="Paste OpenWeather API Key">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">TFT Auto-Carousel Speed:</label>
+                        <select id="carousel-dropdown">
                             <option value="10">10 Seconds</option>
                             <option value="5">5 Seconds</option>
                             <option value="15">15 Seconds</option>
@@ -111,28 +198,13 @@
                             <option value="0">Pause Auto-Switch</option>
                         </select>
                     </div>
-                </div>
-            </section>
-
-            <!-- Card 5: Weather API Configuration -->
-            <section class="card glass">
-                <h2>⚙️ Location & API Configuration</h2>
-                <form id="config-form" onsubmit="saveConfig(event)">
-                    <div class="form-group">
-                        <label class="form-label">City Name:</label>
-                        <input type="text" id="city-input" placeholder="e.g. New Delhi" value="New Delhi">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">OpenWeather API Key:</label>
-                        <input type="password" id="apikey-input" placeholder="Paste OpenWeather API Key">
-                    </div>
-                    <button type="submit" class="btn btn-primary full-width">Save Settings</button>
+                    <button type="submit" class="btn btn-primary full-width">Save Location & API</button>
                 </form>
             </section>
         </main>
 
         <footer>
-            <p>ChaosDesky ESP32 Standalone Station • Powered by LittleFS & AsyncWebServer</p>
+            <p>ChaosDesky ESP32 Standalone Station • 11 Design Themes & Granular Displays Engine</p>
         </footer>
     </div>
 

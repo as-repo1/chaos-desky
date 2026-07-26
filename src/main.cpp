@@ -4,6 +4,7 @@
 #include <LittleFS.h>
 
 #include "config.h"
+#include "config_manager.h"
 #include "sensors.h"
 #include "zambretti.h"
 #include "weather_api.h"
@@ -13,6 +14,7 @@
 #include "web_server.h"
 
 // System Instances
+ConfigManager       configMgr;
 SensorManager       sensorMgr;
 WeatherApiClient    weatherMgr;
 PomodoroTimer       pomoTimer;
@@ -21,10 +23,10 @@ TftDisplayManager   tftMgr;
 WebServerManager    webServerMgr(80);
 
 // Timing Variables
-unsigned long lastSensorReadMs  = 0;
-unsigned long lastWeatherFetchMs = 0;
-unsigned long lastCarouselMs     = 0;
-unsigned long lastOledRefreshMs  = 0;
+unsigned long lastSensorReadMs    = 0;
+unsigned long lastWeatherFetchMs   = 0;
+unsigned long lastCarouselMs       = 0;
+unsigned long lastOledRefreshMs    = 0;
 unsigned long lastPressureSampleMs = 0;
 
 String localIpStr = "0.0.0.0";
@@ -43,9 +45,12 @@ String getFormattedNtpTime() {
 }
 
 void setupWiFi() {
-    Serial.println("🌐 Connecting to WiFi: " + String(DEFAULT_WIFI_SSID));
+    String ssid = configMgr.config.wifiSsid;
+    String pass = configMgr.config.wifiPass;
+
+    Serial.println("🌐 Connecting to WiFi: " + ssid);
     WiFi.mode(WIFI_STA);
-    WiFi.begin(DEFAULT_WIFI_SSID, DEFAULT_WIFI_PASS);
+    WiFi.begin(ssid.c_str(), pass.c_str());
 
     unsigned long startMs = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - startMs < 10000) {
@@ -80,6 +85,24 @@ void setup() {
         Serial.println("✅ LittleFS Mounted Successfully!");
     }
 
+    // Load Persistent Config
+    configMgr.begin();
+
+    // Apply Loaded Configuration to Modules
+    tftMgr.setRotation(configMgr.config.tftRotation);
+    tftMgr.applyTheme((TFTTheme)configMgr.config.tftTheme);
+    tftMgr.enabledPagesMask = configMgr.config.enabledPagesMask;
+    carouselIntervalMs = configMgr.config.carouselSpeedSec * 1000;
+
+    oledMgr.oledMode = configMgr.config.oledMode;
+    oledMgr.setContrast(configMgr.config.oledContrast);
+    oledMgr.setInverted(configMgr.config.oledInverted);
+    oledMgr.customText = configMgr.config.customText;
+    tftMgr.customBannerText = configMgr.config.customText;
+
+    pomoTimer.workDurationMins = configMgr.config.pomoWorkMins;
+    pomoTimer.breakDurationMins = configMgr.config.pomoBreakMins;
+
     // Initialize Displays
     oledMgr.begin();
     tftMgr.begin();
@@ -92,7 +115,9 @@ void setup() {
     webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr);
 
     // Fetch initial Outdoor Weather
-    weatherMgr.fetchWeather(OPENWEATHER_API_KEY, OPENWEATHER_CITY, OPENWEATHER_COUNTRY);
+    weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
+                            configMgr.config.openWeatherCity, 
+                            configMgr.config.openWeatherCountry);
 
     // Add initial barometric pressure sample
     sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
@@ -121,7 +146,9 @@ void loop() {
     // 4. Periodic Weather API Fetch (Every 10 mins)
     if (currentMs - lastWeatherFetchMs >= WEATHER_UPDATE_MS) {
         lastWeatherFetchMs = currentMs;
-        weatherMgr.fetchWeather(OPENWEATHER_API_KEY, OPENWEATHER_CITY, OPENWEATHER_COUNTRY);
+        weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
+                                configMgr.config.openWeatherCity, 
+                                configMgr.config.openWeatherCountry);
     }
 
     // 5. TFT Carousel Page Switcher
@@ -130,15 +157,13 @@ void loop() {
         tftMgr.nextPage();
     }
 
-    // 6. Update OLED HUD (Every 500 ms)
+    // 6. Update Displays (Every 500 ms)
     if (currentMs - lastOledRefreshMs >= 500) {
         lastOledRefreshMs = currentMs;
         timeStr = getFormattedNtpTime();
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
-        oledMgr.drawHUD(sensorMgr.data, localIpStr, timeStr, rssi);
-
-        // Update TFT Current Page
+        oledMgr.draw(sensorMgr.data, localIpStr, timeStr, rssi);
         tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, localIpStr, timeStr);
     }
 }
