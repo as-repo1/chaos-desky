@@ -51,14 +51,14 @@ Welcome to **chaos-desky**, an advanced, feature-rich standalone ESP32 dual-disp
 graph TD
     ESP32[ESP32 Microcontroller]
 
-    subgraph I2C Bus (Shared)
+    subgraph I2C_Bus ["I2C Bus (Shared)"]
         ESP32 -- "GPIO 21 (SDA)" --> OLED[0.96" OLED SSD1306]
         ESP32 -- "GPIO 22 (SCL)" --> OLED
         ESP32 -- "GPIO 21 (SDA)" --> BMP[BMP180/280 Sensor]
         ESP32 -- "GPIO 22 (SCL)" --> BMP
     end
 
-    subgraph SPI Bus (Dedicated)
+    subgraph SPI_Bus ["SPI Bus (Dedicated)"]
         ESP32 -- "GPIO 13 (MOSI)" --> TFT[1.8" Color TFT ST7735]
         ESP32 -- "GPIO 14 (SCK)"  --> TFT
         ESP32 -- "GPIO 15 (CS)"   --> TFT
@@ -66,11 +66,11 @@ graph TD
         ESP32 -- "GPIO 17 (RST)"  --> TFT
     end
 
-    subgraph Digital IO
+    subgraph Digital_IO ["Digital IO"]
         ESP32 -- "GPIO 4 (DATA)"  --> DHT[DHT11 Sensor]
     end
 
-    subgraph Power Distribution
+    subgraph Power_Dist ["Power Distribution"]
         3V3[3.3V Power] --> OLED
         3V3 --> TFT
         3V3 --> DHT

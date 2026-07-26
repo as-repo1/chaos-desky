@@ -32,14 +32,14 @@ This guide outlines the pin connections, hardware protocols, power requirements,
 graph LR
     ESP[ESP32 Microcontroller]
 
-    subgraph I2C Bus (Shared)
+    subgraph I2C_Bus ["I2C Bus (Shared)"]
         ESP -- "GPIO 21 (SDA)" --> OLED[0.96" OLED SSD1306]
         ESP -- "GPIO 22 (SCL)" --> OLED
         ESP -- "GPIO 21 (SDA)" --> BMP[BMP180/BMP280 Sensor]
         ESP -- "GPIO 22 (SCL)" --> BMP
     end
 
-    subgraph SPI Bus (Dedicated)
+    subgraph SPI_Bus ["SPI Bus (Dedicated)"]
         ESP -- "GPIO 13 (MOSI)" --> TFT[1.8" Color TFT ST7735]
         ESP -- "GPIO 14 (SCK)"  --> TFT
         ESP -- "GPIO 15 (CS)"   --> TFT
@@ -47,11 +47,11 @@ graph LR
         ESP -- "GPIO 17 (RST)"  --> TFT
     end
 
-    subgraph Digital IO
+    subgraph Digital_IO ["Digital IO"]
         ESP -- "GPIO 4 (DATA)"  --> DHT[DHT11 Sensor]
     end
 
-    subgraph Power Rails
+    subgraph Power_Rails ["Power Rails"]
         3V3[3.3V Rail] --> OLED
         3V3 --> TFT
         3V3 --> DHT
