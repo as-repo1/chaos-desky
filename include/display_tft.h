@@ -12,8 +12,8 @@
 #include "weather_api.h"
 #include "zambretti.h"
 #include "pomodoro.h"
-#include "ble_manager.h"
 #include "notification_manager.h"
+#include "ancs_client.h"
 #include "gfx_icons.h"
 #include "screensaver.h"
 

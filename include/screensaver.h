@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 struct Star3D {
     float x = 0;
@@ -45,8 +46,8 @@ public:
     }
 
     // --- Render OLED Cute Cyber Cat Mascot (128x64) ---
-    void renderOledCatMascot(Adafruit_GFX& gfx) {
-        gfx.clearDisplay();
+    void renderOledCatMascot(Adafruit_SSD1306& oled) {
+        oled.clearDisplay();
 
         // 1. Draw Floating Particles (Hearts/Stars)
         for (int i = 0; i < 4; i++) {
@@ -58,9 +59,9 @@ public:
             // Draw small pixel heart
             int hx = hearts[i].x;
             int hy = hearts[i].y;
-            gfx.drawPixel(hx, hy, 1);
-            gfx.drawPixel(hx + 2, hy, 1);
-            gfx.drawPixel(hx + 1, hy + 1, 1);
+            oled.drawPixel(hx, hy, SSD1306_WHITE);
+            oled.drawPixel(hx + 2, hy, SSD1306_WHITE);
+            oled.drawPixel(hx + 1, hy + 1, SSD1306_WHITE);
         }
 
         // 2. Draw Cute Cat Head Silhouette
@@ -68,43 +69,43 @@ public:
         int cy = 34;
 
         // Ears
-        gfx.fillTriangle(cx - 18, cy - 10, cx - 28, cy - 24, cx - 10, cy - 16, 1);
-        gfx.fillTriangle(cx + 18, cy - 10, cx + 28, cy - 24, cx + 10, cy - 16, 1);
+        oled.fillTriangle(cx - 18, cy - 10, cx - 28, cy - 24, cx - 10, cy - 16, SSD1306_WHITE);
+        oled.fillTriangle(cx + 18, cy - 10, cx + 28, cy - 24, cx + 10, cy - 16, SSD1306_WHITE);
 
         // Head Round Rect
-        gfx.fillRoundRect(cx - 24, cy - 14, 48, 28, 8, 1);
+        oled.fillRoundRect(cx - 24, cy - 14, 48, 28, 8, SSD1306_WHITE);
 
         // Face Expressions (Frame switching)
         int subFrame = (animFrame / 4) % 3;
         
         if (subFrame == 0) { // Happy ^ _ ^
-            gfx.fillCircle(cx - 10, cy - 2, 4, 0);
-            gfx.fillCircle(cx + 10, cy - 2, 4, 0);
-            gfx.fillCircle(cx - 10, cy - 3, 2, 1); // pupil
-            gfx.fillCircle(cx + 10, cy - 3, 2, 1);
+            oled.fillCircle(cx - 10, cy - 2, 4, SSD1306_BLACK);
+            oled.fillCircle(cx + 10, cy - 2, 4, SSD1306_BLACK);
+            oled.fillCircle(cx - 10, cy - 3, 2, SSD1306_WHITE); // pupil
+            oled.fillCircle(cx + 10, cy - 3, 2, SSD1306_WHITE);
         } else if (subFrame == 1) { // Sleepy - _ -
-            gfx.drawFastHLine(cx - 14, cy - 2, 8, 0);
-            gfx.drawFastHLine(cx + 6, cy - 2, 8, 0);
+            oled.drawFastHLine(cx - 14, cy - 2, 8, SSD1306_BLACK);
+            oled.drawFastHLine(cx + 6, cy - 2, 8, SSD1306_BLACK);
         } else { // Cute Wink ^ _ ~
-            gfx.fillCircle(cx - 10, cy - 2, 4, 0);
-            gfx.fillCircle(cx - 10, cy - 3, 2, 1);
-            gfx.drawFastHLine(cx + 6, cy - 2, 8, 0);
+            oled.fillCircle(cx - 10, cy - 2, 4, SSD1306_BLACK);
+            oled.fillCircle(cx - 10, cy - 3, 2, SSD1306_WHITE);
+            oled.drawFastHLine(cx + 6, cy - 2, 8, SSD1306_BLACK);
         }
 
         // Cute Nose & Whiskers
-        gfx.fillTriangle(cx - 2, cy + 3, cx + 2, cy + 3, cx, cy + 5, 0);
-        gfx.drawFastHLine(cx - 20, cy + 2, 6, 0);
-        gfx.drawFastHLine(cx - 20, cy + 6, 6, 0);
-        gfx.drawFastHLine(cx + 14, cy + 2, 6, 0);
-        gfx.drawFastHLine(cx + 14, cy + 6, 6, 0);
+        oled.fillTriangle(cx - 2, cy + 3, cx + 2, cy + 3, cx, cy + 5, SSD1306_BLACK);
+        oled.drawFastHLine(cx - 20, cy + 2, 6, SSD1306_BLACK);
+        oled.drawFastHLine(cx - 20, cy + 6, 6, SSD1306_BLACK);
+        oled.drawFastHLine(cx + 14, cy + 2, 6, SSD1306_BLACK);
+        oled.drawFastHLine(cx + 14, cy + 6, 6, SSD1306_BLACK);
 
         // Tail Wiggle
         int tailOffset = (animFrame % 2 == 0) ? -3 : 3;
-        gfx.drawLine(cx + 24, cy + 10, cx + 34 + tailOffset, cy + 18, 1);
+        oled.drawLine(cx + 24, cy + 10, cx + 34 + tailOffset, cy + 18, SSD1306_WHITE);
 
         // Status Text
-        gfx.setCursor(18, 54);
-        gfx.print("~ MEOW DESKY ~");
+        oled.setCursor(18, 54);
+        oled.print("~ MEOW DESKY ~");
 
         animFrame++;
     }
@@ -136,7 +137,7 @@ public:
         int py = 70;
         gfx.fillCircle(px, py, 14, colorAccent);
         gfx.drawCircle(px, py, 14, colorPrimary);
-        gfx.drawEllipse(px, py, 22, 6, colorPrimary); // Ring
+        gfx.drawFastHLine(px - 22, py, 44, colorPrimary); // Ring
 
         // 3. Orbiting Moon
         float angle = (animFrame * 0.15f);
@@ -154,7 +155,7 @@ public:
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(1);
         gfx.setCursor(bounceX, bounceY);
-        gfx.print("⚡CHAOS");
+        gfx.print("CHAOS");
 
         animFrame++;
     }
