@@ -62,7 +62,7 @@ public:
                 case 2: drawMode2_Sparklines(sm); break;
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: drawMode4_CustomImage(); break;
-                case 5: screensaverEngine.renderOledCatMascot(oled); break;
+                case 5: screensaverEngine.renderOledScreensaver(oled); break;
                 default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
             }
         }

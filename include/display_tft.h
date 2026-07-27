@@ -249,7 +249,7 @@ public:
             case 6: renderPhoneNotifPage(phoneLog, fullRedraw); break;
             case 7: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
             case 8: renderNetworkMonitorPage(ipStr, fullRedraw); break;
-            case 9: screensaverEngine.renderTftCosmicWarp(tft, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG); break;
+            case 9: screensaverEngine.renderTftScreensaver(tft, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG); break;
         }
     }
 
