@@ -13,6 +13,8 @@
 #include "display_tft.h"
 #include "notification_manager.h"
 #include "ancs_client.h"
+#include "mech_switch.h"
+#include "ble_uart_server.h"
 #include "web_server.h"
 
 // System Instances
@@ -24,6 +26,8 @@ OledDisplayManager     oledMgr;
 TftDisplayManager      tftMgr;
 NotificationManager    notificationMgr;
 AncsNotificationClient ancsClientMgr;
+MechSwitchManager      mechSwitchMgr;
+BleUartServer          bleUartMgr;
 ScreensaverEngine      screensaverEngine;
 WatchFaceEngine        watchFaceEngine;
 WebServerManager       webServerMgr(80);
@@ -118,9 +122,11 @@ void setup() {
     oledMgr.begin();
     tftMgr.begin();
 
-    // Initialize Sensors & Smartwatch BLE ANCS Receiver
+    // Initialize Sensors, Switch & BLE UART Receiver
     sensorMgr.begin();
     ancsClientMgr.begin();
+    mechSwitchMgr.begin(MECH_SWITCH_PIN);
+    bleUartMgr.begin();
 
     // Setup Network & Web Server
     setupWiFi();
@@ -140,9 +146,34 @@ void setup() {
 void loop() {
     unsigned long currentMs = millis();
 
-    // 1. Update State Machines
+    // 1. Update State Machines & Mechanical Switch
     pomoTimer.update();
     notificationMgr.update();
+    bleUartMgr.update();
+
+    SwitchAction action = mechSwitchMgr.update();
+    if (action == SWITCH_SINGLE_CLICK) {
+        if (tftMgr.currentPage == 7) {
+            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6; // Cycle all 6 watch faces (including Casio!)
+            tftMgr.forceRedraw();
+            Serial.printf("⌨️ Single Click: Cycled Watch Face to %d\n", watchFaceEngine.activeStyle);
+        } else {
+            tftMgr.nextPage();
+            Serial.println("⌨️ Single Click: Next TFT Page");
+        }
+    } else if (action == SWITCH_DOUBLE_CLICK) {
+        if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
+            pomoTimer.startWork();
+        } else {
+            pomoTimer.pause();
+        }
+        tftMgr.setPage(2); // Jump to Pomodoro Page
+        Serial.println("⌨️ Double Click: Toggled Pomodoro!");
+    } else if (action == SWITCH_LONG_PRESS) {
+        watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
+        tftMgr.setPage(7); // Jump straight to iconic Casio F-91W!
+        Serial.println("⌨️ Long Press: Jumped to Casio F-91W Watchface!");
+    }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
     if (currentMs - lastSensorReadMs >= 2000) {

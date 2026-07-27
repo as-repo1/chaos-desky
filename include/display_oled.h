@@ -51,6 +51,20 @@ public:
     }
 
     void draw(SensorManager& sm, const NotificationManager& notifMgr, const String& ipStr, const String& timeStr, int rssi) {
+        bool needsRefresh = false;
+        // Only refresh I2C display if animation is playing, mode changed, or second/temp ticked!
+        if (notifMgr.isOledActive() || oledMode == 3 || oledMode == 5 || timeStr != lastTimeStr || oledMode != lastRenderedMode || abs(sm.data.tempC - lastTemp) > 0.1f) {
+            needsRefresh = true;
+        }
+
+        if (!needsRefresh) {
+            return; // 🛡️ ZERO FLICKER: Eliminate redundant screen wiping & I2C writes
+        }
+
+        lastTimeStr = timeStr;
+        lastRenderedMode = oledMode;
+        lastTemp = sm.data.tempC;
+
         oled.clearDisplay();
 
         if (notifMgr.isOledActive()) {
@@ -72,6 +86,9 @@ public:
 
 private:
     Adafruit_SSD1306 oled;
+    String lastTimeStr = "";
+    int lastRenderedMode = -1;
+    float lastTemp = -999.0f;
 
     void drawNotificationOverlay(const NotificationItem& n, float progress) {
         oled.fillRoundRect(0, 0, 128, 14, 3, SSD1306_WHITE);

@@ -36,6 +36,7 @@
 // Optional Pins
 #define BUZZER_PIN      -1    // Set to GPIO pin if piezo buzzer attached (-1 = disabled)
 #define LDR_PIN         -1    // Set to Analog GPIO pin if light sensor attached (-1 = disabled)
+#define MECH_SWITCH_PIN 25    // ⌨️ Mechanical Keyboard Switch (Pin 1 to GPIO 25, Pin 2 to GND - uses internal pullup!)
 
 // ==========================================
 // 🌐 WIFI & NETWORK CONFIGURATION

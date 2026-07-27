@@ -210,36 +210,54 @@
 
         .btn {
             padding: 10px 16px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid var(--border-color);
             background: var(--button-bg);
             color: var(--text-color);
             font-weight: 600;
             font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .btn:hover {
             border-color: var(--primary-color);
             color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(56, 189, 248, 0.22);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(0.97);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
         }
 
         .btn-primary {
             background: var(--primary-color);
             color: #000;
-            border: none;
+            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
             color: #000;
+            opacity: 0.95;
+            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
         }
 
         .btn-red {
             background: var(--accent-color);
             color: #fff;
             border: none;
+            box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+        }
+
+        .btn-red:hover {
+            color: #fff;
+            opacity: 0.95;
+            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.5);
         }
 
         .full-width {
@@ -371,6 +389,8 @@
                         <button onclick="setWatchface(1)" class="btn">⏱️ Cyber Chrono</button>
                         <button onclick="setWatchface(2)" class="btn">☀️ Modern Digital</button>
                         <button onclick="setWatchface(3)" class="btn">🔴 Neon Nixie</button>
+                        <button onclick="setWatchface(4)" class="btn btn-primary" style="background: linear-gradient(135deg, #0056b3, #001f3f); border-left: 4px solid #ff3333; font-weight: bold;">⌚ Casio F-91W</button>
+                        <button onclick="setWatchface(5)" class="btn" style="background: linear-gradient(135deg, #32383e, #1a1c20); border: 1px solid #ff9900; font-weight: bold;">🛡️ Casio G-Shock</button>
                     </div>
                     <hr class="divider">
                     <div class="control-row">
@@ -577,6 +597,35 @@
                         <input type="range" id="pomo-break-slider" min="1" max="30" value="5" oninput="document.getElementById('pomo-break-label').innerText = this.value + ' mins'">
                     </div>
                     <button onclick="savePomodoroConfig()" class="btn btn-primary full-width" style="margin-top:10px;">Save Pomodoro Timers</button>
+                </div>
+            </section>
+
+            <!-- Card 9: Mechanical Switch & BLE UART Command Hub -->
+            <section class="card" id="card-mech-ble">
+                <div class="card-header" onclick="toggleCard('card-mech-ble')">
+                    <h2>⌨️ Bare Mechanical Switch & 📡 BLE UART Telemetry</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Your hardware hub is enhanced with resistorless mechanical switch support and open Nordic UART Service BLE commands!</p>
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 15px;">
+                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⌨️ Mechanical Keyboard Switch (GPIO 25)</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Wire any bare keyboard switch directly between <strong>GPIO 25</strong> and <strong>GND</strong>. Uses internal pull-up resistors with 35ms software debounce—no resistors or capacitors needed!</p>
+                        <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
+                            <li><strong>Single Click:</strong> Cycle through all 6 Watch Faces (when on Watchface Page) or switch to Next TFT Dashboard Page!</li>
+                            <li><strong>Double Click:</strong> Instantly toggle Pomodoro Timer Work / Pause state and jump to Pomodoro screen!</li>
+                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey back to the iconic Casio F-91W watch face!</li>
+                        </ul>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #34d399;">
+                        <h3 style="margin-top:0; font-size:1rem; color:#34d399;">📡 BLE Nordic UART & PC Telemetry Receiver</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Open any Bluetooth Terminal app on iOS/Android or desktop script and connect to <strong>chaos-desky</strong> without OS encryption pairing errors!</p>
+                        <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
+                            <li>Type <code>casio</code> or <code>gshock</code> to switch watch faces wirelessly!</li>
+                            <li>Type <code>page &lt;0..9&gt;</code> to jump to specific telemetry screens!</li>
+                            <li>Send <code>pc:CPU=52C, GPU=61C</code> to broadcast real-time PC gaming telemetry directly onto your OLED & TFT displays!</li>
+                        </ul>
+                    </div>
                 </div>
             </section>
 

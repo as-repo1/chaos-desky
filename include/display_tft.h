@@ -204,10 +204,14 @@ public:
     }
 
     void setPage(int page) {
-        if (page >= 0 && page < TOTAL_TFT_PAGES && page != currentPage) {
+        if (page >= 0 && page < TOTAL_TFT_PAGES) {
             currentPage = page;
             pageNeedsFullRedraw = true;
         }
+    }
+
+    void forceRedraw() {
+        pageNeedsFullRedraw = true;
     }
 
     void renderCurrentPage(const OutdoorWeatherData& weather, 
@@ -671,7 +675,7 @@ private:
             s = timeStr.substring(6, 8).toInt();
         }
 
-        watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG);
+        watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG, fullRedraw);
     }
 
     // --- Page 8: Network & Wi-Fi Monitor ---
