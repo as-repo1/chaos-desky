@@ -26,7 +26,8 @@ OledDisplayManager     oledMgr;
 TftDisplayManager      tftMgr;
 NotificationManager    notificationMgr;
 AncsNotificationClient ancsClientMgr;
-MechSwitchManager      mechSwitchMgr;
+MechSwitchManager      mechSwitch1Mgr; // D25: Page Navigation & Slideshow Toggle
+MechSwitchManager      mechSwitch2Mgr; // D26: TFT Interactive Control & Actions
 BleUartServer          bleUartMgr;
 ScreensaverEngine      screensaverEngine;
 WatchFaceEngine        watchFaceEngine;
@@ -122,10 +123,11 @@ void setup() {
     oledMgr.begin();
     tftMgr.begin();
 
-    // Initialize Sensors, Switch & BLE UART Receiver
+    // Initialize Sensors, Dual Switches & BLE UART Receiver
     sensorMgr.begin();
     ancsClientMgr.begin();
-    mechSwitchMgr.begin(MECH_SWITCH_PIN);
+    mechSwitch1Mgr.begin(MECH_SWITCH_1_PIN);
+    mechSwitch2Mgr.begin(MECH_SWITCH_2_PIN);
     bleUartMgr.begin();
 
     // Setup Network & Web Server
@@ -146,33 +148,88 @@ void setup() {
 void loop() {
     unsigned long currentMs = millis();
 
-    // 1. Update State Machines & Mechanical Switch
+    // 1. Update State Machines & Dual Mechanical Switches
     pomoTimer.update();
     notificationMgr.update();
     bleUartMgr.update();
 
-    SwitchAction action = mechSwitchMgr.update();
-    if (action == SWITCH_SINGLE_CLICK) {
-        if (tftMgr.currentPage == 7) {
-            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6; // Cycle all 6 watch faces (including Casio!)
-            tftMgr.forceRedraw();
-            Serial.printf("⌨️ Single Click: Cycled Watch Face to %d\n", watchFaceEngine.activeStyle);
+    // ==============================================================
+    // ⌨️ SWITCH 1 (D25) — PAGE NAVIGATION & SLIDESHOW TOGGLE
+    // ==============================================================
+    SwitchAction action1 = mechSwitch1Mgr.update();
+    if (action1 == SWITCH_SINGLE_CLICK) {
+        // Pure manual navigation: Step to Next Page & reset timer
+        tftMgr.nextPage();
+        lastCarouselMs = currentMs; 
+        Serial.printf("⌨️ D25 Single Click: Manual Switch to Page %d\n", tftMgr.currentPage);
+    } 
+    else if (action1 == SWITCH_DOUBLE_CLICK) {
+        // Toggle between Manual-Only and Auto-Slideshow (6 seconds)
+        if (carouselIntervalMs == 0) {
+            carouselIntervalMs = 6000;
+            configMgr.config.carouselSpeedSec = 6;
+            notificationMgr.trigger("Slideshow Mode", "Auto-Slideshow ON (6s)", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
+            Serial.println("⌨️ D25 Double Click: Auto-Slideshow Enabled (6s)");
         } else {
-            tftMgr.nextPage();
-            Serial.println("⌨️ Single Click: Next TFT Page");
+            carouselIntervalMs = 0;
+            configMgr.config.carouselSpeedSec = 0;
+            notificationMgr.trigger("Slideshow Mode", "Manual Navigation Only", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
+            Serial.println("⌨️ D25 Double Click: Manual-Only Mode Enabled");
         }
-    } else if (action == SWITCH_DOUBLE_CLICK) {
+        configMgr.saveConfig();
+    } 
+    else if (action1 == SWITCH_LONG_PRESS) {
+        // Cycle OLED Display Mode (HUD -> Clock -> Sparklines -> Marquee -> Cyber Cat)
+        configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
+        configMgr.saveConfig();
+        Serial.printf("⌨️ D25 Long Press: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
+    }
+
+    // ==============================================================
+    // 🎮 SWITCH 2 (D26) — TFT INTERACTION & ACTION SWITCH
+    // ==============================================================
+    SwitchAction action2 = mechSwitch2Mgr.update();
+    if (action2 == SWITCH_SINGLE_CLICK) {
+        // Interact with current active TFT screen
+        if (tftMgr.currentPage == 7) {
+            // Watchface Studio Page -> Cycle through all 6 Watch Faces (including Casio!)
+            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6;
+            tftMgr.forceRedraw();
+            Serial.printf("🎮 D26 Single Click: Cycled Watch Face to %d\n", watchFaceEngine.activeStyle);
+        } 
+        else if (tftMgr.currentPage == 2) {
+            // Pomodoro Page -> Toggle Start/Pause
+            if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
+                pomoTimer.startWork();
+            } else {
+                pomoTimer.pause();
+            }
+            tftMgr.forceRedraw();
+            Serial.println("🎮 D26 Single Click: Toggled Pomodoro Timer!");
+        } 
+        else {
+            // Other Dashboard Pages -> Cycle TFT Color Themes (11 Themes)
+            configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
+            configMgr.saveConfig();
+            tftMgr.forceRedraw();
+            Serial.printf("🎮 D26 Single Click: Cycled TFT Color Theme to %d\n", configMgr.config.tftTheme);
+        }
+    } 
+    else if (action2 == SWITCH_DOUBLE_CLICK) {
+        // Quick Jump to Pomodoro Screen & Toggle Timer
+        tftMgr.setPage(2);
         if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
             pomoTimer.startWork();
         } else {
             pomoTimer.pause();
         }
-        tftMgr.setPage(2); // Jump to Pomodoro Page
-        Serial.println("⌨️ Double Click: Toggled Pomodoro!");
-    } else if (action == SWITCH_LONG_PRESS) {
+        Serial.println("🎮 D26 Double Click: Jumped to Pomodoro & Toggled!");
+    } 
+    else if (action2 == SWITCH_LONG_PRESS) {
+        // Instant Hotkey -> Snap directly to Iconic Casio F-91W Watchface!
         watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
-        tftMgr.setPage(7); // Jump straight to iconic Casio F-91W!
-        Serial.println("⌨️ Long Press: Jumped to Casio F-91W Watchface!");
+        tftMgr.setPage(7);
+        Serial.println("🎮 D26 Long Press: Jumped to Casio F-91W Watchface!");
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)

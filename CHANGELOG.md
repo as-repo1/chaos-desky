@@ -4,6 +4,29 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [1.7.0] - 2026-07-27
+
+### ✨ Added & Modified
+- **⌨️ Dual Bare Mechanical Switch Hardware Controls (`MECH_SWITCH_1_PIN = 25`, `MECH_SWITCH_2_PIN = 26`)**:
+  - Both pins use internal pull-up resistors (`INPUT_PULLUP`) with 35ms software debounce—**zero external resistors or capacitors required!**
+  - **Switch 1 (Pin D25 ➔ GND) — "Navigation & Slideshow Toggle"**:
+    - *Single Click*: Manually advances to Next TFT Dashboard Page (and resets auto-slideshow timer if running).
+    - *Double Click*: Toggles between **Manual Navigation Only** and **Auto-Slideshow Mode** (6 seconds per slide), complete with a live dual-screen popup notification!
+    - *Long Press (>700ms)*: Cycles through OLED Display Modes (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat Screensaver)!
+  - **Switch 2 (Pin D26 ➔ GND) — "Interactive Control & Actions"**:
+    - *Single Click*: Interacts directly with Whatever screen is displayed!
+      - On **Watchface Page (P8)**: Cycles all 6 Watch Faces (including Casio F-91W & G-Shock).
+      - On **Pomodoro Page (P3)**: Instantly Starts / Pauses the countdown timer.
+      - On **Dashboard Pages**: Cycles through all 11 TFT Color Themes (Cyberpunk Neon, Matrix, Dracula, Nord Frost, etc.)!
+    - *Double Click*: Quick-jumps to the Pomodoro Timer screen and toggles Start/Pause!
+    - *Long Press (>700ms)*: Instant hotkey that snaps straight to your iconic **Casio F-91W** watchface!
+- **🛑 Manual-Only Navigation Default**:
+  - Changed default `carouselSpeedSec` to `0` so the device boots in pure manual navigation mode without unexpected screen transitions.
+- **🖥️ Web UI Documentation Update**:
+  - Updated Hardware Card 9 on the Web UI (`index.html`) with interactive pin diagrams and instructions for both D25 and D26 switches.
+
+---
+
 ## [1.6.0] - 2026-07-27
 
 ### ✨ Added

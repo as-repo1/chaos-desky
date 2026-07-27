@@ -600,23 +600,37 @@
                 </div>
             </section>
 
-            <!-- Card 9: Mechanical Switch & BLE UART Command Hub -->
+            <!-- Card 9: Dual Mechanical Switches & BLE UART Command Hub -->
             <section class="card" id="card-mech-ble">
                 <div class="card-header" onclick="toggleCard('card-mech-ble')">
-                    <h2>⌨️ Bare Mechanical Switch & 📡 BLE UART Telemetry</h2>
+                    <h2>⌨️ Dual Mechanical Switches & 📡 BLE UART Telemetry</h2>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Your hardware hub is enhanced with resistorless mechanical switch support and open Nordic UART Service BLE commands!</p>
+                    <p class="card-desc">Your hardware hub features resistorless dual mechanical switches (D25 & D26) with manual navigation by default and open Nordic UART BLE telemetry!</p>
+                    
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 15px;">
-                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⌨️ Mechanical Keyboard Switch (GPIO 25)</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Wire any bare keyboard switch directly between <strong>GPIO 25</strong> and <strong>GND</strong>. Uses internal pull-up resistors with 35ms software debounce—no resistors or capacitors needed!</p>
+                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⌨️ Switch 1: Navigation & Slideshow Toggle (Pin D25 ➔ GND)</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">By default, screen navigation is <strong>Manual Only</strong> (auto-slideshow paused). Use this switch to navigate or toggle modes:</p>
                         <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li><strong>Single Click:</strong> Cycle through all 6 Watch Faces (when on Watchface Page) or switch to Next TFT Dashboard Page!</li>
-                            <li><strong>Double Click:</strong> Instantly toggle Pomodoro Timer Work / Pause state and jump to Pomodoro screen!</li>
-                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey back to the iconic Casio F-91W watch face!</li>
+                            <li><strong>Single Click:</strong> Manually switch to Next TFT Dashboard Page!</li>
+                            <li><strong>Double Click:</strong> Toggle between <strong>Manual-Only Mode</strong> and <strong>Auto-Slideshow Mode</strong> (6 seconds per slide)!</li>
+                            <li><strong>Long Press (&gt;700ms):</strong> Cycle through OLED display modes (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat Screensaver)!</li>
                         </ul>
                     </div>
+
+                    <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #f43f5e; margin-bottom: 15px;">
+                        <h3 style="margin-top:0; font-size:1rem; color:#f43f5e;">🎮 Switch 2: Interactive TFT Control & Actions (Pin D26 ➔ GND)</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Wire a second bare mechanical switch to pin <strong>D26</strong> to interact directly with whatever screen is displayed!</p>
+                        <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
+                            <li><strong>Single Click on Watchface Page:</strong> Cycle through all 6 Watch Faces (Swiss Analog, Cyber Chrono, Modern Digital, Neon Nixie, Casio F-91W, Casio G-Shock)!</li>
+                            <li><strong>Single Click on Pomodoro Page:</strong> Instantly Start / Pause the productivity countdown!</li>
+                            <li><strong>Single Click on Dashboard Pages:</strong> Cycle through the 11 TFT Color Themes (Cyberpunk Neon, Matrix, Dracula, Nord, etc.)!</li>
+                            <li><strong>Double Click:</strong> Quick-jump directly to the Pomodoro Timer screen & toggle work!</li>
+                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey to snap directly to your iconic <strong>Casio F-91W</strong> watchface!</li>
+                        </ul>
+                    </div>
+                    
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #34d399;">
                         <h3 style="margin-top:0; font-size:1rem; color:#34d399;">📡 BLE Nordic UART & PC Telemetry Receiver</h3>
                         <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Open any Bluetooth Terminal app on iOS/Android or desktop script and connect to <strong>chaos-desky</strong> without OS encryption pairing errors!</p>

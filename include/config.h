@@ -35,8 +35,9 @@
 
 // Optional Pins
 #define BUZZER_PIN      -1    // Set to GPIO pin if piezo buzzer attached (-1 = disabled)
-#define LDR_PIN         -1    // Set to Analog GPIO pin if light sensor attached (-1 = disabled)
-#define MECH_SWITCH_PIN 25    // ⌨️ Mechanical Keyboard Switch (Pin 1 to GPIO 25, Pin 2 to GND - uses internal pullup!)
+#define MECH_SWITCH_1_PIN 25    // ⌨️ Switch 1: Navigation & Slideshow Toggle (Pin to D25 & GND)
+#define MECH_SWITCH_2_PIN 26    // 🎮 Switch 2: TFT Interactive Action Switch (Pin to D26 & GND)
+#define MECH_SWITCH_PIN   MECH_SWITCH_1_PIN // Backward compatible alias
 
 // ==========================================
 // 🌐 WIFI & NETWORK CONFIGURATION
@@ -62,7 +63,7 @@
 // ==========================================
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
-#define CAROUSEL_INTERVAL_MS  10000 // Switch page every 10 seconds (0 = pause)
+#define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only!)
 #define TOTAL_TFT_PAGES       10    // 10 Total TFT Carousel Pages
 #define TOTAL_THEMES          11    // 11 Themes Supported
 
