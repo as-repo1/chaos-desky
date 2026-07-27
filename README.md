@@ -30,16 +30,18 @@
 - 🕹️ **Resistorless Dual Mechanical Switches & Macro Studio**:
   - Direct connection to internal ESP32 pullups on **GPIO 25 (Left Key)** and **GPIO 26 (Right Key)** to GND.
   - **Dynamic Macro Deck**: Configure Custom Single Clicks, Double Clicks, and Long Holds directly from the Web Dashboard and store in persistent LittleFS!
+  - **Default Mapping**: Left Single Click switches TFT pages, Right Single Click cycles OLED clock modes, Left Double Click opens the To-Do Board, and Right Double Click enters Watchface Studio.
   - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches simultaneously to fire instant global macros (e.g., instant WiFi Credentials Broadcast across both screens or stealth dual screensaver launch!).
   - **⚡ Smart Context-Aware Controls**: When viewing interactive screens (such as the To-Do Board or Pomodoro Timer), single clicks automatically transform from carousel switching into instinctive item controllers (moving task focus down, checking/unchecking items, or toggling/resetting timers!).
 
 - 📡 **BLE Smartwatch Sync, Telemetry & Command Hub**:
   - Open Nordic UART BLE receiver allowing lossless telemetry broadcast from PC gaming monitors or mobile terminals without OS encryption pairing errors.
+  - **Configurable Alert Display Target**: Customize directly in the Web Portal whether system alerts, BLE popups, timer notifications, and telemetry appear on the OLED display, the TFT screen, or simultaneously across both!
   - Send wireless terminal commands (`casio`, `gshock`, `page <0..9>`, or `pc:CPU=52C, GPU=61C`).
 
 - 🌐 **Embedded Tabbed Web Dashboard**:
   - Full mobile-responsive UI hosted on LittleFS featuring interactive cards: Telemetry, Watch Face Customizer, Mechanical Macro & Button Studio, BLE Hub, Marquee Publisher, and Resource Optimization Hub.
-  - Real-time sliders for OLED contrast/brightness, 11 TFT color themes, screen rotation, carousel page masking, and feature toggling.
+  - Real-time sliders for OLED contrast/brightness, 11 TFT color themes, screen rotation, carousel page masking, system notification screen target, and feature toggling.
 
 - 🎨 **11 Tailored Color Themes**:
   - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, and Material You.

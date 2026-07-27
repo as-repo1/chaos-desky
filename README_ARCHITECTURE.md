@@ -49,7 +49,7 @@ graph TD
 
 ### Smart Context-Aware Routing (`executeButtonAction`)
 When a Single Click event occurs, the system examines `tftMgr.currentPage`:
-- **Standard Navigation (Pages 0–3, 6–9)**: Executes configured user macros (e.g. Page Forward/Back, OLED Mode cycle).
+- **Standard Navigation (Pages 0–3, 6–9)**: Executes configured user macros (Default: Left Single Click cycles TFT screens, Right Single Click cycles OLED display modes, Left Double Click opens To-Do Dashboard, Right Double Click opens Watchface Studio).
 - **Interactive To-Do List (Page 5, Index 4)**: Clicks effortlessly hijack navigation to become **Task Selectors** (highlighting items down the board) and **Checkoff Switches** (marking items DONE in persistent LittleFS).
 - **Pomodoro Action Screen (Page 3, Index 2)**: Automatically translates clicks into Start/Pause toggle triggers and Long Holds into timer reset commands.
 
@@ -136,7 +136,7 @@ stateDiagram-v2
 │   ├── zambretti.h             # Barometric weather forecasting engine
 │   ├── weather_api.h           # OpenWeatherMap Async JSON API client
 │   ├── pomodoro.h              # Focus timer state machine logic
-│   └── web_server.h            # Async Web Server & REST API handlers (/api/buttons/config, /api/tft/todo)
+│   └── web_server.h            # Async Web Server & REST API handlers (/api/buttons/config, /api/notify/target, /api/tft/todo)
 ├── src/
 │   └── main.cpp                # System initialization, dual-switch logic, macro dispatcher & event loops
 └── data/                       # LittleFS Storage

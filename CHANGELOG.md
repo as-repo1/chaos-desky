@@ -4,6 +4,20 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [1.8.1] - 2026-07-27
+
+### ✨ Added & Enhanced
+- **⚙️ Customizable System & Alert Notification Display Preference (`/api/notify/target`)**:
+  - Added real-time selector to Web Portal (Card 4) allowing users to decide where all system change alerts, BLE notifications, timers, and theme switch popups are routed (**TFT Only**, **OLED Only**, or **Both Displays**).
+  - Implemented automatic LittleFS persistence via `notifTarget` in `SystemConfig` and added `NOTIF_TARGET_USER_PREF` across all core notification triggers in firmware.
+- **🔄 Re-Aligned Mechanical Button Default Macros**:
+  - **Left Switch (D25) Single Click**: Switches between pages directly on the **TFT Color Screen** (`ACT_NEXT_TFT_PAGE`).
+  - **Right Switch (D26) Single Click**: Cycles through modes on the **OLED Display** (`ACT_CYCLE_OLED`).
+  - **Left Switch Double Click**: Enters interactive **To-Do & Notes Board** functionality (`ACT_JUMP_TODO`).
+  - **Right Switch Double Click**: Enters **Watchface Studio** functionality (`ACT_JUMP_WATCH`).
+
+---
+
 ## [1.8.0] - 2026-07-27
 
 ### ✨ Added & Overhauled

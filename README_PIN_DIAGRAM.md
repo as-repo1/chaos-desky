@@ -16,8 +16,8 @@ This guide outlines the pin connections, hardware protocols, power requirements,
 | | VCC / GND | `3.3V` / `GND` | Power | — | Barometric pressure & altitude |
 | **DHT11 Sensor** | DATA | `GPIO 4` | Digital IO | `3.3V` | Requires 10k ohm pull-up resistor to 3.3V |
 | | VCC / GND | `3.3V` / `GND` | Power | — | Temperature & Humidity |
-| **Left Switch (Key 1)** | Signal | `GPIO 25` | Digital IO | — | Direct to GND (Internal `INPUT_PULLUP`). Controls OLED & To-Do toggle. |
-| **Right Switch (Key 2)** | Signal | `GPIO 26` | Digital IO | — | Direct to GND (Internal `INPUT_PULLUP`). Controls TFT navigation & watchfaces. |
+| **Left Switch (Key 1)** | Signal | `GPIO 25` | Digital IO | — | Direct to GND (Internal `INPUT_PULLUP`). Controls TFT navigation & To-Do board. |
+| **Right Switch (Key 2)** | Signal | `GPIO 26` | Digital IO | — | Direct to GND (Internal `INPUT_PULLUP`). Controls OLED mode cycling & Watchface Studio. |
 | **TFT Display (ST7735)** | MOSI (SDA) | `GPIO 13` | SPI | `3.3V` | Hardware SPI Data |
 | | SCK (SCL) | `GPIO 14` | SPI | `3.3V` | Hardware SPI Clock |
 | | CS | `GPIO 15` | SPI | `3.3V` | Chip Select |
