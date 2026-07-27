@@ -45,6 +45,14 @@ public:
     bool todoChecked[4] = { true, false, false, false };
     String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
 
+    // Flappy Bird Mini-Game State
+    float gameBirdY = 80.0;
+    float gameBirdVelocity = 0.0;
+    int gamePipeX = 128;
+    int gamePipeGapY = 60;
+    int gameScore = 0;
+    bool gameIsOver = true; // Start in game over state (waiting for flap)
+
     // Color definitions (16-bit RGB565 format)
     uint16_t COLOR_BG       = ST77XX_BLACK;
     uint16_t COLOR_PRIMARY  = ST77XX_CYAN;
@@ -54,7 +62,7 @@ public:
     uint16_t COLOR_WARN     = ST77XX_YELLOW;
     uint16_t COLOR_ALERT    = ST77XX_RED;
 
-    TftDisplayManager() : tft(TFT_CS_PIN, TFT_DC_PIN, TFT_MOSI_PIN, TFT_SCLK_PIN, TFT_RST_PIN) {}
+    TftDisplayManager() : tft(TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN) {}
 
     bool begin() {
         SPI.begin(TFT_SCLK_PIN, -1, TFT_MOSI_PIN, TFT_CS_PIN);
@@ -260,6 +268,7 @@ public:
             case 6: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
             case 7: renderNetworkMonitorPage(ipStr, fullRedraw); break;
             case 8: renderSystemHardwarePage(fullRedraw); break;
+            case 9: renderFlappyBirdPage(fullRedraw); break;
         }
     }
 
@@ -359,6 +368,7 @@ private:
             case 6: tft.print("WATCH"); break;
             case 7: tft.print("NETWORK"); break;
             case 8: tft.print("HARDWARE"); break;
+            case 9: tft.print("FLAPPY DESKY"); break;
         }
 
         GfxIconRenderer::drawWifiSignal(tft, 108, 1, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
@@ -696,6 +706,76 @@ private:
         tft.printf("UPTIME:    %lu s", millis() / 1000);
         tft.setCursor(10, 124);
         tft.print("BOARD: ESP32-D0WD");
+    }
+
+    void renderFlappyBirdPage(bool fullRedraw) {
+        if (fullRedraw) {
+            tft.fillScreen(ST77XX_CYAN); // Sky color
+            tft.fillRect(0, 140, 128, 20, ST77XX_GREEN); // Ground
+            gameBirdY = 80.0;
+            gameBirdVelocity = 0.0;
+            gamePipeX = 128;
+            gamePipeGapY = random(20, 80);
+            gameScore = 0;
+            gameIsOver = true; // Wait for input
+            tft.setTextColor(ST77XX_WHITE);
+            tft.setTextSize(2);
+            tft.setCursor(2, 20);
+            tft.print("FLAPPY BIRD");
+            tft.setTextSize(1);
+            tft.setCursor(15, 100);
+            tft.print("Press R to Start");
+        }
+
+        if (gameIsOver) return;
+
+        // Erase old bird
+        tft.fillRect(20, (int)gameBirdY, 10, 10, ST77XX_CYAN);
+
+        // Physics
+        gameBirdVelocity += 0.7; // Gravity
+        gameBirdY += gameBirdVelocity;
+
+        // Pipe movement - erase trailing edge
+        tft.fillRect(gamePipeX + 16, 0, 4, gamePipeGapY, ST77XX_CYAN); // Top erase
+        tft.fillRect(gamePipeX + 16, gamePipeGapY + 40, 4, 140 - (gamePipeGapY + 40), ST77XX_CYAN); // Bottom erase
+
+        gamePipeX -= 4;
+
+        if (gamePipeX < -20) {
+            gamePipeX = 128;
+            gamePipeGapY = random(20, 80);
+            gameScore++;
+            // Draw score
+            tft.fillRect(100, 5, 25, 15, ST77XX_CYAN);
+            tft.setCursor(100, 5);
+            tft.setTextColor(ST77XX_WHITE);
+            tft.print(gameScore);
+        }
+
+        // Draw new pipe
+        tft.fillRect(gamePipeX, 0, 16, gamePipeGapY, ST77XX_GREEN); // Top
+        tft.fillRect(gamePipeX, gamePipeGapY + 40, 16, 140 - (gamePipeGapY + 40), ST77XX_GREEN); // Bottom
+
+        // Draw bird
+        tft.fillRect(20, (int)gameBirdY, 10, 10, ST77XX_YELLOW);
+        tft.drawRect(20, (int)gameBirdY, 10, 10, ST77XX_BLACK);
+
+        // Collision Check
+        if (gameBirdY < 0 || gameBirdY > 130) gameIsOver = true;
+        if ((30 > gamePipeX && 20 < gamePipeX + 16) && (gameBirdY < gamePipeGapY || gameBirdY + 10 > gamePipeGapY + 40)) {
+            gameIsOver = true;
+        }
+
+        if (gameIsOver) {
+            tft.fillRect(14, 50, 100, 40, ST77XX_BLACK);
+            tft.setCursor(20, 55);
+            tft.setTextColor(ST77XX_WHITE);
+            tft.setTextSize(1);
+            tft.print("GAME OVER!");
+            tft.setCursor(20, 75);
+            tft.print("Score: "); tft.print(gameScore);
+        }
     }
 
     void drawWeatherIcon(int x, int y, const String& iconCode) {

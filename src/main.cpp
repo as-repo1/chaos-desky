@@ -209,8 +209,8 @@ void setup() {
     tftMgr.begin();
 
     // Initialize Sensors, Dual Switches & BLE UART Receiver
-    sensorMgr.begin();
     mechSwitch1Mgr.begin(MECH_SWITCH_1_PIN);
+    mechSwitch1Mgr.instantTrigger = true; // 🔥 Left Button triggers INSTANTLY on press (no 350ms delay)
     mechSwitch2Mgr.begin(MECH_SWITCH_2_PIN);
     bleWifiMgr.begin();
 
@@ -293,6 +293,18 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 executeButtonAction(ACT_CYCLE_THEMES);
                 break;
 
+            case 9: // Flappy Bird Mini-Game
+                if (tftMgr.gameIsOver) {
+                    tftMgr.gameIsOver = false;
+                    tftMgr.gameBirdY = 80.0;
+                    tftMgr.gameBirdVelocity = -4.0;
+                    tftMgr.gamePipeX = 128;
+                    tftMgr.gameScore = 0;
+                } else {
+                    tftMgr.gameBirdVelocity = -4.0; // Flap!
+                }
+                break;
+
             default:
                 break;
         }
@@ -315,12 +327,33 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 break;
 
+            case 9: // Flappy Bird Mini-Game (Force Restart)
+                tftMgr.gameIsOver = false;
+                tftMgr.gameBirdY = 80.0;
+                tftMgr.gameBirdVelocity = -4.0;
+                tftMgr.gamePipeX = 128;
+                tftMgr.gameScore = 0;
+                break;
+
             default:
                 executeButtonAction(ACT_JUMP_TODO);
                 break;
         }
     } else if (action == SWITCH_LONG_PRESS) {
-        executeButtonAction(ACT_SCREENSAVER);
+        switch (page) {
+            case 2: // Pomodoro: Reset timer
+                Serial.println("➡️ Right Button Long-Hold [Pomodoro]: Resetting timer");
+                executeButtonAction(ACT_RESET_POMO);
+                break;
+            case 9: // Flappy Bird: Exit game
+                Serial.println("➡️ Right Button Long-Hold [Flappy]: Exiting game");
+                tftMgr.setPage(0);
+                break;
+            default:
+                Serial.println("➡️ Right Button Long-Hold [Global]: Toggling Screensavers");
+                executeButtonAction(ACT_SCREENSAVER);
+                break;
+        }
     }
 }
 
@@ -399,7 +432,9 @@ void loop() {
 
     // 6. Update Displays (Dynamic 45ms Refresh for High-Speed Marquee Ticker)
     uint32_t oledInterval = 500;
-    if (configMgr.config.oledMode == 3) {
+    if (tftMgr.currentPage == 9) {
+        oledInterval = 33; // ~30 FPS for Flappy Bird Mini-Game!
+    } else if (configMgr.config.oledMode == 3) {
         oledInterval = 45; // Fast scrolling speed for Custom Marquee Ticker
     } else if (configMgr.config.oledMode == 4 || notificationMgr.isOledActive()) {
         oledInterval = 75; // Smooth animations for OLED screensavers & notifications

@@ -7,7 +7,7 @@
 ## 🛠️ Key Features & Capabilities
 
 - 🖥️ **Dual Display Command Center**:
-  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 9-page custom carousel display (default 180° rotation) featuring smooth laser-wipe page transitions:
+  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page custom carousel display (default 180° rotation) featuring smooth laser-wipe page transitions:
     1. **Outdoor Weather**: Live temperature, weather icon, condition description, wind speed & humidity from OpenWeatherMap.
     2. **Barometric Pressure Trend & Zambretti Weather Forecaster**: Sparkline graph of air pressure history & local prediction.
     3. **Pomodoro Productivity Work/Break Timer**: Interactive timer with pause/resume state retention and visual countdown ring.
@@ -17,6 +17,7 @@
     7. **Watch Face Studio**: 10 Iconic Watch Faces (Swiss, Cyber, Modern Digital, Nixie, Casio F-91W, Casio G-Shock, Casio CA-53W Calculator, Casio Royale, Seiko Diver, Pulsar LED).
     8. **Network Monitor**: Live WiFi signal analysis, RSSI indicator, MAC address & gateway stats.
     9. **System Hardware & Telemetry Diagnostics**: Deep dive into Free Heap RAM, Flash storage utilization, uptime, and CPU status.
+    10. **Flappy Desky Mini-Game**: Fully playable Flappy Bird clone running natively at ~30 FPS! Jump through pipes and track your high score.
   - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 distinct operational modes:
     0. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
     1. **Multi-Style OLED Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Vertical Stack, Binary Gauges, Cyberpunk Frame, and Radial Horizon Arc!
@@ -28,8 +29,7 @@
 - 🕹️ **Intuitive Dual Mechanical Switch Deck (Left = Nav | Right = Functionality)**:
   - Direct connection to internal ESP32 pullups on **GPIO 25 (Left Key)** and **GPIO 26 (Right Key)** to GND. No external resistors required!
   - **⬅️ Left Button (Navigation Master)**:
-    - **Single Click**: Cycle forward through the 9 TFT pages.
-    - **Double Click**: Cycle backward to the previous page.
+    - **Single Click (Instant Trigger)**: Instantly cycles forward through the 10 TFT pages without any double-click debounce delay.
     - **Long Press**: Instant home jump back to Page 0 (Outdoor Weather).
   - **➡️ Right Button (Page-Specific Functional Action Engine)**:
     - **Page 0 (Weather)**: Single click forces an instant cloud refresh of OpenWeatherMap data.
@@ -41,7 +41,8 @@
     - **Page 6 (Watchface Studio)**: Single click cycles between the 10 iconic watch styles; Double click jumps straight to the Casio F-91W!
     - **Page 7 (Network Monitor)**: Single click broadcasts full WiFi credentials across both screens.
     - **Page 8 (Hardware Stats)**: Single click cycles between the 11 TFT Color Themes!
-    - **Long Press (Anywhere)**: Immediately unleashes the synchronized animated dual screensaver!
+    - **Page 9 (Flappy Desky)**: Single click makes the bird jump; Double click instantly restarts a game over; Long press exits the game entirely!
+    - **Long Press (Global Fallback)**: Immediately unleashes the synchronized animated dual screensaver!
   - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches together to trigger global shortcut macros (configurable in web portal).
 
 - 📡 **BLE Wi-Fi Provisioning & Telemetry**:

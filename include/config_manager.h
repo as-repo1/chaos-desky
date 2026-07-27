@@ -16,7 +16,7 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 0;  // 0 = pause (Manual Navigation Only)
-    uint16_t enabledPagesMask = 0x01FF; // All 9 pages enabled by default (bitmask 0b111111111)
+    uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
 
     int oledMode           = 0;  // 0: HUD, 1: Clock, 2: Sparklines, 3: Marquee Text, 4: Animated Screensavers, 5: WiFi Info
     int oledClockStyle     = 0;  // 0: Digital HUD, 1: Analog Minimal, 2: Cyber Matrix, 3: Retro Flip, 4: Vertical Stack, 5: Binary Segment, 6: Cyberpunk Box, 7: Radial Horizon
@@ -98,7 +98,10 @@ public:
         config.tftTheme        = doc["tftTheme"] | 0;
         config.tftRotation     = doc["tftRotation"] | 2;
         config.carouselSpeedSec= doc["carouselSpeedSec"] | 0;
-        config.enabledPagesMask= doc["enabledPagesMask"] | 0x01FF;
+        config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
+        if ((config.enabledPagesMask & (1 << 9)) == 0) {
+            config.enabledPagesMask |= (1 << 9); // Safety: Auto-enable Page 9 (Flappy Bird) if migrating from 9-page config
+        }
 
         config.oledMode        = doc["oledMode"] | 0;
         config.oledClockStyle  = doc["oledClockStyle"] | 0;

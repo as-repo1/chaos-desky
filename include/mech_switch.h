@@ -21,6 +21,7 @@ public:
     int clickCount = 0;
     bool waitingForDoubleClick = false;
     bool suppressNextAction = false;
+    bool instantTrigger = false; // If true, single click fires instantly on press
     const unsigned long debounceDelay = 35; // 35ms software debounce (no hardware capacitor needed!)
     const unsigned long doubleClickGap = 350; // 350ms window for double click
     const unsigned long longPressTime = 700; // 700ms for long press
@@ -56,16 +57,19 @@ public:
                 // Button PRESSED (LOW because of INPUT_PULLUP to GND)
                 if (buttonState == LOW) {
                     buttonPressTime = currentMs;
+                    if (instantTrigger) {
+                        detectedAction = SWITCH_SINGLE_CLICK;
+                    }
                 } 
                 // Button RELEASED (HIGH)
                 else {
                     unsigned long pressDuration = currentMs - buttonPressTime;
                     
                     if (pressDuration >= longPressTime) {
-                        detectedAction = SWITCH_LONG_PRESS;
+                        if (!instantTrigger) detectedAction = SWITCH_LONG_PRESS;
                         waitingForDoubleClick = false;
                         clickCount = 0;
-                    } else if (pressDuration > 10) {
+                    } else if (pressDuration > 10 && !instantTrigger) {
                         clickCount++;
                         if (clickCount == 1) {
                             waitingForDoubleClick = true;
