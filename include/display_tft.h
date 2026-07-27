@@ -208,6 +208,17 @@ public:
         pageNeedsFullRedraw = true;
     }
 
+    void prevPage() {
+        int prev = (currentPage - 1 + TOTAL_TFT_PAGES) % TOTAL_TFT_PAGES;
+        int safety = 0;
+        while (((enabledPagesMask & (1 << prev)) == 0) && safety < TOTAL_TFT_PAGES) {
+            prev = (prev - 1 + TOTAL_TFT_PAGES) % TOTAL_TFT_PAGES;
+            safety++;
+        }
+        currentPage = prev;
+        pageNeedsFullRedraw = true;
+    }
+
     void setPage(int page) {
         if (page >= 0 && page < TOTAL_TFT_PAGES) {
             currentPage = page;

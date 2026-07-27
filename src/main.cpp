@@ -232,6 +232,108 @@ void setup() {
     Serial.println("🎉 System Initialization Complete!");
 }
 
+void executePageRightButtonAction(int page, SwitchAction action) {
+    if (action == SWITCH_SINGLE_CLICK) {
+        switch (page) {
+            case 0: // Weather Page
+                Serial.println("➡️ Right Button [Weather]: Refreshing weather data...");
+                notificationMgr.trigger("Weather API", "Fetching Latest Weather...", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
+                                        configMgr.config.openWeatherCity, 
+                                        configMgr.config.openWeatherCountry);
+                tftMgr.forceRedraw();
+                break;
+
+            case 1: // Barometer / Pressure Graph Page
+                Serial.println("➡️ Right Button [Barometer]: Logging pressure sample...");
+                sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
+                notificationMgr.trigger("Barometer", "Pressure Logged to Sparkline", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                tftMgr.forceRedraw();
+                break;
+
+            case 2: // Pomodoro Page
+                Serial.println("➡️ Right Button [Pomodoro]: Toggling Timer State");
+                executeButtonAction(ACT_TOGGLE_POMO);
+                tftMgr.forceRedraw();
+                break;
+
+            case 3: // System QR / Info Page
+                Serial.println("➡️ Right Button [System]: Cycling OLED Display Mode");
+                executeButtonAction(ACT_CYCLE_OLED);
+                break;
+
+            case 4: // To-Do List Page
+                Serial.println("➡️ Right Button [To-Do]: Toggling task checkbox");
+                tftMgr.todoChecked[tftMgr.todoSelectedIdx] = !tftMgr.todoChecked[tftMgr.todoSelectedIdx];
+                tftMgr.forceRedraw();
+                {
+                    String msg = tftMgr.todoChecked[tftMgr.todoSelectedIdx] ? "Task Completed!" : "Task Re-Opened!";
+                    notificationMgr.trigger("To-Do Target", msg, NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                }
+                break;
+
+            case 5: // Indoor Climate Page
+                Serial.println("➡️ Right Button [Climate]: Re-reading sensors");
+                sensorMgr.readSensors();
+                notificationMgr.trigger("Sensors", "Telemetry Refreshed!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                tftMgr.forceRedraw();
+                break;
+
+            case 6: // Phone Notes / Log Page
+                Serial.println("➡️ Right Button [Notes/Logs]: Test Notification");
+                notificationMgr.trigger("Desky Test", "Notification System OK!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+                tftMgr.forceRedraw();
+                break;
+
+            case 7: // Watchface Studio Page
+                Serial.println("➡️ Right Button [Watchface]: Cycling Watchface Style");
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
+                notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                tftMgr.forceRedraw();
+                break;
+
+            case 8: // Network Monitor Page
+                Serial.println("➡️ Right Button [Network]: Broadcasting WiFi Info");
+                executeButtonAction(ACT_WIFI_INFO);
+                break;
+
+            case 9: // Warp / Screensaver Page
+                Serial.println("➡️ Right Button [Warp]: Cycling TFT Theme");
+                executeButtonAction(ACT_CYCLE_THEMES);
+                break;
+
+            default:
+                executeButtonAction(configMgr.config.btnRightSingle);
+                break;
+        }
+    } else if (action == SWITCH_DOUBLE_CLICK) {
+        switch (page) {
+            case 2: // Pomodoro: Reset timer
+                Serial.println("➡️ Right Button Double-Click [Pomodoro]: Resetting timer");
+                executeButtonAction(ACT_RESET_POMO);
+                break;
+
+            case 4: // To-Do List: Move focus item
+                tftMgr.todoSelectedIdx = (tftMgr.todoSelectedIdx + 1) % 4;
+                tftMgr.forceRedraw();
+                Serial.printf("➡️ Right Button Double-Click [To-Do]: Moved focus to item %d\n", tftMgr.todoSelectedIdx + 1);
+                break;
+
+            case 7: // Watchface: Switch to Casio F-91W
+                watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
+                tftMgr.forceRedraw();
+                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                break;
+
+            default:
+                executeButtonAction(configMgr.config.btnRightDouble);
+                break;
+        }
+    } else if (action == SWITCH_LONG_PRESS) {
+        executeButtonAction(configMgr.config.btnRightLong);
+    }
+}
+
 void loop() {
     unsigned long currentMs = millis();
 
@@ -251,53 +353,32 @@ void loop() {
     }
 
     // ==============================================================
-    // ⬅️ LEFT KEY (D25) — INTERACTIVE CONTEXT & MACRO STUDIO
+    // ⬅️ LEFT KEY (D25) — CYCLE THROUGH PAGES
     // ==============================================================
     SwitchAction action1 = mechSwitch1Mgr.update();
     if (action1 == SWITCH_SINGLE_CLICK) {
-        // A1: Context-Aware Navigation on interactive screens!
-        if (tftMgr.currentPage == 4) {
-            // On To-Do List: move focus down through items
-            tftMgr.todoSelectedIdx = (tftMgr.todoSelectedIdx + 1) % 4;
-            tftMgr.forceRedraw();
-            Serial.printf("⬅️ Context Control: Moved To-Do focus to item %d\n", tftMgr.todoSelectedIdx + 1);
-        } else if (tftMgr.currentPage == 2) {
-            // On Pomodoro: toggle work/pause
-            executeButtonAction(ACT_TOGGLE_POMO);
-        } else {
-            // Execute Web-Configurable Single Click Macro
-            executeButtonAction(configMgr.config.btnLeftSingle);
-        }
+        // Single Click: Cycle forward through TFT pages
+        tftMgr.nextPage();
+        lastCarouselMs = millis();
+        Serial.printf("⬅️ Left Button Single-Click: Cycled to TFT Page %d\n", tftMgr.currentPage);
     } else if (action1 == SWITCH_DOUBLE_CLICK) {
-        executeButtonAction(configMgr.config.btnLeftDouble);
+        // Double Click: Cycle backward through TFT pages
+        tftMgr.prevPage();
+        lastCarouselMs = millis();
+        Serial.printf("⬅️ Left Button Double-Click: Cycled back to TFT Page %d\n", tftMgr.currentPage);
     } else if (action1 == SWITCH_LONG_PRESS) {
-        executeButtonAction(configMgr.config.btnLeftLong);
+        // Long Press: Jump to Page 0 (Home / Weather)
+        tftMgr.setPage(0);
+        lastCarouselMs = millis();
+        Serial.println("⬅️ Left Button Long-Press: Jumped to Page 0 (Home)");
     }
 
     // ==============================================================
-    // ➡️ RIGHT KEY (D26) — INTERACTIVE ACTION & MACRO STUDIO
+    // ➡️ RIGHT KEY (D26) — PAGE-SPECIFIC FUNCTIONALITY
     // ==============================================================
     SwitchAction action2 = mechSwitch2Mgr.update();
-    if (action2 == SWITCH_SINGLE_CLICK) {
-        // A1: Context-Aware Action on interactive screens!
-        if (tftMgr.currentPage == 4) {
-            // On To-Do List: Toggle check mark of selected task!
-            tftMgr.todoChecked[tftMgr.todoSelectedIdx] = !tftMgr.todoChecked[tftMgr.todoSelectedIdx];
-            tftMgr.forceRedraw();
-            String msg = tftMgr.todoChecked[tftMgr.todoSelectedIdx] ? "Task Completed!" : "Task Re-Opened!";
-            notificationMgr.trigger("To-Do Target", msg, NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
-            Serial.println("➡️ Context Control: Toggled To-Do item checkbox!");
-        } else if (tftMgr.currentPage == 2) {
-            // On Pomodoro: Reset timer
-            executeButtonAction(ACT_RESET_POMO);
-        } else {
-            // Execute Web-Configurable Single Click Macro
-            executeButtonAction(configMgr.config.btnRightSingle);
-        }
-    } else if (action2 == SWITCH_DOUBLE_CLICK) {
-        executeButtonAction(configMgr.config.btnRightDouble);
-    } else if (action2 == SWITCH_LONG_PRESS) {
-        executeButtonAction(configMgr.config.btnRightLong);
+    if (action2 != SWITCH_NO_ACTION) {
+        executePageRightButtonAction(tftMgr.currentPage, action2);
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
