@@ -49,8 +49,11 @@ private:
                            uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         
         int cx = 64;
-        int cy = 74;
-        int r = 46;
+        int cy = 72;
+        int r = 44;
+
+        // Clear dial area inside bezel to erase previous hands
+        gfx.fillCircle(cx, cy, r - 1, colorBg);
 
         // Double Outer Bezel
         gfx.drawCircle(cx, cy, r + 2, colorPrimary);
@@ -104,8 +107,8 @@ private:
         gfx.fillCircle(cx, cy, 3, colorAccent);
 
         // Weather Complication Badge below dial
-        gfx.drawRoundRect(14, 130, 100, 18, 4, colorAccent);
-        gfx.setCursor(20, 135);
+        gfx.drawRoundRect(14, 124, 100, 18, 4, colorAccent);
+        gfx.setCursor(22, 129);
         gfx.printf("%.1fC | %s", w.valid ? w.tempC : tempC, w.cityName.substring(0, 8).c_str());
     }
 
@@ -126,9 +129,10 @@ private:
 
         // Sub-Dial Mini Analog Clock
         int cx = 64;
-        int cy = 82;
-        int r = 32;
+        int cy = 80;
+        int r = 30;
 
+        gfx.fillCircle(cx, cy, r - 2, colorBg);
         gfx.drawCircle(cx, cy, r, colorPrimary);
         gfx.drawCircle(cx, cy, r - 1, colorPrimary);
 
