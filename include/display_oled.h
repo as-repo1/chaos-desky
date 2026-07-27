@@ -76,9 +76,8 @@ public:
                 case 1: drawMode1_BigClock(timeStr, ipStr, sm.data, clockStyle); break;
                 case 2: drawMode2_Sparklines(sm); break;
                 case 3: drawMode3_Marquee(customText); break;
-                case 4: drawMode4_CustomImage(); break;
-                case 5: screensaverEngine.renderOledScreensaver(oled); break;
-                case 6: drawMode6_WifiInfo(ipStr, AP_SSID, AP_PASS); break;
+                case 4: screensaverEngine.renderOledScreensaver(oled); break;
+                case 5: drawMode5_WifiInfo(ipStr, AP_SSID, AP_PASS); break;
                 default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
             }
         }
@@ -157,7 +156,7 @@ private:
         oled.drawFastHLine(0, 39, 128, SSD1306_WHITE);
 
         oled.setCursor(2, 42);
-        oled.printf("HI:%.1fC  DEW:%.1fC", s.heatIndexC, s.dewPointC);
+        oled.printf("HI:%.1fC   DEW:%.1fC", s.heatIndexC, s.dewPointC);
         oled.setCursor(2, 54);
         oled.printf("IP: %s", ipStr.c_str());
     }
@@ -482,30 +481,8 @@ private:
         oled.print("CHAOSDESKY DESK HUB");
     }
 
-    void drawMode4_CustomImage() {
-        // Mode 4: Retro Cyber Radar Graphic
-        oled.drawCircle(64, 32, 28, SSD1306_WHITE);
-        oled.drawCircle(64, 32, 18, SSD1306_WHITE);
-        oled.drawCircle(64, 32, 8, SSD1306_WHITE);
-        oled.drawLine(36, 32, 92, 32, SSD1306_WHITE);
-        oled.drawLine(64, 4, 64, 60, SSD1306_WHITE);
-
-        // Blinking / Rotating Target
-        int sec = millis() / 500;
-        int tx = 64 + (int)(cos(sec * 0.7f) * 20);
-        int ty = 32 + (int)(sin(sec * 0.7f) * 20);
-        oled.fillCircle(tx, ty, 3, SSD1306_WHITE);
-
-        oled.setTextColor(SSD1306_WHITE);
-        oled.setTextSize(1);
-        oled.setCursor(4, 4);
-        oled.print("RADAR");
-        oled.setCursor(96, 4);
-        oled.print("ACTIVE");
-    }
-
-    void drawMode6_WifiInfo(const String& ipStr, const String& ssid, const String& pass) {
-        // Mode 6: WiFi Credentials & IP Broadcast Dashboard
+    void drawMode5_WifiInfo(const String& ipStr, const String& ssid, const String& pass) {
+        // Mode 5: WiFi Credentials & IP Broadcast Dashboard
         oled.fillRoundRect(0, 0, 128, 14, 2, SSD1306_WHITE);
         oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
         oled.setTextSize(1);

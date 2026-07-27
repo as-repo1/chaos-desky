@@ -89,10 +89,10 @@ async function savePomodoroConfig() {
     showToast(`Pomodoro Timer updated: ${w}m Work / ${b}m Rest`);
 }
 
-// Save 10-Page Enabled Carousel Bitmask
+// Save 9-Page Enabled Carousel Bitmask
 async function savePageMask() {
     let mask = 0;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 9; i++) {
         const chk = document.getElementById(`chk-page-${i}`);
         if (chk && chk.checked) {
             mask |= (1 << i);
@@ -168,22 +168,6 @@ async function sendNotificationPopup() {
     showToast("Live Notification Pushed to Display!");
 }
 
-// Simulate Smartwatch Phone Call Notification
-async function simulatePhoneNotif() {
-    const formData = new URLSearchParams();
-    formData.append('sender', 'John (iPhone Call)');
-    formData.append('text', 'Incoming Call - Swipe or Answer');
-    formData.append('category', '2'); // NOTIF_CALL
-
-    await fetch('/api/ancs/simulate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-    });
-
-    showToast("Phone Call Notification Pushed!");
-}
-
 
 
 // Save Configuration
@@ -206,45 +190,6 @@ async function saveConfig(e) {
 
     showToast("Location & API Settings Saved!");
     updateWeather();
-}
-
-// Fetch BLE Radar API
-async function updateBleRadar() {
-    try {
-        const res = await fetch('/api/ble/radar');
-        if (res.ok) {
-            const data = await res.json();
-            const stateNames = ["AWAY", "NEAR DESK", "IMMEDIATE"];
-            const stateEl = document.getElementById('ble-state-val');
-            stateEl.innerText = stateNames[data.state] || "SEARCHING";
-
-            if (data.state === 1 || data.state === 2) {
-                stateEl.style.color = "#34d399";
-            } else {
-                stateEl.style.color = "#94a3b8";
-            }
-
-            document.getElementById('ble-rssi-val').innerText = `${data.rssi} dBm`;
-        }
-    } catch (e) {
-        console.error("BLE API error:", e);
-    }
-}
-
-function setBleThreshold(val) {
-    document.getElementById('ble-thresh-label').innerText = `${val} dBm`;
-}
-
-async function saveBleConfig() {
-    const thresh = document.getElementById('ble-thresh-slider').value;
-    const formData = new URLSearchParams();
-    formData.append('threshold', thresh);
-    await fetch('/api/ble/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-    });
-    showToast("BLE Proximity Threshold Saved!");
 }
 
 // Tab Navigation Switcher
@@ -274,57 +219,11 @@ async function setWatchface(style) {
 setInterval(updateSensors, 2000);
 setInterval(updateWeather, 10000);
 setInterval(updatePomodoro, 1000);
-setInterval(updateBleRadar, 2000);
 
 // Initial Load
 updateSensors();
 updateWeather();
 updatePomodoro();
-updateBleRadar();
-
-// Load Mechanical Button & Macro Studio Settings
-async function loadMacroDeck() {
-    try {
-        const res = await fetch('/api/buttons/config');
-        if (res.ok) {
-            const cfg = await res.json();
-            if (document.getElementById('btn-left-single')) document.getElementById('btn-left-single').value = cfg.btnLeftSingle ?? 2;
-            if (document.getElementById('btn-left-double')) document.getElementById('btn-left-double').value = cfg.btnLeftDouble ?? 4;
-            if (document.getElementById('btn-left-long'))   document.getElementById('btn-left-long').value   = cfg.btnLeftLong ?? 3;
-            if (document.getElementById('btn-right-single')) document.getElementById('btn-right-single').value = cfg.btnRightSingle ?? 1;
-            if (document.getElementById('btn-right-double')) document.getElementById('btn-right-double').value = cfg.btnRightDouble ?? 5;
-            if (document.getElementById('btn-right-long'))   document.getElementById('btn-right-long').value   = cfg.btnRightLong ?? 6;
-            if (document.getElementById('btn-combo'))        document.getElementById('btn-combo').value        = cfg.btnCombo ?? 7;
-        }
-    } catch (e) {
-        console.warn("Could not load macro deck configuration:", e);
-    }
-}
-
-// Save Mechanical Button & Macro Studio Settings
-async function saveMacroDeck() {
-    const p = new URLSearchParams();
-    p.append('btnLeftSingle', document.getElementById('btn-left-single').value);
-    p.append('btnLeftDouble', document.getElementById('btn-left-double').value);
-    p.append('btnLeftLong',   document.getElementById('btn-left-long').value);
-    p.append('btnRightSingle', document.getElementById('btn-right-single').value);
-    p.append('btnRightDouble', document.getElementById('btn-right-double').value);
-    p.append('btnRightLong',   document.getElementById('btn-right-long').value);
-    p.append('btnCombo',        document.getElementById('btn-combo').value);
-
-    try {
-        const res = await fetch('/api/buttons/config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: p.toString()
-        });
-        if (res.ok) {
-            showToast("🕹️ Mechanical Macro Deck Saved to LittleFS!");
-        }
-    } catch (e) {
-        showToast("Error saving macro deck!");
-    }
-}
 
 async function loadNotifTargetPref() {
     try {
@@ -352,6 +251,5 @@ async function saveNotifTargetPref() {
     }
 }
 
-loadMacroDeck();
 loadNotifTargetPref();
 

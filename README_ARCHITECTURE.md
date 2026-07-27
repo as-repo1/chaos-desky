@@ -19,12 +19,12 @@ To ensure silky-smooth high-frequency display animations and zero flickering whi
 +-----------------------------------+               +-----------------------------------+
 | CORE 0: Network & Web API         |               | CORE 1: Hardware & Display Engine |
 +-----------------------------------+               +-----------------------------------+
-| • WiFi Connection Watchdog        |               | • Dual Mechanical Macro Dispatch  |
+| • WiFi Connection Watchdog        |               | • Dual Mechanical Switch Engine   |
 | • OpenWeather API Async Client    |               | • Simultaneous Combo Detector     |
-| • NTP Time Synchronization        |               | • DHT11 & BMP180/280 Read Loop    |
+| • NTP Time Synchronization        |               | • DHT11 & BMP180 Read Loop        |
 | • LittleFS Async Web Server API   |               | • OLED 45ms High-Speed Marquee    |
-| • Nordic BLE UART Server          |               | • TFT ST7735 10-Page Carousel     |
-+-----------------------------------+               | • Context-Aware Button Router     |
+| • BLE Wi-Fi Provisioning Server   |               | • TFT ST7735 9-Page Carousel      |
++-----------------------------------+               | • Dedicated Nav / Action Router   |
                                                     +-----------------------------------+
 ```
 
@@ -47,11 +47,15 @@ graph TD
     SINGLE_MGR --> LONG_EVT["Long Hold Action (>700ms Toggle / Reset)"]
 ```
 
-### Smart Context-Aware Routing (`executeButtonAction`)
-When a Single Click event occurs, the system examines `tftMgr.currentPage`:
-- **Standard Navigation (Pages 0–3, 6–9)**: Executes configured user macros (Default: Left Single Click cycles TFT screens, Right Single Click cycles OLED display modes, Left Double Click opens To-Do Dashboard, Right Double Click opens Watchface Studio).
-- **Interactive To-Do List (Page 5, Index 4)**: Clicks effortlessly hijack navigation to become **Task Selectors** (highlighting items down the board) and **Checkoff Switches** (marking items DONE in persistent LittleFS).
-- **Pomodoro Action Screen (Page 3, Index 2)**: Automatically translates clicks into Start/Pause toggle triggers and Long Holds into timer reset commands.
+### Dedicated Dual-Key Separation of Duties (`executePageRightButtonAction`)
+To eliminate ambiguous UX and maximize memory efficiency by pruning complex macro mappings, responsibilities are cleanly divided:
+- **Left Button (D25) — Dedicated Page Navigator**: Single Clicks cycle forward through the 9 TFT pages; Double Clicks cycle backward; Long Hold instantly returns to Page 0 (Outdoor Weather Home).
+- **Right Button (D26) — Page-Specific Functional Processor**: When tapped, it queries `tftMgr.currentPage` and dispatches the ideal contextual command:
+  - **Pomodoro Action Screen (Page 2)**: Toggles Start/Pause on single click; Resets timer on double click.
+  - **Interactive To-Do Board (Page 4)**: Single clicks Check/Uncheck the active task in persistent memory; Double clicks move focus down the list.
+  - **Watchface Studio (Page 6)**: Single clicks cycle through the 10 watch styles; Double clicks select the iconic Casio F-91W.
+  - **Weather (Page 0) & Climate (Page 5)**: Forces immediate live sampling and cloud weather API updates!
+  - **System QR (Page 3) & Hardware (Page 8)**: Cycles OLED modes and TFT Color Themes respectively!
 
 ---
 
@@ -59,9 +63,9 @@ When a Single Click event occurs, the system examines `tftMgr.currentPage`:
 
 | Memory Region | Allocation | Used / Capacity | Percentage | Utilization Notes |
 | :--- | :---: | :---: | :---: | :--- |
-| **DRAM (SRAM)** | Static / Heap | `62.5 KB / 327.6 KB` | **19.1%** | Dynamic JsonDocument buffers, rolling sensor arrays, QR Code rendering matrix |
-| **Flash Memory** | Code + LittleFS | `1.93 MB / 1.96 MB` | **98.3%** | 10 iconic TFT watch faces, 8 OLED clock faces, BLE stack, AsyncWebServer |
-| **LittleFS System** | Filesystem | `18.2 KB / 1.44 MB` | **1.2%** | `index.html`, `style.css`, `app.js` web interface & persistent macro configuration |
+| **DRAM (SRAM)** | Static / Heap | `62.1 KB / 327.6 KB` | **19.0%** | Dynamic JsonDocument buffers, rolling sensor arrays, QR Code rendering matrix |
+| **Flash Memory** | Code + LittleFS | `1.92 MB / 1.96 MB` | **98.1%** | 10 iconic TFT watch faces, 8 OLED clock faces, BLE WiFi stack, AsyncWebServer |
+| **LittleFS System** | Filesystem | `18.2 KB / 1.44 MB` | **1.2%** | `index.html`, `style.css`, `app.js` web interface & persistent configuration |
 
 ---
 
@@ -126,21 +130,23 @@ stateDiagram-v2
 ```
 ├── include/
 │   ├── config.h                # Pins, WiFi, OpenWeather API, NTP, Theme definitions
-│   ├── config_manager.h        # LittleFS JSON config persistence, button macro deck & feature toggles
+│   ├── config_manager.h        # LittleFS JSON config persistence & feature toggles
 │   ├── display_oled.h          # OLED SSD1306 engine featuring 8 iconic clock faces & fast 45ms marquee
-│   ├── display_tft.h           # TFT ST7735 128x160 10-page static/carousel engine
+│   ├── display_tft.h           # TFT ST7735 128x160 9-page static/carousel engine
+│   ├── gfx_icons.h             # Vector and bitmap drawing icons for system alerts and hardware
 │   ├── watchface_engine.h      # 10 Iconic TFT watch faces (Swiss, Nixie, Casio F91, G-Shock, Pulsar)
+│   ├── screensaver.h           # Animated OLED screensavers (Matrix, DVD, Tunnel, DNA, Batman, Tux)
 │   ├── mech_switch.h           # Dual mechanical switch debounce & simultaneous combo detector (D25/D26)
-│   ├── ble_uart_server.h       # Nordic BLE UART receiver & PC telemetry streaming parser
-│   ├── sensors.h               # DHT11 & BMP180/280 non-blocking drivers
+│   ├── ble_wifi_provision.h    # Nordic BLE UART server for seamless Wi-Fi credential provisioning
+│   ├── sensors.h               # DHT11 & BMP180 non-blocking hardware sensor drivers
 │   ├── zambretti.h             # Barometric weather forecasting engine
 │   ├── weather_api.h           # OpenWeatherMap Async JSON API client
-│   ├── pomodoro.h              # Focus timer state machine logic
-│   └── web_server.h            # Async Web Server & REST API handlers (/api/buttons/config, /api/notify/target, /api/tft/todo)
+│   ├── pomodoro.h              # Focus timer state machine logic with pause state retention
+│   └── web_server.h            # Async Web Server & REST API handlers
 ├── src/
-│   └── main.cpp                # System initialization, dual-switch logic, macro dispatcher & event loops
+│   └── main.cpp                # System initialization, Left Nav / Right Action dispatch & event loops
 └── data/                       # LittleFS Storage
-    ├── index.html              # Ultra-premium Dark Glass web dashboard with interactive Macro Studio
-    ├── style.css               # Responsive styling, custom switch cards & aesthetic sliders
-    └── app.js                  # Asynchronous REST API fetcher, Macro deck synchronizer & UI logic
+    ├── index.html              # Ultra-premium Dark Glass web dashboard
+    ├── style.css               # Responsive styling, custom cards & aesthetic sliders
+    └── app.js                  # Asynchronous REST API fetcher & UI sync logic
 ```

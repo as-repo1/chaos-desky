@@ -64,7 +64,7 @@
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
 #define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only!)
-#define TOTAL_TFT_PAGES       10    // 10 Total TFT Carousel Pages
+#define TOTAL_TFT_PAGES       9     // 9 Total TFT Carousel Pages
 #define TOTAL_THEMES          11    // 11 Themes Supported
 
 // Pressure Trend History Buffer

@@ -4,27 +4,7 @@
 #include <Arduino.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-
-struct Star3D {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-};
-
-struct Particle2D {
-    int16_t x = 0;
-    int16_t y = 0;
-    int8_t speedY = 1;
-};
-
-// RGB565 Color Constants for Screensaver
-#ifndef ST77XX_CYAN
-#define ST77XX_CYAN    0x07FF
-#define ST77XX_MAGENTA 0xF81F
-#define ST77XX_YELLOW  0xFFE0
-#define ST77XX_GREEN   0x07E0
-#define ST77XX_WHITE   0xFFFF
-#endif
+#include <math.h>
 
 class ScreensaverEngine {
 public:
@@ -33,135 +13,37 @@ public:
     int bounceY = 30;
     int bounceDx = 2;
     int bounceDy = 2;
+    int oledSaverMode = 0;  // 0: Matrix, 1: DVD, 2: Tunnel, 3: DNA Helix, 4: Batman Signal, 5: Linux Tux
 
-    Star3D stars[30];
-    Particle2D hearts[4];
-
-    int tftSaverMode = 0;   // 0: Cosmic Warp, 1: Matrix Rain, 2: Synthwave, 3: DVD Bounce
-    int oledSaverMode = 0;  // 0: Cyber Cat, 1: Matrix Rain, 2: DVD Bounce, 3: 3D Tunnel
-
-    // Matrix Rain Stream state
+    // Matrix Rain State
     int matrixY[10];
     int matrixSpeed[10];
-    uint16_t dvdColor = ST77XX_CYAN;
 
     ScreensaverEngine() {
-        for (int i = 0; i < 30; i++) {
-            resetStar(i);
-        }
-        for (int i = 0; i < 4; i++) {
-            hearts[i].x = 20 + (i * 25);
-            hearts[i].y = 50 + (i * 12);
-            hearts[i].speedY = 1 + (i % 2);
-        }
         for (int i = 0; i < 10; i++) {
             matrixY[i] = random(-40, 0);
             matrixSpeed[i] = random(2, 5);
         }
     }
 
-    void resetStar(int i) {
-        stars[i].x = random(-60, 60);
-        stars[i].y = random(-70, 70);
-        stars[i].z = random(20, 100);
-    }
-
-    // Master render caller for TFT screensaver page
-    void renderTftScreensaver(Adafruit_GFX& gfx, uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
-        // Auto-switch sub-mode every 300 frames (~15 seconds)
-        if (animFrame % 300 == 0) {
-            tftSaverMode = (tftSaverMode + 1) % 4;
-        }
-
-        switch (tftSaverMode) {
-            case 0: renderTftCosmicWarp(gfx, colorPrimary, colorAccent, colorText, colorBg); break;
-            case 1: renderTftMatrixRain(gfx, colorPrimary, colorBg); break;
-            case 2: renderTftSynthwaveGrid(gfx, colorPrimary, colorAccent, colorText, colorBg); break;
-            case 3: renderTftDvdLogo(gfx, colorBg); break;
-            default: renderTftCosmicWarp(gfx, colorPrimary, colorAccent, colorText, colorBg); break;
-        }
-    }
-
-    // Master render caller for OLED screensaver mode
     void renderOledScreensaver(Adafruit_SSD1306& oled) {
-        if (animFrame % 300 == 0) {
-            oledSaverMode = (oledSaverMode + 1) % 4;
+        if (animFrame % 250 == 0 && animFrame > 0) {
+            oledSaverMode = (oledSaverMode + 1) % 6;
         }
 
         switch (oledSaverMode) {
-            case 0: renderOledCatMascot(oled); break;
-            case 1: renderOledMatrixRain(oled); break;
-            case 2: renderOledDvdBounce(oled); break;
-            case 3: renderOled3DTunnel(oled); break;
-            default: renderOledCatMascot(oled); break;
+            case 0: renderOledMatrixRain(oled); break;
+            case 1: renderOledDvdBounce(oled); break;
+            case 2: renderOled3DTunnel(oled); break;
+            case 3: renderOledDnaHelix(oled); break;
+            case 4: renderOledBatmanSignal(oled); break;
+            case 5: renderOledLinuxTux(oled); break;
+            default: renderOledMatrixRain(oled); break;
         }
     }
 
-    // --- Render OLED Cute Cyber Cat Mascot (128x64) ---
-    void renderOledCatMascot(Adafruit_SSD1306& oled) {
-        oled.clearDisplay();
-
-        // 1. Draw Floating Particles (Hearts/Stars)
-        for (int i = 0; i < 4; i++) {
-            hearts[i].y -= hearts[i].speedY;
-            if (hearts[i].y < 4) {
-                hearts[i].y = 58;
-                hearts[i].x = random(10, 118);
-            }
-            int hx = hearts[i].x;
-            int hy = hearts[i].y;
-            oled.drawPixel(hx, hy, SSD1306_WHITE);
-            oled.drawPixel(hx + 2, hy, SSD1306_WHITE);
-            oled.drawPixel(hx + 1, hy + 1, SSD1306_WHITE);
-        }
-
-        // 2. Draw Cute Cat Head Silhouette
-        int cx = 64;
-        int cy = 34;
-
-        // Ears
-        oled.fillTriangle(cx - 18, cy - 10, cx - 28, cy - 24, cx - 10, cy - 16, SSD1306_WHITE);
-        oled.fillTriangle(cx + 18, cy - 10, cx + 28, cy - 24, cx + 10, cy - 16, SSD1306_WHITE);
-
-        // Head Round Rect
-        oled.fillRoundRect(cx - 24, cy - 14, 48, 28, 8, SSD1306_WHITE);
-
-        // Face Expressions (Frame switching)
-        int subFrame = (animFrame / 4) % 3;
-        
-        if (subFrame == 0) { // Happy ^ _ ^
-            oled.fillCircle(cx - 10, cy - 2, 4, SSD1306_BLACK);
-            oled.fillCircle(cx + 10, cy - 2, 4, SSD1306_BLACK);
-            oled.fillCircle(cx - 10, cy - 3, 2, SSD1306_WHITE);
-            oled.fillCircle(cx + 10, cy - 3, 2, SSD1306_WHITE);
-        } else if (subFrame == 1) { // Sleepy - _ -
-            oled.drawFastHLine(cx - 14, cy - 2, 8, SSD1306_BLACK);
-            oled.drawFastHLine(cx + 6, cy - 2, 8, SSD1306_BLACK);
-        } else { // Cute Wink ^ _ ~
-            oled.fillCircle(cx - 10, cy - 2, 4, SSD1306_BLACK);
-            oled.fillCircle(cx - 10, cy - 3, 2, SSD1306_WHITE);
-            oled.drawFastHLine(cx + 6, cy - 2, 8, SSD1306_BLACK);
-        }
-
-        // Cute Nose & Whiskers
-        oled.fillTriangle(cx - 2, cy + 3, cx + 2, cy + 3, cx, cy + 5, SSD1306_BLACK);
-        oled.drawFastHLine(cx - 20, cy + 2, 6, SSD1306_BLACK);
-        oled.drawFastHLine(cx - 20, cy + 6, 6, SSD1306_BLACK);
-        oled.drawFastHLine(cx + 14, cy + 2, 6, SSD1306_BLACK);
-        oled.drawFastHLine(cx + 14, cy + 6, 6, SSD1306_BLACK);
-
-        // Tail Wiggle
-        int tailOffset = (animFrame % 2 == 0) ? -3 : 3;
-        oled.drawLine(cx + 24, cy + 10, cx + 34 + tailOffset, cy + 18, SSD1306_WHITE);
-
-        // Status Text
-        oled.setCursor(18, 54);
-        oled.print("~ MEOW DESKY ~");
-
-        animFrame++;
-    }
-
-    // --- OLED Screensaver 2: Matrix Code Rain (128x64) ---
+private:
+    // --- OLED Screensaver 0: Matrix Code Rain ---
     void renderOledMatrixRain(Adafruit_SSD1306& oled) {
         oled.clearDisplay();
         oled.setTextSize(1);
@@ -175,22 +57,19 @@ public:
                 matrixSpeed[i] = random(2, 5);
             }
 
-            // Draw stream head
             oled.setCursor(x, matrixY[i]);
             char c = (char)random(33, 126);
             oled.print(c);
-
-            // Trail line
             oled.drawFastVLine(x + 3, max(0, matrixY[i] - 16), 12, SSD1306_WHITE);
         }
 
-        oled.drawFastHLine(0, 60, 128, SSD1306_WHITE);
-        oled.setCursor(20, 52);
-        oled.print("MATRIX CODE OLED");
+        oled.drawFastHLine(0, 58, 128, SSD1306_WHITE);
+        oled.setCursor(16, 52);
+        oled.print("MATRIX CODE RAIN");
         animFrame++;
     }
 
-    // --- OLED Screensaver 3: DVD Bouncing Logo (128x64) ---
+    // --- OLED Screensaver 1: DVD Bouncing Logo ---
     void renderOledDvdBounce(Adafruit_SSD1306& oled) {
         oled.clearDisplay();
 
@@ -209,7 +88,7 @@ public:
         animFrame++;
     }
 
-    // --- OLED Screensaver 4: 3D Tunnel Zoom (128x64) ---
+    // --- OLED Screensaver 2: 3D Tunnel Zoom ---
     void renderOled3DTunnel(Adafruit_SSD1306& oled) {
         oled.clearDisplay();
         int cx = 64;
@@ -226,148 +105,106 @@ public:
         oled.setTextSize(1);
         oled.setCursor(32, 28);
         oled.print("WARP TUNNEL");
-
         animFrame++;
     }
 
-    // --- TFT Screensaver 1: 3D Cosmic Warp (128x160) ---
-    void renderTftCosmicWarp(Adafruit_GFX& gfx, uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
-        gfx.fillScreen(colorBg);
+    // --- OLED Screensaver 3: DNA Double Helix ---
+    void renderOledDnaHelix(Adafruit_SSD1306& oled) {
+        oled.clearDisplay();
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(22, 2);
+        oled.print("DNA DOUBLE HELIX");
+        oled.drawFastHLine(0, 12, 128, SSD1306_WHITE);
 
-        int centerX = 64;
-        int centerY = 80;
+        float phase = animFrame * 0.15f;
+        for (int x = 10; x < 118; x += 6) {
+            float angle = phase + (x * 0.08f);
+            int y1 = 36 + (int)(sin(angle) * 16.0f);
+            int y2 = 36 - (int)(sin(angle) * 16.0f);
 
-        for (int i = 0; i < 30; i++) {
-            float prevZ = stars[i].z;
-            stars[i].z -= 4.0f;
-            if (stars[i].z <= 2.0f) {
-                resetStar(i);
-                continue;
+            // Connect rungs every 12 pixels when strings are apart
+            if (x % 12 == 0) {
+                oled.drawLine(x, y1, x, y2, SSD1306_WHITE);
             }
-
-            int prevX = centerX + (int)((stars[i].x / prevZ) * 40.0f);
-            int prevY = centerY + (int)((stars[i].y / prevZ) * 40.0f);
-            int sx = centerX + (int)((stars[i].x / stars[i].z) * 40.0f);
-            int sy = centerY + (int)((stars[i].y / stars[i].z) * 40.0f);
-
-            if (sx >= 0 && sx < 128 && sy >= 18 && sy < 146) {
-                gfx.drawLine(prevX, prevY, sx, sy, colorPrimary);
-            }
+            oled.fillCircle(x, y1, 2, SSD1306_WHITE);
+            oled.drawCircle(x, y2, 2, SSD1306_WHITE);
         }
-
-        int px = 64;
-        int py = 70;
-        gfx.fillCircle(px, py, 14, colorAccent);
-        gfx.drawCircle(px, py, 14, colorPrimary);
-        gfx.drawFastHLine(px - 22, py, 44, colorPrimary);
-        gfx.drawFastHLine(px - 18, py - 1, 36, colorAccent);
-
-        float angle = (animFrame * 0.15f);
-        int mx = px + (int)(cos(angle) * 26.0f);
-        int my = py + (int)(sin(angle) * 8.0f);
-        gfx.fillCircle(mx, my, 4, colorText);
-
-        bounceX += bounceDx;
-        bounceY += bounceDy;
-
-        if (bounceX <= 4 || bounceX >= 68) bounceDx = -bounceDx;
-        if (bounceY <= 22 || bounceY >= 135) bounceDy = -bounceDy;
-
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(1);
-        gfx.setCursor(bounceX, bounceY);
-        gfx.print("CHAOS");
-
         animFrame++;
     }
 
-    // --- TFT Screensaver 2: Matrix Code Rain (128x160) ---
-    void renderTftMatrixRain(Adafruit_GFX& gfx, uint16_t colorPrimary, uint16_t colorBg) {
-        gfx.fillScreen(colorBg);
-        gfx.setTextSize(1);
+    // --- OLED Screensaver 4: Batman Signal Searchlight ---
+    void renderOledBatmanSignal(Adafruit_SSD1306& oled) {
+        oled.clearDisplay();
+        int cx = 64, cy = 28;
 
-        for (int i = 0; i < 10; i++) {
-            int x = i * 12 + 6;
-            matrixY[i] += matrixSpeed[i];
-            if (matrixY[i] > 140) {
-                matrixY[i] = random(-30, 0);
-                matrixSpeed[i] = random(3, 6);
-            }
+        // Pulsing searchlight oval beam
+        int radiusX = 46 + (int)(sin(animFrame * 0.12f) * 4.0f);
+        int radiusY = 22 + (int)(sin(animFrame * 0.12f) * 2.0f);
+        oled.fillRoundRect(cx - radiusX, cy - radiusY, radiusX * 2, radiusY * 2, radiusY, SSD1306_WHITE);
 
-            // Head char
-            gfx.setTextColor(ST77XX_WHITE, colorBg);
-            gfx.setCursor(x, matrixY[i]);
-            gfx.print((char)random(33, 126));
+        // Bat symbol cutout (Black inside white beam)
+        oled.fillRoundRect(cx - 30, cy - 8, 60, 16, 6, SSD1306_BLACK);
+        
+        // Bat wings scalloped cutouts from bottom
+        oled.fillCircle(cx - 16, cy + 10, 8, SSD1306_WHITE);
+        oled.fillCircle(cx, cy + 12, 7, SSD1306_WHITE);
+        oled.fillCircle(cx + 16, cy + 10, 8, SSD1306_WHITE);
 
-            // Tail
-            gfx.drawFastVLine(x + 3, max(18, matrixY[i] - 24), 20, colorPrimary);
-        }
+        // Bat head and ears
+        oled.fillTriangle(cx - 5, cy - 8, cx - 4, cy - 14, cx - 1, cy - 8, SSD1306_BLACK);
+        oled.fillTriangle(cx + 5, cy - 8, cx + 4, cy - 14, cx + 1, cy - 8, SSD1306_BLACK);
+        oled.fillCircle(cx, cy - 8, 4, SSD1306_BLACK);
+        // Cutout space between ears
+        oled.fillTriangle(cx - 2, cy - 14, cx + 2, cy - 14, cx, cy - 9, SSD1306_WHITE);
 
-        gfx.drawFastHLine(0, 142, 128, colorPrimary);
-        gfx.setTextColor(colorPrimary, colorBg);
-        gfx.setCursor(14, 146);
-        gfx.print("MATRIX CODE RAIN");
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(18, 55);
+        oled.print("~ THE DARK KNIGHT ~");
         animFrame++;
     }
 
-    // --- TFT Screensaver 3: Synthwave Retro Horizon (128x160) ---
-    void renderTftSynthwaveGrid(Adafruit_GFX& gfx, uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
-        gfx.fillScreen(colorBg);
+    // --- OLED Screensaver 5: Linux Tux Mascot ---
+    void renderOledLinuxTux(Adafruit_SSD1306& oled) {
+        oled.clearDisplay();
+        int cx = 64, cy = 28;
 
-        // Synthwave Sun on horizon
-        int sunY = 74;
-        gfx.fillCircle(64, sunY, 18, colorAccent);
-        gfx.drawFastHLine(44, sunY - 4, 40, colorBg);
-        gfx.drawFastHLine(42, sunY, 44, colorBg);
-        gfx.drawFastHLine(44, sunY + 4, 40, colorBg);
+        // Penguin silhouette (Body & Head)
+        oled.fillRoundRect(cx - 14, cy - 16, 28, 36, 12, SSD1306_WHITE);
+        oled.fillRoundRect(cx - 10, cy - 2, 20, 20, 8, SSD1306_BLACK); // White belly in inverted contrast
 
-        // Horizon Line
-        gfx.drawFastHLine(0, sunY + 18, 128, colorPrimary);
+        // Flippers (Wiggling up and down)
+        int flipperOffset = (animFrame % 4 < 2) ? -2 : 2;
+        oled.fillTriangle(cx - 14, cy, cx - 24, cy + 10 + flipperOffset, cx - 12, cy + 14, SSD1306_WHITE);
+        oled.fillTriangle(cx + 14, cy, cx + 24, cy + 10 - flipperOffset, cx + 12, cy + 14, SSD1306_WHITE);
 
-        // Perspective Ground Grid Lines
-        for (int i = -3; i <= 3; i++) {
-            int x1 = 64 + (i * 6);
-            int x2 = 64 + (i * 24);
-            gfx.drawLine(x1, sunY + 18, x2, 146, colorPrimary);
+        // Feet (Webbed triangles at base)
+        oled.fillTriangle(cx - 10, cy + 18, cx - 16, cy + 23, cx - 4, cy + 23, SSD1306_WHITE);
+        oled.fillTriangle(cx + 10, cy + 18, cx + 16, cy + 23, cx + 4, cy + 23, SSD1306_WHITE);
+
+        // Eyes (Blinking animation)
+        if ((animFrame % 30) > 2) {
+            oled.fillCircle(cx - 5, cy - 8, 3, SSD1306_BLACK);
+            oled.fillCircle(cx + 5, cy - 8, 3, SSD1306_BLACK);
+            oled.fillCircle(cx - 4, cy - 8, 1, SSD1306_WHITE);
+            oled.fillCircle(cx + 4, cy - 8, 1, SSD1306_WHITE);
+        } else {
+            oled.drawFastHLine(cx - 8, cy - 8, 6, SSD1306_BLACK);
+            oled.drawFastHLine(cx + 2, cy - 8, 6, SSD1306_BLACK);
         }
 
-        // Horizontal Grid Scroll
-        int gridOffset = (animFrame * 2) % 14;
-        for (int y = sunY + 18 + gridOffset; y < 146; y += 14) {
-            gfx.drawFastHLine(0, y, 128, colorPrimary);
-        }
+        // Beak (Triangle under eyes)
+        oled.fillTriangle(cx - 4, cy - 4, cx + 4, cy - 4, cx, cy, SSD1306_BLACK);
+        oled.drawTriangle(cx - 4, cy - 4, cx + 4, cy - 4, cx, cy, SSD1306_WHITE);
 
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(1);
-        gfx.setCursor(20, 24);
-        gfx.print("SYNTHWAVE 80S");
-        animFrame++;
-    }
-
-    // --- TFT Screensaver 4: DVD Bouncing Logo (128x160) ---
-    void renderTftDvdLogo(Adafruit_GFX& gfx, uint16_t colorBg) {
-        gfx.fillScreen(colorBg);
-
-        bounceX += bounceDx;
-        bounceY += bounceDy;
-
-        if (bounceX <= 4 || bounceX >= 74) {
-            bounceDx = -bounceDx;
-            dvdColor = (dvdColor == ST77XX_CYAN) ? ST77XX_MAGENTA : (dvdColor == ST77XX_MAGENTA) ? ST77XX_YELLOW : (dvdColor == ST77XX_YELLOW) ? ST77XX_GREEN : ST77XX_CYAN;
-        }
-        if (bounceY <= 20 || bounceY >= 126) {
-            bounceDy = -bounceDy;
-            dvdColor = (dvdColor == ST77XX_CYAN) ? ST77XX_MAGENTA : (dvdColor == ST77XX_MAGENTA) ? ST77XX_YELLOW : (dvdColor == ST77XX_YELLOW) ? ST77XX_GREEN : ST77XX_CYAN;
-        }
-
-        gfx.fillRoundRect(bounceX, bounceY, 48, 20, 6, dvdColor);
-        gfx.setTextColor(colorBg, dvdColor);
-        gfx.setTextSize(1);
-        gfx.setCursor(bounceX + 8, bounceY + 6);
-        gfx.print("CHAOS");
-
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(28, 54);
+        oled.print("LINUX INSIDE");
         animFrame++;
     }
 };
 
 #endif // SCREENSAVER_H
+

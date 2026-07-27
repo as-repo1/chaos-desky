@@ -12,9 +12,8 @@
 #include "display_oled.h"
 #include "display_tft.h"
 #include "notification_manager.h"
-#include "ancs_client.h"
 #include "mech_switch.h"
-#include "ble_uart_server.h"
+#include "ble_wifi_provision.h"
 #include "web_server.h"
 
 // System Instances
@@ -25,10 +24,9 @@ PomodoroTimer          pomoTimer;
 OledDisplayManager     oledMgr;
 TftDisplayManager      tftMgr;
 NotificationManager    notificationMgr;
-AncsNotificationClient ancsClientMgr;
 MechSwitchManager      mechSwitch1Mgr; // D25: Page Navigation & Slideshow Toggle
 MechSwitchManager      mechSwitch2Mgr; // D26: TFT Interactive Control & Actions
-BleUartServer          bleUartMgr;
+BleWifiProvisioner     bleWifiMgr;
 ScreensaverEngine      screensaverEngine;
 WatchFaceEngine        watchFaceEngine;
 WebServerManager       webServerMgr(80);
@@ -92,7 +90,7 @@ DualSwitchComboDetector comboDetector;
 void executeButtonAction(int action) {
     switch (action) {
         case ACT_CYCLE_OLED:
-            configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
+            configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 6;
             configMgr.saveConfig();
             Serial.printf("🔘 Macro Action: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
             break;
@@ -116,19 +114,19 @@ void executeButtonAction(int action) {
             
         case ACT_JUMP_TODO:
             if (tftMgr.currentPage == 4) {
-                tftMgr.setPage(6); // Toggle back and forth with Notes / Notif log
+                tftMgr.setPage(5); // Toggle back and forth with Climate P6
             } else {
-                tftMgr.setPage(4); // Snap straight to To-Do Board
+                tftMgr.setPage(4); // Snap straight to To-Do Board P5
             }
-            Serial.println("🔘 Macro Action: Jumped to To-Do & Notes Board!");
+            Serial.println("🔘 Macro Action: Jumped to To-Do Board!");
             break;
             
         case ACT_JUMP_WATCH:
             configMgr.config.oledMode = 1; // Big Clock Mode
             configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
             configMgr.saveConfig();
-            if (tftMgr.currentPage != 7) {
-                tftMgr.setPage(7); // Jump straight to Watchface Studio
+            if (tftMgr.currentPage != 6) {
+                tftMgr.setPage(6); // Jump straight to Watchface Studio (Page 7, index 6)
             } else {
                 watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
                 tftMgr.forceRedraw();
@@ -137,7 +135,7 @@ void executeButtonAction(int action) {
             break;
             
         case ACT_CYCLE_THEMES:
-            if (tftMgr.currentPage == 7) {
+            if (tftMgr.currentPage == 6) {
                 watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
                 tftMgr.forceRedraw();
                 notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
@@ -150,16 +148,16 @@ void executeButtonAction(int action) {
             break;
             
         case ACT_WIFI_INFO:
-            configMgr.config.oledMode = 6; // Mode 6: Dedicated WiFi Credentials & IP Broadcast
-            tftMgr.setPage(3);             // Page 3: System QR Code & IP Dashboard
+            configMgr.config.oledMode = 5; // Mode 5: Dedicated WiFi Credentials & IP Broadcast
+            tftMgr.setPage(3);             // Page 4: System QR Code & IP Dashboard
             notificationMgr.trigger("WiFi Broadcast", "Broadcasting Credentials", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
             Serial.println("🔘 Macro Action: Broadcasting WiFi & QR Code across both screens!");
             break;
             
         case ACT_SCREENSAVER:
-            configMgr.config.oledMode = 5; // OLED screensaver
-            tftMgr.setPage(9);             // Warp screensaver page
-            Serial.println("🔘 Macro Action: Launched Dual Screensavers!");
+            configMgr.config.oledMode = 4; // OLED animated screensavers (Matrix, DVD, Tunnel, DNA, Batman, Tux)
+            tftMgr.setPage(8);             // Hardware stats page
+            Serial.println("🔘 Macro Action: Launched OLED Animations & Hardware Stats!");
             break;
             
         case ACT_RESET_POMO:
@@ -212,14 +210,13 @@ void setup() {
 
     // Initialize Sensors, Dual Switches & BLE UART Receiver
     sensorMgr.begin();
-    ancsClientMgr.begin();
     mechSwitch1Mgr.begin(MECH_SWITCH_1_PIN);
     mechSwitch2Mgr.begin(MECH_SWITCH_2_PIN);
-    bleUartMgr.begin();
+    bleWifiMgr.begin();
 
     // Setup Network & Web Server
     setupWiFi();
-    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &ancsClientMgr, &notificationMgr);
+    webServerMgr.begin(&sensorMgr, &weatherMgr, &pomoTimer, &tftMgr, &notificationMgr);
 
     // Fetch initial Outdoor Weather
     weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
@@ -279,31 +276,24 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 tftMgr.forceRedraw();
                 break;
 
-            case 6: // Phone Notes / Log Page
-                Serial.println("➡️ Right Button [Notes/Logs]: Test Notification");
-                notificationMgr.trigger("Desky Test", "Notification System OK!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
-                tftMgr.forceRedraw();
-                break;
-
-            case 7: // Watchface Studio Page
+            case 6: // Watchface Studio Page (Index 6)
                 Serial.println("➡️ Right Button [Watchface]: Cycling Watchface Style");
                 watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
                 notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 tftMgr.forceRedraw();
                 break;
 
-            case 8: // Network Monitor Page
+            case 7: // Network Monitor Page (Index 7)
                 Serial.println("➡️ Right Button [Network]: Broadcasting WiFi Info");
                 executeButtonAction(ACT_WIFI_INFO);
                 break;
 
-            case 9: // Warp / Screensaver Page
-                Serial.println("➡️ Right Button [Warp]: Cycling TFT Theme");
+            case 8: // System Hardware Stats Page (Index 8)
+                Serial.println("➡️ Right Button [Hardware]: Cycling TFT Theme");
                 executeButtonAction(ACT_CYCLE_THEMES);
                 break;
 
             default:
-                executeButtonAction(configMgr.config.btnRightSingle);
                 break;
         }
     } else if (action == SWITCH_DOUBLE_CLICK) {
@@ -319,18 +309,18 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 Serial.printf("➡️ Right Button Double-Click [To-Do]: Moved focus to item %d\n", tftMgr.todoSelectedIdx + 1);
                 break;
 
-            case 7: // Watchface: Switch to Casio F-91W
+            case 6: // Watchface: Switch to Casio F-91W (Index 6)
                 watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
                 tftMgr.forceRedraw();
                 notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 break;
 
             default:
-                executeButtonAction(configMgr.config.btnRightDouble);
+                executeButtonAction(ACT_JUMP_TODO);
                 break;
         }
     } else if (action == SWITCH_LONG_PRESS) {
-        executeButtonAction(configMgr.config.btnRightLong);
+        executeButtonAction(ACT_SCREENSAVER);
     }
 }
 
@@ -341,7 +331,7 @@ void loop() {
     pomoTimer.update();
     notificationMgr.update();
     if (configMgr.config.featureBleEnabled) {
-        bleUartMgr.update();
+        bleWifiMgr.update();
     }
 
     // ==============================================================
@@ -410,9 +400,9 @@ void loop() {
     // 6. Update Displays (Dynamic 45ms Refresh for High-Speed Marquee Ticker)
     uint32_t oledInterval = 500;
     if (configMgr.config.oledMode == 3) {
-        oledInterval = 45; // Ultra-fast scrolling text speed for announce page!
-    } else if (configMgr.config.oledMode == 5 || notificationMgr.isOledActive()) {
-        oledInterval = 100; // Smooth animations for mascot & notifications
+        oledInterval = 45; // Fast scrolling speed for Custom Marquee Ticker
+    } else if (configMgr.config.oledMode == 4 || notificationMgr.isOledActive()) {
+        oledInterval = 75; // Smooth animations for OLED screensavers & notifications
     }
     if (currentMs - lastOledRefreshMs >= oledInterval) {
         lastOledRefreshMs = currentMs;
@@ -420,6 +410,6 @@ void loop() {
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
         oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi, configMgr.config.oledClockStyle);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, ancsClientMgr.phoneLog, notificationMgr, localIpStr, timeStr);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, notificationMgr, localIpStr, timeStr);
     }
 }

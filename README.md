@@ -7,41 +7,53 @@
 ## 🛠️ Key Features & Capabilities
 
 - 🖥️ **Dual Display Command Center**:
-  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page custom carousel display (default 180° rotation) featuring smooth laser-wipe page transitions:
-    1. Outdoor Weather & OpenWeatherMap Forecast (Custom City & Country).
-    2. Barometric Pressure Graph & Zambretti Forecast Engine.
-    3. Pomodoro Work/Break Timer & Action Hub.
-    4. Free Heap RAM Status, WiFi Details & Interactive Web QR Code Dashboard.
-    5. To-Do List & Daily Focus Dashboard with Live Checkoff Controls.
-    6. Indoor Climate Sensor Telemetry (Temperature, Humidity, Dew Point, Heat Index, Altitude).
-    7. BLE Notification Center & Message Logs.
-    8. Custom Watch Face Studio (10 Iconic Watch Faces: Swiss, Cyber, Modern Digital, Nixie, Casio F-91W, Casio G-Shock, Casio CA-53W Calculator, Casio Royale, Seiko Diver, Pulsar LED).
-    9. Network Scan Monitor & Signal RSSI Analysis.
-    10. 3D Warp Space Screensaver.
-  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 7 distinct operational modes:
-    1. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
-    2. **8 Iconic OLED Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Oversized Vertical Stack, Binary Segment Gauges, Cyberpunk Boxed Frame, and Radial Horizon Arc Clock!
-    3. **Sparkline Telemetry**: Historical Barometric pressure and indoor climate trend lines.
-    4. **Fast-Speed Marquee Ticker**: High-speed, fluid 45ms scrolling custom announcements.
-    5. **Retro Cyber Radar**: Futuristic rotating sweeping radar vector graphic.
-    6. **Cute Cyber Cat Mascot**: Animated blinking feline desk pet screensaver.
-    7. **Dedicated WiFi AP Credentials**: Broadcasts current network status, IP, SSID, and password!
+  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 9-page custom carousel display (default 180° rotation) featuring smooth laser-wipe page transitions:
+    1. **Outdoor Weather**: Live temperature, weather icon, condition description, wind speed & humidity from OpenWeatherMap.
+    2. **Barometric Pressure Trend & Zambretti Weather Forecaster**: Sparkline graph of air pressure history & local prediction.
+    3. **Pomodoro Productivity Work/Break Timer**: Interactive timer with pause/resume state retention and visual countdown ring.
+    4. **System QR Code Dashboard**: Instant scanning QR code to access the embedded ESP32 web control portal, WiFi IP & Heap memory status.
+    5. **To-Do List & Daily Focus Board**: Interactive checklist with live checkoff controls and focus selector.
+    6. **Indoor Climate Telemetry**: Precision readings from DHT11 & BMP180 (Temperature, Dew Point, Heat Index, Humidity, Altitude).
+    7. **Watch Face Studio**: 10 Iconic Watch Faces (Swiss, Cyber, Modern Digital, Nixie, Casio F-91W, Casio G-Shock, Casio CA-53W Calculator, Casio Royale, Seiko Diver, Pulsar LED).
+    8. **Network Monitor**: Live WiFi signal analysis, RSSI indicator, MAC address & gateway stats.
+    9. **System Hardware & Telemetry Diagnostics**: Deep dive into Free Heap RAM, Flash storage utilization, uptime, and CPU status.
+  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 distinct operational modes:
+    0. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
+    1. **Multi-Style OLED Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Vertical Stack, Binary Gauges, Cyberpunk Frame, and Radial Horizon Arc!
+    2. **Sparkline Telemetry**: Historical Barometric pressure and indoor climate trend lines.
+    3. **Fast-Speed Marquee Ticker**: High-speed, fluid 45ms scrolling custom announcements and desk notes.
+    4. **Animated Screensaver**: Rotating animations including Matrix Code Rain, Bouncing DVD Logo, 3D Hyperspace Tunnel, DNA Helix, Batman Signal, and Linux Tux!
+    5. **Dedicated WiFi AP Credentials**: Broadcasts current network status, IP, SSID, and connection instructions.
 
-- 🕹️ **Resistorless Dual Mechanical Switches & Macro Studio**:
-  - Direct connection to internal ESP32 pullups on **GPIO 25 (Left Key)** and **GPIO 26 (Right Key)** to GND.
-  - **Dynamic Macro Deck**: Configure Custom Single Clicks, Double Clicks, and Long Holds directly from the Web Dashboard and store in persistent LittleFS!
-  - **Default Mapping**: Left Single Click switches TFT pages, Right Single Click cycles OLED clock modes, Left Double Click opens the To-Do Board, and Right Double Click enters Watchface Studio.
-  - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches simultaneously to fire instant global macros (e.g., instant WiFi Credentials Broadcast across both screens or stealth dual screensaver launch!).
-  - **⚡ Smart Context-Aware Controls**: When viewing interactive screens (such as the To-Do Board or Pomodoro Timer), single clicks automatically transform from carousel switching into instinctive item controllers (moving task focus down, checking/unchecking items, or toggling/resetting timers!).
+- 🕹️ **Intuitive Dual Mechanical Switch Deck (Left = Nav | Right = Functionality)**:
+  - Direct connection to internal ESP32 pullups on **GPIO 25 (Left Key)** and **GPIO 26 (Right Key)** to GND. No external resistors required!
+  - **⬅️ Left Button (Navigation Master)**:
+    - **Single Click**: Cycle forward through the 9 TFT pages.
+    - **Double Click**: Cycle backward to the previous page.
+    - **Long Press**: Instant home jump back to Page 0 (Outdoor Weather).
+  - **➡️ Right Button (Page-Specific Functional Action Engine)**:
+    - **Page 0 (Weather)**: Single click forces an instant cloud refresh of OpenWeatherMap data.
+    - **Page 1 (Barometer)**: Single click logs an instantaneous barometric pressure sample to the trend graph.
+    - **Page 2 (Pomodoro)**: Single click Toggles Start/Pause; Double click Resets the timer back to 25:00.
+    - **Page 3 (System QR)**: Single click cycles the secondary OLED Display mode.
+    - **Page 4 (To-Do Board)**: Single click Checks/Unchecks the selected task; Double click moves focus down to the next item!
+    - **Page 5 (Climate)**: Single click triggers immediate hardware sensor sampling.
+    - **Page 6 (Watchface Studio)**: Single click cycles between the 10 iconic watch styles; Double click jumps straight to the Casio F-91W!
+    - **Page 7 (Network Monitor)**: Single click broadcasts full WiFi credentials across both screens.
+    - **Page 8 (Hardware Stats)**: Single click cycles between the 11 TFT Color Themes!
+    - **Long Press (Anywhere)**: Immediately unleashes the synchronized animated dual screensaver!
+  - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches together to trigger global shortcut macros (configurable in web portal).
 
-- 📡 **BLE Smartwatch Sync, Telemetry & Command Hub**:
-  - Open Nordic UART BLE receiver allowing lossless telemetry broadcast from PC gaming monitors or mobile terminals without OS encryption pairing errors.
-  - **Configurable Alert Display Target**: Customize directly in the Web Portal whether system alerts, BLE popups, timer notifications, and telemetry appear on the OLED display, the TFT screen, or simultaneously across both!
-  - Send wireless terminal commands (`casio`, `gshock`, `page <0..9>`, or `pc:CPU=52C, GPU=61C`).
+- 📡 **BLE Wi-Fi Provisioning & Telemetry**:
+  - Open Nordic UART BLE receiver (`chaos-desky-wifi`) allowing seamless Wi-Fi setup and terminal diagnostic status inspection without OS encryption pairing errors.
+  - **Configurable Alert Display Target**: Customize directly in the Web Portal whether system alerts, WiFi status, and timer notifications appear on the OLED display, the TFT screen, or simultaneously across both!
 
-- 🌐 **Embedded Tabbed Web Dashboard**:
-  - Full mobile-responsive UI hosted on LittleFS featuring interactive cards: Telemetry, Watch Face Customizer, Mechanical Macro & Button Studio, BLE Hub, Marquee Publisher, and Resource Optimization Hub.
+- 🌐 **Embedded LittleFS Web Command Portal**:
+  - Premium glassmorphic mobile-responsive UI hosted on LittleFS featuring interactive cards: Sensor Telemetry, Watch Face Customizer, Pomodoro & To-Do Task Manager, BLE Wi-Fi Setup Hub, Custom Marquee Publisher, and Resource Optimization Hub.
   - Real-time sliders for OLED contrast/brightness, 11 TFT color themes, screen rotation, carousel page masking, system notification screen target, and feature toggling.
+
+- ⚡ **Flash & Memory Optimized Architecture**:
+  - Surgically pruned redundant mobile notification overhead and unused macro structs to preserve precious ESP32 application partition storage (98% utilization, zero flash overflows) while keeping the visual WOW factor running at full frame rate!
 
 - 🎨 **11 Tailored Color Themes**:
   - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, and Material You.

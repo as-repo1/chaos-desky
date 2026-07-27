@@ -14,13 +14,11 @@
 #include "display_oled.h"
 #include "display_tft.h"
 #include "notification_manager.h"
-#include "ancs_client.h"
 
 extern String localIpStr;
 extern unsigned long carouselIntervalMs;
 extern ConfigManager configMgr;
 extern OledDisplayManager oledMgr;
-extern AncsNotificationClient ancsClientMgr;
 extern NotificationManager notificationMgr;
 
 class WebServerManager {
@@ -31,14 +29,12 @@ public:
                WeatherApiClient* weatherClient, 
                PomodoroTimer* pomo, 
                TftDisplayManager* tftMgr,
-               AncsNotificationClient* ancsMgr,
                NotificationManager* notifMgr) {
         
         sensorMgr = sensors;
         weatherMgr = weatherClient;
         pomoTimer = pomo;
         tftManager = tftMgr;
-        ancsClient = ancsMgr;
         notificationEngine = notifMgr;
 
         // REST API: GET /api/sensors
@@ -178,7 +174,7 @@ public:
         // REST API: POST /api/tft/pagemask?mask=31
         server.on("/api/tft/pagemask", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("mask")) {
-                uint8_t m = (uint8_t)request->getParam("mask")->value().toInt();
+                uint16_t m = (uint16_t)request->getParam("mask")->value().toInt();
                 tftManager->enabledPagesMask = m;
                 configMgr.config.enabledPagesMask = m;
                 configMgr.saveConfig();
@@ -283,61 +279,6 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\",\"optimized\":true}");
         });
 
-        // REST API: GET /api/buttons/config (Macro & Button Studio Settings)
-        server.on("/api/buttons/config", HTTP_GET, [](AsyncWebServerRequest* request) {
-            StaticJsonDocument<512> doc;
-            doc["btnLeftSingle"]  = configMgr.config.btnLeftSingle;
-            doc["btnLeftDouble"]  = configMgr.config.btnLeftDouble;
-            doc["btnLeftLong"]    = configMgr.config.btnLeftLong;
-            doc["btnRightSingle"] = configMgr.config.btnRightSingle;
-            doc["btnRightDouble"] = configMgr.config.btnRightDouble;
-            doc["btnRightLong"]   = configMgr.config.btnRightLong;
-            doc["btnCombo"]       = configMgr.config.btnCombo;
-
-            String json;
-            serializeJson(doc, json);
-            request->send(200, "application/json", json);
-        });
-
-        // REST API: POST /api/buttons/config (Save Macro & Button Mappings)
-        server.on("/api/buttons/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
-            if (request->hasParam("btnLeftSingle", true))  configMgr.config.btnLeftSingle  = request->getParam("btnLeftSingle", true)->value().toInt();
-            if (request->hasParam("btnLeftDouble", true))  configMgr.config.btnLeftDouble  = request->getParam("btnLeftDouble", true)->value().toInt();
-            if (request->hasParam("btnLeftLong", true))    configMgr.config.btnLeftLong    = request->getParam("btnLeftLong", true)->value().toInt();
-            if (request->hasParam("btnRightSingle", true)) configMgr.config.btnRightSingle = request->getParam("btnRightSingle", true)->value().toInt();
-            if (request->hasParam("btnRightDouble", true)) configMgr.config.btnRightDouble = request->getParam("btnRightDouble", true)->value().toInt();
-            if (request->hasParam("btnRightLong", true))   configMgr.config.btnRightLong   = request->getParam("btnRightLong", true)->value().toInt();
-            if (request->hasParam("btnCombo", true))       configMgr.config.btnCombo       = request->getParam("btnCombo", true)->value().toInt();
-
-            configMgr.saveConfig();
-            notificationEngine->trigger("Macro Studio", "Custom Switch Deck Saved!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
-            request->send(200, "application/json", "{\"status\":\"ok\",\"saved\":true}");
-        });
-
-        // REST API: GET /api/ancs/status
-        server.on("/api/ancs/status", HTTP_GET, [this](AsyncWebServerRequest* request) {
-            StaticJsonDocument<256> doc;
-            doc["connected"]    = ancsClient->phoneLog.connected;
-            doc["lastApp"]      = ancsClient->phoneLog.lastApp;
-            doc["lastSender"]   = ancsClient->phoneLog.lastSender;
-            doc["lastMessage"]  = ancsClient->phoneLog.lastMessage;
-            doc["totalCount"]   = ancsClient->phoneLog.totalCount;
-
-            String json;
-            serializeJson(doc, json);
-            request->send(200, "application/json", json);
-        });
-
-        // REST API: POST /api/ancs/simulate
-        server.on("/api/ancs/simulate", HTTP_POST, [this](AsyncWebServerRequest* request) {
-            String sender = request->hasParam("sender", true) ? request->getParam("sender", true)->value() : "WhatsApp";
-            String text = request->hasParam("text", true) ? request->getParam("text", true)->value() : "New Message Received";
-            int cat = request->hasParam("category", true) ? request->getParam("category", true)->value().toInt() : 1;
-
-            ancsClient->simulateNotification(sender, text, (NotificationCategory)cat);
-            request->send(200, "application/json", "{\"status\":\"ok\"}");
-        });
-
         // REST API: GET /api/notify/target (System Alerts Display Preference)
         server.on("/api/notify/target", HTTP_GET, [](AsyncWebServerRequest* request) {
             StaticJsonDocument<128> doc;
@@ -383,7 +324,6 @@ private:
     WeatherApiClient* weatherMgr = nullptr;
     PomodoroTimer* pomoTimer = nullptr;
     TftDisplayManager* tftManager = nullptr;
-    AncsNotificationClient* ancsClient = nullptr;
     NotificationManager* notificationEngine = nullptr;
 };
 

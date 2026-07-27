@@ -13,12 +13,9 @@
 #include "zambretti.h"
 #include "pomodoro.h"
 #include "notification_manager.h"
-#include "ancs_client.h"
 #include "gfx_icons.h"
-#include "screensaver.h"
 #include "watchface_engine.h"
 
-extern ScreensaverEngine screensaverEngine;
 extern WatchFaceEngine watchFaceEngine;
 
 enum TFTTheme {
@@ -233,7 +230,6 @@ public:
     void renderCurrentPage(const OutdoorWeatherData& weather, 
                            SensorManager& sensors, 
                            PomodoroTimer& pomo, 
-                           const PhoneNotificationLog& phoneLog,
                            const NotificationManager& notifMgr,
                            const String& ipStr, 
                            const String& timeStr) {
@@ -247,12 +243,7 @@ public:
         bool fullRedraw = pageNeedsFullRedraw || (currentPage != lastRenderedPage);
 
         if (fullRedraw) {
-            // Creamy Laser Wipe Page Transition
-            for (int y = 0; y < 160; y += 16) {
-                tft.fillRect(0, y, 128, 16, COLOR_PRIMARY);
-                delay(1);
-                tft.fillRect(0, y, 128, 16, COLOR_BG);
-            }
+            tft.fillScreen(COLOR_BG);
             drawPageHeader(timeStr);
             drawPageDots();
             lastRenderedPage = currentPage;
@@ -266,10 +257,9 @@ public:
             case 3: renderSystemQrPage(ipStr, fullRedraw); break;
             case 4: renderCustomUserPage(fullRedraw); break;
             case 5: renderIndoorClimatePage(sensors.data, fullRedraw); break;
-            case 6: renderPhoneNotifPage(phoneLog, fullRedraw); break;
-            case 7: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
-            case 8: renderNetworkMonitorPage(ipStr, fullRedraw); break;
-            case 9: screensaverEngine.renderTftScreensaver(tft, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG); break;
+            case 6: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
+            case 7: renderNetworkMonitorPage(ipStr, fullRedraw); break;
+            case 8: renderSystemHardwarePage(fullRedraw); break;
         }
     }
 
@@ -366,10 +356,9 @@ private:
             case 3: tft.print("SYSTEM"); break;
             case 4: tft.print("TO-DO LIST"); break;
             case 5: tft.print("CLIMATE"); break;
-            case 6: tft.print("NOTES & LOG"); break;
-            case 7: tft.print("WATCH"); break;
-            case 8: tft.print("NETWORK"); break;
-            case 9: tft.print("WARP"); break;
+            case 6: tft.print("WATCH"); break;
+            case 7: tft.print("NETWORK"); break;
+            case 8: tft.print("HARDWARE"); break;
         }
 
         GfxIconRenderer::drawWifiSignal(tft, 108, 1, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
@@ -643,43 +632,7 @@ private:
         tft.printf("MIN/MAX : %.0f/%.0fC", s.minTempC, s.maxTempC);
     }
 
-    // --- Page 6: Phone Notifications Log ---
-    void renderPhoneNotifPage(const PhoneNotificationLog& p, bool fullRedraw) {
-        if (fullRedraw) {
-            tft.drawRoundRect(4, 16, 120, 128, 8, COLOR_PRIMARY);
-        }
-
-        // Connection Dot
-        tft.fillCircle(12, 24, 3, p.connected ? COLOR_GOOD : COLOR_WARN);
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setTextSize(1);
-        tft.setCursor(20, 21);
-        tft.print(p.connected ? "PUSH READY" : "OFFLINE");
-
-        // Chat Bubble Container
-        tft.fillRoundRect(8, 34, 112, 82, 6, COLOR_PRIMARY);
-        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-        tft.setCursor(12, 40);
-        tft.printf("APP: %s", p.lastApp.substring(0, 12).c_str());
-        tft.setCursor(12, 54);
-        tft.printf("FROM: %s", p.lastSender.substring(0, 11).c_str());
-
-        // Message text clean word wrap
-        tft.setCursor(12, 72);
-        if (p.lastMessage.length() <= 16) {
-            tft.print(p.lastMessage);
-        } else {
-            tft.print(p.lastMessage.substring(0, 16));
-            tft.setCursor(12, 86);
-            tft.print(p.lastMessage.substring(16, 32));
-        }
-
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(10, 124);
-        tft.printf("TOTAL RECEIVED: %d", p.totalCount);
-    }
-
-    // --- Page 7: Custom Watch Face Dial ---
+    // --- Page 6: Custom Watch Face Dial ---
     void renderBigClockPage(const String& timeStr, const OutdoorWeatherData& weather, SensorManager& sensors, bool fullRedraw) {
         int h = 0, m = 0, s = 0;
         if (timeStr.length() >= 8) {
@@ -691,7 +644,7 @@ private:
         watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG, fullRedraw);
     }
 
-    // --- Page 8: Network & Wi-Fi Monitor ---
+    // --- Page 7: Network & Wi-Fi Monitor ---
     void renderNetworkMonitorPage(const String& ipStr, bool fullRedraw) {
         if (fullRedraw) {
             tft.drawRoundRect(4, 16, 120, 128, 8, COLOR_PRIMARY);
@@ -720,33 +673,29 @@ private:
         GfxIconRenderer::drawWifiSignal(tft, 98, 102, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
     }
 
-    // --- Page 9: System Hardware & Performance ---
+    // --- Page 8: System Hardware & Performance ---
     void renderSystemHardwarePage(bool fullRedraw) {
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 16, 120, 130, 8, COLOR_PRIMARY);
+        }
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setTextSize(1);
 
-        tft.setCursor(4, 22);
+        tft.setCursor(10, 26);
         tft.printf("FREE HEAP: %u KB", ESP.getFreeHeap() / 1024);
-        tft.setCursor(4, 38);
+        tft.setCursor(10, 42);
         tft.printf("MIN HEAP:  %u KB", ESP.getMinFreeHeap() / 1024);
-        tft.setCursor(4, 54);
+        tft.setCursor(10, 58);
         tft.printf("CPU FREQ:  %d MHz", ESP.getCpuFreqMHz());
-        tft.setCursor(4, 70);
+        tft.setCursor(10, 74);
         tft.printf("CHIP REV:  %d", ESP.getChipRevision());
 
-        tft.setCursor(4, 90);
+        tft.setCursor(10, 92);
         tft.printf("FLASH SIZE:%u MB", ESP.getFlashChipSize() / (1024 * 1024));
-        tft.setCursor(4, 106);
+        tft.setCursor(10, 108);
         tft.printf("UPTIME:    %lu s", millis() / 1000);
-        tft.setCursor(4, 122);
+        tft.setCursor(10, 124);
         tft.print("BOARD: ESP32-D0WD");
-
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
-            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-            tft.setCursor(4, 149);
-            tft.printf("RAM -f : %u KB", ESP.getFreeHeap() / 1024);
-        }
     }
 
     void drawWeatherIcon(int x, int y, const String& iconCode) {

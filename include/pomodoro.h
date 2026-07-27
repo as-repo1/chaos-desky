@@ -14,6 +14,7 @@ enum PomodoroState {
 class PomodoroTimer {
 public:
     PomodoroState state = POMO_IDLE;
+    PomodoroState pausedFrom = POMO_WORK;
     unsigned long durationSec = POMODORO_WORK_MINS * 60;
     unsigned long remainingSec = POMODORO_WORK_MINS * 60;
     unsigned long lastTickMs = 0;
@@ -37,13 +38,14 @@ public:
 
     void pause() {
         if (state == POMO_WORK || state == POMO_BREAK) {
+            pausedFrom = state;
             state = POMO_PAUSED;
         }
     }
 
     void resume() {
         if (state == POMO_PAUSED) {
-            state = (remainingSec > breakDurationMins * 60) ? POMO_WORK : POMO_BREAK;
+            state = pausedFrom;
             lastTickMs = millis();
         }
     }

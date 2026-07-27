@@ -4,6 +4,27 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [2.0.0] - 2026-07-27 (The Precision Optimization & Dedicated UX Update)
+
+### ✨ Overhauled & Optimized
+- **🕹️ Dedicated Separation of Switch Duties (Left = Navigation | Right = Page Action)**:
+  - Streamlined mechanical key ergonomics: **Left Button (D25)** is exclusively reserved for page and screen navigation (Single Click for next TFT page, Double Click for previous page, Long Hold for immediate home jump to Page 0).
+  - **Right Button (D26)** serves as the dedicated functional execution button for whatever page is currently displayed on the screen:
+    - **Weather & Climate Pages**: Instant cloud API refresh and hardware sensor read triggers.
+    - **Pomodoro Timer**: Single Click Toggles Start/Pause; Double Click Resets the timer back to 25:00.
+    - **To-Do Task Board**: Single Click toggles checkmark state; Double Click moves focus down the list.
+    - **Watchface Studio**: Single Click cycles the 10 watch styles; Double Click applies the iconic Casio F-91W.
+    - **System & Hardware Pages**: Quick toggles for OLED display modes and cycling TFT color themes.
+    - **Global Long Hold**: Instantly unleashes the animated dual screensavers across both displays!
+- **⚡ Surgical Flash Memory Optimization**:
+  - Successfully reduced firmware footprint from 102.5% overflow down to an optimal **98.1%** flash memory utilization without sacrificing high-frequency animations or custom aesthetics!
+  - Removed unused ANCS phone notification structs and replaced overhead-heavy macro tables with clean, compiled switch statements.
+  - Streamlined TFT presentation from 10 pages down to 9 precision-tuned pages and OLED presentation to 6 distinct modes.
+- **⏱️ Pomodoro Pause State Retention**:
+  - Resolved an issue where resuming a paused Pomodoro timer would incorrectly transition to an IDLE state instead of resuming the exact countdown from its paused working state (`POMO_WORK` vs `POMO_BREAK`).
+
+---
+
 ## [1.8.1] - 2026-07-27
 
 ### ✨ Added & Enhanced
