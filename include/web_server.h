@@ -257,6 +257,22 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
+        // REST API: POST /api/optimize (Feature & Resource Optimization)
+        server.on("/api/optimize", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("ble", true)) {
+                configMgr.config.featureBleEnabled = (request->getParam("ble", true)->value() == "1");
+            }
+            if (request->hasParam("weather", true)) {
+                configMgr.config.featureWeatherEnabled = (request->getParam("weather", true)->value() == "1");
+            }
+            if (request->hasParam("screensaver", true)) {
+                configMgr.config.featureScreensaverEnabled = (request->getParam("screensaver", true)->value() == "1");
+            }
+            configMgr.saveConfig();
+            notificationEngine->trigger("Optimization", "Resource & Feature Toggles Saved!", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
+            request->send(200, "application/json", "{\"status\":\"ok\",\"optimized\":true}");
+        });
+
         // Upload custom 128x64 OLED Bitmap raw binary
         server.on("/api/upload/oled-image", HTTP_POST, [](AsyncWebServerRequest* request) {
             request->send(200, "application/json", "{\"status\":\"ok\"}");

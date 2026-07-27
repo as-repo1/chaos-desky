@@ -607,27 +607,25 @@
                     <span class="arrow">▼</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Your hardware hub features resistorless dual mechanical switches (D25 & D26) with manual navigation by default and open Nordic UART BLE telemetry!</p>
+                    <p class="card-desc">Your hardware hub features resistorless dual mechanical switches (Left D25 & Right D26) with manual navigation by default and open Nordic UART BLE telemetry!</p>
                     
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 15px;">
-                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⌨️ Switch 1: Navigation & Slideshow Toggle (Pin D25 ➔ GND)</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">By default, screen navigation is <strong>Manual Only</strong> (auto-slideshow paused). Use this switch to navigate or toggle modes:</p>
+                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⬅️ Left Key (Pin D25 ➔ GND) — OLED Controls & To-Do / Notes Jump</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Controls your Left Display (OLED) and gives instant productivity shortcuts:</p>
                         <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li><strong>Single Click:</strong> Manually switch to Next TFT Dashboard Page!</li>
-                            <li><strong>Double Click:</strong> Toggle between <strong>Manual-Only Mode</strong> and <strong>Auto-Slideshow Mode</strong> (6 seconds per slide)!</li>
-                            <li><strong>Long Press (&gt;700ms):</strong> Cycle through OLED display modes (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat Screensaver)!</li>
+                            <li><strong>Single Click:</strong> Switches pages/modes directly on the <strong>OLED Display</strong> (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat)!</li>
+                            <li><strong>Double Click:</strong> Instantly jumps to the <strong>To-Do List (Page 4)</strong> and <strong>Notes / Logs (Page 6)</strong> screens on the TFT! Toggles back and forth on each double-click!</li>
+                            <li><strong>Long Press (&gt;700ms):</strong> Quick-jumps to Pomodoro screen and toggles timer Work/Pause (Customizable via power-user options)!</li>
                         </ul>
                     </div>
 
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #f43f5e; margin-bottom: 15px;">
-                        <h3 style="margin-top:0; font-size:1rem; color:#f43f5e;">🎮 Switch 2: Interactive TFT Control & Actions (Pin D26 ➔ GND)</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Wire a second bare mechanical switch to pin <strong>D26</strong> to interact directly with whatever screen is displayed!</p>
+                        <h3 style="margin-top:0; font-size:1rem; color:#f43f5e;">➡️ Right Key (Pin D26 ➔ GND) — TFT Navigation & Watchface Sync</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Controls your Right Display (TFT) and syncs time displays across screens:</p>
                         <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li><strong>Single Click on Watchface Page:</strong> Cycle through all 6 Watch Faces (Swiss Analog, Cyber Chrono, Modern Digital, Neon Nixie, Casio F-91W, Casio G-Shock)!</li>
-                            <li><strong>Single Click on Pomodoro Page:</strong> Instantly Start / Pause the productivity countdown!</li>
-                            <li><strong>Single Click on Dashboard Pages:</strong> Cycle through the 11 TFT Color Themes (Cyberpunk Neon, Matrix, Dracula, Nord, etc.)!</li>
-                            <li><strong>Double Click:</strong> Quick-jump directly to the Pomodoro Timer screen & toggle work!</li>
-                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey to snap directly to your iconic <strong>Casio F-91W</strong> watchface!</li>
+                            <li><strong>Single Click:</strong> Manually switches pages directly on the <strong>TFT Display</strong>!</li>
+                            <li><strong>Double Click:</strong> Switches the OLED display to the <strong>Big Clock Face</strong>, jumps the TFT to Watchface Studio, and switches between multiple iconic watch faces (Swiss, Nixie, <strong>Casio F-91W</strong>, and <strong>Casio G-Shock</strong>)!</li>
+                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey to snap straight to your iconic Casio F-91W watchface and cycle themes!</li>
                         </ul>
                     </div>
                     
@@ -640,6 +638,41 @@
                             <li>Send <code>pc:CPU=52C, GPU=61C</code> to broadcast real-time PC gaming telemetry directly onto your OLED & TFT displays!</li>
                         </ul>
                     </div>
+                </div>
+            </section>
+
+            <!-- Card 10: Resource & Performance Optimization Hub -->
+            <section class="card" id="card-optimize">
+                <div class="card-header" onclick="toggleCard('card-optimize')">
+                    <h2>⚡ Resource & Performance Optimization Hub</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Optimize your ESP32's CPU cycles, reduce heap memory footprint, and lower network power consumption by selectively pausing hardware and software engines!</p>
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 14px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div>
+                                <strong style="color:#34d399; font-size:0.95rem;">📡 BLE UART Radio & Telemetry</strong>
+                                <div style="font-size:0.75rem; color:#94a3b8;">Disabling frees ~50KB Heap RAM and cuts RF transmission power.</div>
+                            </div>
+                            <input type="checkbox" id="opt-ble-cb" checked style="width:20px; height:20px; cursor:pointer;">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div>
+                                <strong style="color:#38bdf8; font-size:0.95rem;">🌦️ OpenWeatherMap HTTPS Polling</strong>
+                                <div style="font-size:0.75rem; color:#94a3b8;">Disabling stops TLS encryption overhead & WiFi packet spikes.</div>
+                            </div>
+                            <input type="checkbox" id="opt-weather-cb" checked style="width:20px; height:20px; cursor:pointer;">
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="color:#f472b6; font-size:0.95rem;">🌌 TFT Warp Screensaver Particle Math</strong>
+                                <div style="font-size:0.75rem; color:#94a3b8;">Disabling stops dual-core floating point particle kinematics.</div>
+                            </div>
+                            <input type="checkbox" id="opt-saver-cb" checked style="width:20px; height:20px; cursor:pointer;">
+                        </div>
+                    </div>
+                    <button onclick="saveOptimizations()" class="btn btn-primary full-width" style="background: linear-gradient(135deg, #10b981, #059669); border-color:#059669;">⚡ Apply Optimization Profile</button>
                 </div>
             </section>
 
@@ -796,6 +829,18 @@
             }
             await fetch('/api/upload/oled-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: buffer });
             showToast("OLED Custom Bitmap Uploaded!");
+        }
+
+        async function saveOptimizations() {
+            const ble = document.getElementById('opt-ble-cb').checked ? 1 : 0;
+            const weather = document.getElementById('opt-weather-cb').checked ? 1 : 0;
+            const saver = document.getElementById('opt-saver-cb').checked ? 1 : 0;
+            await fetch('/api/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `ble=${ble}&weather=${weather}&screensaver=${saver}`
+            });
+            showToast("⚡ Resource Optimization Profile Saved!");
         }
 
         setInterval(fetchSensors, 2000);

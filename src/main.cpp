@@ -151,85 +151,80 @@ void loop() {
     // 1. Update State Machines & Dual Mechanical Switches
     pomoTimer.update();
     notificationMgr.update();
-    bleUartMgr.update();
-
-    // ==============================================================
-    // ⌨️ SWITCH 1 (D25) — PAGE NAVIGATION & SLIDESHOW TOGGLE
-    // ==============================================================
-    SwitchAction action1 = mechSwitch1Mgr.update();
-    if (action1 == SWITCH_SINGLE_CLICK) {
-        // Pure manual navigation: Step to Next Page & reset timer
-        tftMgr.nextPage();
-        lastCarouselMs = currentMs; 
-        Serial.printf("⌨️ D25 Single Click: Manual Switch to Page %d\n", tftMgr.currentPage);
-    } 
-    else if (action1 == SWITCH_DOUBLE_CLICK) {
-        // Toggle between Manual-Only and Auto-Slideshow (6 seconds)
-        if (carouselIntervalMs == 0) {
-            carouselIntervalMs = 6000;
-            configMgr.config.carouselSpeedSec = 6;
-            notificationMgr.trigger("Slideshow Mode", "Auto-Slideshow ON (6s)", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
-            Serial.println("⌨️ D25 Double Click: Auto-Slideshow Enabled (6s)");
-        } else {
-            carouselIntervalMs = 0;
-            configMgr.config.carouselSpeedSec = 0;
-            notificationMgr.trigger("Slideshow Mode", "Manual Navigation Only", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
-            Serial.println("⌨️ D25 Double Click: Manual-Only Mode Enabled");
-        }
-        configMgr.saveConfig();
-    } 
-    else if (action1 == SWITCH_LONG_PRESS) {
-        // Cycle OLED Display Mode (HUD -> Clock -> Sparklines -> Marquee -> Cyber Cat)
-        configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
-        configMgr.saveConfig();
-        Serial.printf("⌨️ D25 Long Press: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
+    if (configMgr.config.featureBleEnabled) {
+        bleUartMgr.update();
     }
 
     // ==============================================================
-    // 🎮 SWITCH 2 (D26) — TFT INTERACTION & ACTION SWITCH
+    // ⬅️ LEFT KEY (D25) — OLED CONTROL & TO-DO / NOTES JUMP
     // ==============================================================
-    SwitchAction action2 = mechSwitch2Mgr.update();
-    if (action2 == SWITCH_SINGLE_CLICK) {
-        // Interact with current active TFT screen
-        if (tftMgr.currentPage == 7) {
-            // Watchface Studio Page -> Cycle through all 6 Watch Faces (including Casio!)
-            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6;
-            tftMgr.forceRedraw();
-            Serial.printf("🎮 D26 Single Click: Cycled Watch Face to %d\n", watchFaceEngine.activeStyle);
-        } 
-        else if (tftMgr.currentPage == 2) {
-            // Pomodoro Page -> Toggle Start/Pause
-            if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
-                pomoTimer.startWork();
-            } else {
-                pomoTimer.pause();
-            }
-            tftMgr.forceRedraw();
-            Serial.println("🎮 D26 Single Click: Toggled Pomodoro Timer!");
-        } 
-        else {
-            // Other Dashboard Pages -> Cycle TFT Color Themes (11 Themes)
-            configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
-            configMgr.saveConfig();
-            tftMgr.forceRedraw();
-            Serial.printf("🎮 D26 Single Click: Cycled TFT Color Theme to %d\n", configMgr.config.tftTheme);
+    SwitchAction action1 = mechSwitch1Mgr.update();
+    if (action1 == SWITCH_SINGLE_CLICK) {
+        // Single Click -> Switches pages/modes on the OLED display!
+        configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
+        configMgr.saveConfig();
+        Serial.printf("⬅️ D25 (Left) Single Click: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
+    } 
+    else if (action1 == SWITCH_DOUBLE_CLICK) {
+        // Double Click -> Jump to To-Do List (Page 4) & Notes / Notifs (Page 6) on the TFT!
+        if (tftMgr.currentPage == 4) {
+            tftMgr.setPage(6); // Toggle to Notes / Notifs Log
+            Serial.println("⬅️ D25 (Left) Double Click: Jumped to Notes / Notifs Page!");
+        } else {
+            tftMgr.setPage(4); // Snap straight to To-Do / Custom User Notes Board
+            Serial.println("⬅️ D25 (Left) Double Click: Jumped to To-Do & Notes Page!");
         }
     } 
-    else if (action2 == SWITCH_DOUBLE_CLICK) {
-        // Quick Jump to Pomodoro Screen & Toggle Timer
+    else if (action1 == SWITCH_LONG_PRESS) {
+        // Current Default Long Press -> Toggle Pomodoro Timer Work/Pause & Quick-Jump to Pomodoro (P2)
         tftMgr.setPage(2);
         if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
             pomoTimer.startWork();
+            notificationMgr.trigger("Pomodoro Timer", "Work Timer Started (25m)!", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
         } else {
             pomoTimer.pause();
+            notificationMgr.trigger("Pomodoro Timer", "Timer Paused", NOTIF_WARNING, NOTIF_TARGET_BOTH, 3);
         }
-        Serial.println("🎮 D26 Double Click: Jumped to Pomodoro & Toggled!");
+        Serial.println("⬅️ D25 (Left) Long Press: Toggled Pomodoro Timer!");
+    }
+
+    // ==============================================================
+    // ➡️ RIGHT KEY (D26) — TFT NAVIGATION & WATCHFACE CONTROL
+    // ==============================================================
+    SwitchAction action2 = mechSwitch2Mgr.update();
+    if (action2 == SWITCH_SINGLE_CLICK) {
+        // Single Click -> Switches pages manually on the TFT display!
+        tftMgr.nextPage();
+        lastCarouselMs = currentMs; // Reset timer if auto-slideshow is active
+        Serial.printf("➡️ D26 (Right) Single Click: Manual Switch to TFT Page %d\n", tftMgr.currentPage);
+    } 
+    else if (action2 == SWITCH_DOUBLE_CLICK) {
+        // Double Click -> Switch OLED to Clock Face (Mode 1) & switch/cycle multiple watch faces on TFT!
+        configMgr.config.oledMode = 1; // Set OLED to Big Clock Mode
+        configMgr.saveConfig();
+        
+        if (tftMgr.currentPage != 7) {
+            tftMgr.setPage(7); // Jump straight to Watchface Studio (Page 7)
+            Serial.println("➡️ D26 (Right) Double Click: Switched OLED to Clock & TFT to Watchfaces!");
+        } else {
+            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6; // Cycle all 6 Watch Faces!
+            tftMgr.forceRedraw();
+            Serial.printf("➡️ D26 (Right) Double Click: Cycled TFT Watch Face to %d\n", watchFaceEngine.activeStyle);
+        }
     } 
     else if (action2 == SWITCH_LONG_PRESS) {
-        // Instant Hotkey -> Snap directly to Iconic Casio F-91W Watchface!
-        watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
-        tftMgr.setPage(7);
-        Serial.println("🎮 D26 Long Press: Jumped to Casio F-91W Watchface!");
+        // Current Default Long Press -> Cycle through all 11 TFT Color Themes & snap to Casio F-91W!
+        if (tftMgr.currentPage == 7) {
+            watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
+            tftMgr.forceRedraw();
+            notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_BOTH, 2);
+        } else {
+            configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
+            configMgr.saveConfig();
+            tftMgr.forceRedraw();
+            notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
+        }
+        Serial.println("➡️ D26 (Right) Long Press: Action triggered!");
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
@@ -244,8 +239,8 @@ void loop() {
         sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
     }
 
-    // 4. Periodic Weather API Fetch (Every 10 mins)
-    if (currentMs - lastWeatherFetchMs >= WEATHER_UPDATE_MS) {
+    // 4. Periodic Weather API Fetch (Every 10 mins, if enabled)
+    if (configMgr.config.featureWeatherEnabled && (currentMs - lastWeatherFetchMs >= WEATHER_UPDATE_MS)) {
         lastWeatherFetchMs = currentMs;
         weatherMgr.fetchWeather(configMgr.config.openWeatherKey, 
                                 configMgr.config.openWeatherCity, 

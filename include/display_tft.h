@@ -348,9 +348,9 @@ private:
             case 1: tft.print("BARO"); break;
             case 2: tft.print("POMODORO"); break;
             case 3: tft.print("SYSTEM"); break;
-            case 4: tft.print("MEDIA"); break;
+            case 4: tft.print("TO-DO LIST"); break;
             case 5: tft.print("CLIMATE"); break;
-            case 6: tft.print("NOTIFS"); break;
+            case 6: tft.print("NOTES & LOG"); break;
             case 7: tft.print("WATCH"); break;
             case 8: tft.print("NETWORK"); break;
             case 9: tft.print("WARP"); break;

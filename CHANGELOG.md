@@ -7,22 +7,23 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 ## [1.7.0] - 2026-07-27
 
 ### ✨ Added & Modified
-- **⌨️ Dual Bare Mechanical Switch Hardware Controls (`MECH_SWITCH_1_PIN = 25`, `MECH_SWITCH_2_PIN = 26`)**:
-  - Both pins use internal pull-up resistors (`INPUT_PULLUP`) with 35ms software debounce—**zero external resistors or capacitors required!**
-  - **Switch 1 (Pin D25 ➔ GND) — "Navigation & Slideshow Toggle"**:
-    - *Single Click*: Manually advances to Next TFT Dashboard Page (and resets auto-slideshow timer if running).
-    - *Double Click*: Toggles between **Manual Navigation Only** and **Auto-Slideshow Mode** (6 seconds per slide), complete with a live dual-screen popup notification!
-    - *Long Press (>700ms)*: Cycles through OLED Display Modes (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat Screensaver)!
-  - **Switch 2 (Pin D26 ➔ GND) — "Interactive Control & Actions"**:
-    - *Single Click*: Interacts directly with Whatever screen is displayed!
-      - On **Watchface Page (P8)**: Cycles all 6 Watch Faces (including Casio F-91W & G-Shock).
-      - On **Pomodoro Page (P3)**: Instantly Starts / Pauses the countdown timer.
-      - On **Dashboard Pages**: Cycles through all 11 TFT Color Themes (Cyberpunk Neon, Matrix, Dracula, Nord Frost, etc.)!
-    - *Double Click*: Quick-jumps to the Pomodoro Timer screen and toggles Start/Pause!
-    - *Long Press (>700ms)*: Instant hotkey that snaps straight to your iconic **Casio F-91W** watchface!
-- **🛑 Manual-Only Navigation Default**:
-  - Changed default `carouselSpeedSec` to `0` so the device boots in pure manual navigation mode without unexpected screen transitions.
-- **🖥️ Web UI Documentation Update**:
+- **⌨️ Static Screen Dual-Switch Hardware Hub (`MECH_SWITCH_1_PIN = 25`, `MECH_SWITCH_2_PIN = 26`)**:
+  - Both screens are completely static by default (`carouselSpeedSec = 0`). Auto-slideshow cycling is completely disabled so screens only transition on your explicit physical switch presses!
+  - **Left Key (Pin D25 ➔ GND) — "OLED Controls & To-Do / Notes Quick-Jump"**:
+    - *Single Click*: Advances pages/modes directly on the **OLED Display** (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat).
+    - *Double Click*: Instant toggle jump between the **To-Do List (Page 4)** and **Notes & Logs (Page 6)** screens on the TFT!
+    - *Long Press (>700ms)*: Quick-jumps to Pomodoro screen & toggles work countdown!
+  - **Right Key (Pin D26 ➔ GND) — "TFT Navigation & Watchface Studio Sync"**:
+    - *Single Click*: Manually advances pages directly on the **TFT Display**!
+    - *Double Click*: Switches OLED display to the **Big Clock Face**, snaps TFT to Watchface Studio, and cycles between iconic watch faces (Swiss, Nixie, **Casio F-91W**, and **Casio G-Shock**)!
+    - *Long Press (>700ms)*: Hotkey to snap straight to your Casio F-91W watchface and cycle themes!
+- **⚡ Resource & Performance Optimization Hub (Web UI Card 10 & API)**:
+  - Added interactive feature toggles in the Web UI to dynamically enable/disable resource-intensive subsystem engines via `/api/optimize`:
+    - **BLE UART Radio & Telemetry (`featureBleEnabled`)**: Stops RF broadcasts and saves ~50KB RAM.
+    - **OpenWeatherMap HTTPS Polling (`featureWeatherEnabled`)**: Disables regular TLS requests to eliminate network packet spikes.
+    - **TFT Cyber-Warp Screensaver Math (`featureScreensaverEnabled`)**: Skips floating point particle kinematics when idling.
+- **🖥️ Web UI Polish & Static Routing**:
+  - Updated Hardware Hub instructions in Web UI Card 9 and renamed Page 4 to `TO-DO LIST` and Page 6 to `NOTES & LOG` for crystal-clear readability!
   - Updated Hardware Card 9 on the Web UI (`index.html`) with interactive pin diagrams and instructions for both D25 and D26 switches.
 
 ---

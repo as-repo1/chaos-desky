@@ -28,6 +28,11 @@ struct SystemConfig {
 
     bool ancsEnabled       = true;
     bool ancsAutoPopup     = true;
+
+    // Feature Toggles for CPU / Memory / Power Optimization
+    bool featureBleEnabled        = true; // Enable BLE UART radio
+    bool featureWeatherEnabled    = true; // Enable OWM cloud HTTPS fetches
+    bool featureScreensaverEnabled= true; // Enable TFT Warp Screensaver math
 };
 
 class ConfigManager {
@@ -87,6 +92,9 @@ public:
 
         config.ancsEnabled     = doc["ancsEnabled"] | true;
         config.ancsAutoPopup   = doc["ancsAutoPopup"] | true;
+        config.featureBleEnabled         = doc["featureBleEnabled"] | true;
+        config.featureWeatherEnabled     = doc["featureWeatherEnabled"] | true;
+        config.featureScreensaverEnabled = doc["featureScreensaverEnabled"] | true;
 
         Serial.println("✅ Configuration loaded successfully from LittleFS!");
         return true;
@@ -119,8 +127,11 @@ public:
         doc["pomoWorkMins"]     = config.pomoWorkMins;
         doc["pomoBreakMins"]    = config.pomoBreakMins;
 
-        doc["ancsEnabled"]      = config.ancsEnabled;
-        doc["ancsAutoPopup"]    = config.ancsAutoPopup;
+        doc["ancsEnabled"]              = config.ancsEnabled;
+        doc["ancsAutoPopup"]            = config.ancsAutoPopup;
+        doc["featureBleEnabled"]        = config.featureBleEnabled;
+        doc["featureWeatherEnabled"]    = config.featureWeatherEnabled;
+        doc["featureScreensaverEnabled"]= config.featureScreensaverEnabled;
 
         if (serializeJson(doc, file) == 0) {
             Serial.println("❌ Failed to write JSON to /config.json!");
