@@ -4,6 +4,22 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [1.7.5] - 2026-07-27
+
+### ✨ Added & Enhanced
+- **⌚ 10 Iconic TFT Watch Faces (`watchface_engine.h`)**:
+  - Swiss Analog, Cyber Chrono, Modern Digital, Neon Nixie, Casio F-91W, Casio G-Shock, **Casio CA-53W Calculator**, **Casio Royale (AE-1200 World Time Radar)**, **Seiko Diver (Luminescent Marine)**, and **Pulsar LED (1972 Ruby Red)**.
+- **📟 6 Multi-Style OLED Clock Faces (`display_oled.h`)**:
+  - Digital Telemetry HUD, Analog Minimalist Dial, Cyber Matrix HUD, Retro Airport Flip Cards, Oversized Vertical Stack, and Binary Segment Gauges!
+- **⚡ Pixel-Perfect Alignment Overhaul**:
+  - Re-calculated character bounding boxes ($6\text{px}$ Size 1, $12\text{px}$ Size 2, $18\text{px}$ Size 3) across all watchfaces and dashboard screens to eliminate digit overlaps and text spillage.
+- **🚀 50px/sec OLED Marquee Ticker**:
+  - Accelerated custom announcement ticker scrolling speed to 50px/sec at a 100ms refresh rate for fluid, rapid message broadcasting.
+- **🧹 Image Uploader Purge & Page Refocus**:
+  - Removed photo canvas uploader and memory buffers. Refocused TFT Page 5 as an interactive **To-Do List Dashboard** and OLED Mode 4 as a **Retro Cyber Radar Graphic**.
+
+---
+
 ## [1.7.0] - 2026-07-27
 
 ### ✨ Added & Modified

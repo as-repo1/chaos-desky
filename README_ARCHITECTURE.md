@@ -110,19 +110,21 @@ stateDiagram-v2
 ## 📁 6. Software File Architecture
 
 ```
-chaos-desky/
-├── platformio.ini              # Dependencies, build flags, and LittleFS target
 ├── include/
 │   ├── config.h                # Pins, WiFi, OpenWeather API, NTP, Theme settings
-│   ├── display_oled.h          # OLED SSD1306 128x64 HUD renderer
-│   ├── display_tft.h           # TFT ST7735 128x160 4-page carousel engine
+│   ├── config_manager.h        # LittleFS JSON config persistence & feature toggles
+│   ├── display_oled.h          # OLED SSD1306 128x64 engine with 6 clock styles
+│   ├── display_tft.h           # TFT ST7735 128x160 10-page static/carousel engine
+│   ├── watchface_engine.h      # 10 Iconic TFT watch faces (Swiss, Nixie, Casio, Seiko, Pulsar)
+│   ├── mech_switch.h           # Dual mechanical switch hardware hub manager (D25/D26)
+│   ├── ble_uart_server.h       # Nordic BLE UART receiver & PC telemetry parser
 │   ├── sensors.h               # DHT11 & BMP180/280 non-blocking drivers
 │   ├── zambretti.h             # Barometric weather forecasting algorithm
 │   ├── weather_api.h           # OpenWeatherMap Async JSON API client
 │   ├── pomodoro.h              # Focus timer state machine logic
 │   └── web_server.h            # Async Web Server & REST API handlers
 ├── src/
-│   └── main.cpp                # System initialization, task loops, & event timing
+│   └── main.cpp                # System initialization, dual-switch logic, & event loops
 └── data/                       # LittleFS Storage
     ├── index.html              # Dark glassmorphism web dashboard
     ├── style.css               # Responsive dashboard styling
