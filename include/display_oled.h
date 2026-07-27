@@ -58,7 +58,7 @@ public:
         } else {
             switch (oledMode) {
                 case 0: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
-                case 1: drawMode1_BigClock(timeStr, ipStr); break;
+                case 1: drawMode1_BigClock(timeStr, ipStr, sm.data); break;
                 case 2: drawMode2_Sparklines(sm); break;
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: drawMode4_CustomImage(); break;
@@ -98,7 +98,6 @@ private:
             oled.setCursor(4, 44);
             oled.print(n.message.substring(20, 40));
         }
-
         // Rounded Progress bar
         oled.drawRoundRect(0, 56, 128, 8, 3, SSD1306_WHITE);
         int fillW = (int)((1.0f - progress) * 124.0f);
@@ -143,19 +142,30 @@ private:
         oled.printf("IP: %s", ipStr.c_str());
     }
 
-    void drawMode1_BigClock(const String& timeStr, const String& ipStr) {
+    void drawMode1_BigClock(const String& timeStr, const String& ipStr, const SensorData& s) {
         oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(1);
+
+        // Top Status Header
+        oled.setCursor(2, 2);
+        oled.print("SYSTEM CLOCK");
+        oled.setCursor(80, 2);
+        oled.printf("%.1fC", s.tempC);
+        oled.drawFastHLine(0, 12, 128, SSD1306_WHITE);
+
+        // Big Time Display
         oled.setTextSize(3);
-        oled.setCursor(6, 12);
+        oled.setCursor(12, 18);
         oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
 
+        // Small Seconds on right
         oled.setTextSize(1);
-        oled.setCursor(102, 26);
+        oled.setCursor(104, 32);
         oled.print(timeStr.length() >= 8 ? timeStr.substring(6, 8) : "00");
 
-        oled.drawFastHLine(0, 44, 128, SSD1306_WHITE);
-        oled.setCursor(4, 50);
-        oled.printf("IP: %s", ipStr.c_str());
+        oled.drawFastHLine(0, 48, 128, SSD1306_WHITE);
+        oled.setCursor(4, 53);
+        oled.printf("WEB: %s", ipStr.c_str());
     }
 
     void drawMode2_Sparklines(SensorManager& sm) {
@@ -196,23 +206,34 @@ private:
     void drawMode3_Marquee(const String& text) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
-        oled.setCursor(4, 2);
-        oled.print("📢 ANNOUNCEMENT");
 
-        oled.drawFastHLine(0, 14, 128, SSD1306_WHITE);
+        // Draw clean speaker icon instead of emoji
+        oled.fillRect(4, 3, 4, 6, SSD1306_WHITE);
+        oled.fillTriangle(8, 3, 13, 0, 13, 11, SSD1306_WHITE);
+        oled.drawPixel(15, 3, SSD1306_WHITE);
+        oled.drawPixel(16, 5, SSD1306_WHITE);
+        oled.drawPixel(15, 8, SSD1306_WHITE);
+
+        oled.setCursor(22, 2);
+        oled.print("ANNOUNCEMENT");
+        oled.drawFastHLine(0, 13, 128, SSD1306_WHITE);
+
+        // Disable text wrap to prevent scrolling text from spilling over multiple lines!
+        oled.setTextWrap(false);
         oled.setTextSize(2);
-        oled.setCursor(scrollX, 28);
+        oled.setCursor(scrollX, 26);
         oled.print(text);
+        oled.setTextWrap(true);
 
-        scrollX -= 1;
+        scrollX -= 2;
         int textWidth = text.length() * 12;
         if (scrollX < -textWidth) {
             scrollX = 128;
         }
 
-        oled.drawFastHLine(0, 52, 128, SSD1306_WHITE);
+        oled.drawFastHLine(0, 50, 128, SSD1306_WHITE);
         oled.setTextSize(1);
-        oled.setCursor(4, 55);
+        oled.setCursor(10, 54);
         oled.print("CHAOSDESKY DESK HUB");
     }
 

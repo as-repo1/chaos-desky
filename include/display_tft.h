@@ -637,7 +637,7 @@ private:
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setTextSize(1);
         tft.setCursor(20, 21);
-        tft.print(p.connected ? "BLE CONNECTED" : "BLE PAIRING...");
+        tft.print(p.connected ? "PUSH READY" : "OFFLINE");
 
         // Chat Bubble Container
         tft.fillRoundRect(8, 34, 112, 82, 6, COLOR_PRIMARY);
