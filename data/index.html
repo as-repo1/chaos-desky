@@ -438,11 +438,22 @@
                         <label class="form-label">OLED Display Mode:</label>
                         <select id="oled-mode-dropdown" onchange="setOledMode(this.value)">
                             <option value="0">0: Full Telemetry HUD</option>
-                            <option value="1">1: Big Digital Clock & Date</option>
+                            <option value="1">1: OLED Multi-Clock Face</option>
                             <option value="2">2: Temp & Humidity Sparklines</option>
                             <option value="3">3: Custom Text Marquee Ticker</option>
                             <option value="4">4: Retro Cyber Radar Graphic</option>
                             <option value="5">🐱 5: Cute Cyber Cat Mascot Screensaver</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OLED Clock Face Style (Mode 1):</label>
+                        <select id="oled-clock-style-dropdown" onchange="setOledClockStyle(this.value)">
+                            <option value="0">📊 0: Digital Telemetry HUD Clock</option>
+                            <option value="1">🕒 1: Analog Minimalist Clock</option>
+                            <option value="2">🟩 2: Cyber Matrix HUD Clock</option>
+                            <option value="3">🪟 3: Retro Airport Flip Clock</option>
+                            <option value="4">🔤 4: Oversized Vertical Stack Clock</option>
+                            <option value="5">🚥 5: Binary Segment Gauge Clock</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -723,6 +734,7 @@
         function setTftTheme(theme) { fetch(`/api/tft/theme?theme=${theme}`, { method: 'POST' }); showToast("Theme Updated!"); }
         function setTftRotation(rot) { fetch(`/api/tft/rotation?rot=${rot}`, { method: 'POST' }); showToast("Rotation Updated!"); }
         function setOledMode(mode) { fetch(`/api/oled/mode?mode=${mode}`, { method: 'POST' }); showToast("OLED Mode Updated!"); }
+        function setOledClockStyle(style) { fetch(`/api/oled/clock-style?style=${style}`, { method: 'POST' }); showToast("OLED Clock Face Updated!"); }
         function setOledContrast(val) { fetch(`/api/oled/contrast?level=${val}`, { method: 'POST' }); }
         function setWatchface(style) { fetch('/api/tft/watchface', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `style=${style}` }); showToast("Watch Face Updated!"); }
 

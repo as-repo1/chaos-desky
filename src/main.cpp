@@ -199,8 +199,9 @@ void loop() {
         Serial.printf("➡️ D26 (Right) Single Click: Manual Switch to TFT Page %d\n", tftMgr.currentPage);
     } 
     else if (action2 == SWITCH_DOUBLE_CLICK) {
-        // Double Click -> Switch OLED to Clock Face (Mode 1) & switch/cycle multiple watch faces on TFT!
+        // Double Click -> Switch OLED to Clock Face (Mode 1) & cycle clock faces on both displays!
         configMgr.config.oledMode = 1; // Set OLED to Big Clock Mode
+        configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 6; // Cycle all 6 OLED Clock Faces!
         configMgr.saveConfig();
         
         if (tftMgr.currentPage != 7) {
@@ -209,7 +210,7 @@ void loop() {
         } else {
             watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10; // Cycle all 10 Iconic Watch Faces!
             tftMgr.forceRedraw();
-            Serial.printf("➡️ D26 (Right) Double Click: Cycled TFT Watch Face to %d\n", watchFaceEngine.activeStyle);
+            Serial.printf("➡️ D26 (Right) Double Click: Cycled TFT to %d & OLED Clock to %d\n", watchFaceEngine.activeStyle, configMgr.config.oledClockStyle);
         }
     } 
     else if (action2 == SWITCH_LONG_PRESS) {
@@ -224,7 +225,6 @@ void loop() {
             tftMgr.forceRedraw();
             notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
         }
-        Serial.println("➡️ D26 (Right) Long Press: Action triggered!");
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)

@@ -19,6 +19,7 @@ struct SystemConfig {
     uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
 
     int oledMode           = 0;  // 0: HUD, 1: Clock, 2: Sparklines, 3: Marquee Text, 4: Custom Bitmap
+    int oledClockStyle     = 0;  // 0: Digital HUD, 1: Analog Minimal, 2: Cyber Matrix, 3: Retro Flip, 4: Vertical Stack, 5: Binary Segment
     uint8_t oledContrast   = 255;
     bool oledInverted      = false;
     String customText      = "Welcome to ChaosDesky!";
@@ -83,6 +84,7 @@ public:
         config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
 
         config.oledMode        = doc["oledMode"] | 0;
+        config.oledClockStyle  = doc["oledClockStyle"] | 0;
         config.oledContrast    = doc["oledContrast"] | 255;
         config.oledInverted    = doc["oledInverted"] | false;
         config.customText      = doc["customText"] | "Welcome to ChaosDesky!";
@@ -120,6 +122,7 @@ public:
         doc["enabledPagesMask"] = config.enabledPagesMask;
 
         doc["oledMode"]         = config.oledMode;
+        doc["oledClockStyle"]    = config.oledClockStyle;
         doc["oledContrast"]     = config.oledContrast;
         doc["oledInverted"]     = config.oledInverted;
         doc["customText"]       = config.customText;

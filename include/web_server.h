@@ -186,12 +186,22 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
-        // REST API: POST /api/oled/mode?mode=0..4
+        // REST API: POST /api/oled/mode?mode=0..5
         server.on("/api/oled/mode", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("mode")) {
                 int m = request->getParam("mode")->value().toInt();
                 oledMgr.oledMode = m;
                 configMgr.config.oledMode = m;
+                configMgr.saveConfig();
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: POST /api/oled/clock-style?style=0..5
+        server.on("/api/oled/clock-style", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("style")) {
+                int s = request->getParam("style")->value().toInt();
+                configMgr.config.oledClockStyle = s;
                 configMgr.saveConfig();
             }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
