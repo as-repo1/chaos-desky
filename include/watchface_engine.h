@@ -232,34 +232,34 @@ private:
             gfx.fillRoundRect(6, 20, 116, 18, 4, colorPrimary);
             gfx.setTextColor(colorBg, colorPrimary);
             gfx.setTextSize(1);
-            gfx.setCursor(14, 25);
+            gfx.setCursor(10, 25);
             gfx.print("MODERN DIGITAL HUD");
 
             // Main digital time container frame
-            gfx.drawRoundRect(4, 44, 120, 48, 6, colorAccent);
-            gfx.drawRoundRect(5, 45, 118, 46, 5, colorPrimary);
+            gfx.drawRoundRect(4, 42, 120, 48, 6, colorAccent);
+            gfx.drawRoundRect(5, 43, 118, 46, 5, colorPrimary);
             
             // Environmental Telemetry Box below
-            gfx.drawRoundRect(4, 98, 120, 56, 6, colorPrimary);
+            gfx.drawRoundRect(4, 94, 120, 60, 6, colorPrimary);
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(12, 106);
+            gfx.setCursor(10, 102);
             gfx.printf("CITY : %-10s", w.cityName.substring(0, 10).c_str());
-            gfx.setCursor(12, 120);
+            gfx.setCursor(10, 118);
             gfx.printf("TEMP : %.1fC / %.1fC", tempC, w.tempC);
-            gfx.setCursor(12, 134);
-            gfx.printf("WIND : %.1f m/s (%s)", w.windSpeedMs, w.condition.substring(0, 4).c_str());
+            gfx.setCursor(10, 134);
+            gfx.printf("WIND : %.1fm/s %s", w.windSpeedMs, w.condition.substring(0, 4).c_str());
         }
 
         // Clean time rendering with exact zero-overlap margins
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(10, 56);
+        gfx.setCursor(8, 54);
         gfx.printf("%02d:%02d", h, m);
 
         // Separated sleek second pillbox
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setTextSize(2);
-        gfx.setCursor(98, 62);
+        gfx.setCursor(98, 60);
         gfx.printf("%02d", s);
     }
 
@@ -271,18 +271,18 @@ private:
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
             
-            // 3 Staggered Nixie Glass Vacuum Tubes (Each 40px wide, zero clash)
-            // Tube 1 (Hours): x=2 to x=42
-            gfx.drawRoundRect(2, 24, 40, 56, 8, colorPrimary);
-            gfx.drawRoundRect(4, 26, 36, 52, 6, colorAccent);
+            // 3 Staggered Nixie Glass Vacuum Tubes (Each 36px wide, zero clash)
+            // Tube 1 (Hours): x=4 to x=40
+            gfx.drawRoundRect(4, 24, 36, 56, 8, colorPrimary);
+            gfx.drawRoundRect(6, 26, 32, 52, 6, colorAccent);
             
-            // Tube 2 (Mins): x=44 to x=84
-            gfx.drawRoundRect(44, 24, 40, 56, 8, colorPrimary);
-            gfx.drawRoundRect(46, 26, 36, 52, 6, colorAccent);
+            // Tube 2 (Mins): x=46 to x=82
+            gfx.drawRoundRect(46, 24, 36, 56, 8, colorPrimary);
+            gfx.drawRoundRect(48, 26, 32, 52, 6, colorAccent);
 
-            // Tube 3 (Secs): x=86 to x=126
-            gfx.drawRoundRect(86, 24, 40, 56, 8, colorPrimary);
-            gfx.drawRoundRect(88, 26, 36, 52, 6, colorPrimary);
+            // Tube 3 (Secs): x=88 to x=124
+            gfx.drawRoundRect(88, 24, 36, 56, 8, colorPrimary);
+            gfx.drawRoundRect(90, 26, 32, 52, 6, colorPrimary);
 
             // Cathode glowing filament coils at bottom of tubes
             gfx.drawFastHLine(8, 72, 28, colorPrimary);
@@ -290,31 +290,31 @@ private:
             gfx.drawFastHLine(92, 72, 28, colorAccent);
 
             // USSR Tech Telemetry Box
-            gfx.drawRect(6, 88, 116, 64, colorAccent);
+            gfx.drawRect(4, 86, 120, 68, colorAccent);
             gfx.setTextSize(1);
             gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(14, 94);
-            gfx.print("[- IN-14 NIXIE CORE -]");
+            gfx.setCursor(12, 92);
+            gfx.print("IN-14 NIXIE CORE");
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(14, 110);
+            gfx.setCursor(10, 108);
             gfx.printf("AMB TEMP : %.1f C", tempC);
-            gfx.setCursor(14, 124);
+            gfx.setCursor(10, 122);
             gfx.printf("OUT TEMP : %.1f C", w.tempC);
-            gfx.setCursor(14, 138);
-            gfx.printf("STATUS   : %-10s", w.condition.c_str());
+            gfx.setCursor(10, 136);
+            gfx.printf("STATUS   : %-9s", w.condition.substring(0, 9).c_str());
         }
 
-        // Perfectly centered Size 3 digits inside each 40px vacuum tube box!
+        // Centered Size 3 digits inside each 36px vacuum tube box!
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(6, 40);
+        gfx.setCursor(5, 40);
         gfx.printf("%02d", h);
         
-        gfx.setCursor(48, 40);
+        gfx.setCursor(47, 40);
         gfx.printf("%02d", m);
 
         gfx.setTextColor(colorAccent, colorBg);
-        gfx.setCursor(90, 40);
+        gfx.setCursor(89, 40);
         gfx.printf("%02d", s);
     }
 
@@ -459,22 +459,22 @@ private:
             gfx.drawRoundRect(4, 18, 120, 140, 4, colorPrimary);
             
             // Recessed LCD Top Screen
-            gfx.drawRect(8, 22, 112, 42, colorAccent);
-            gfx.drawRect(9, 23, 110, 40, colorPrimary);
+            gfx.drawRect(8, 22, 112, 44, colorAccent);
+            gfx.drawRect(9, 23, 110, 42, colorPrimary);
 
             // LCD indicators
             gfx.setTextColor(colorAccent, colorBg);
             gfx.setTextSize(1);
-            gfx.setCursor(14, 26);
-            gfx.print("ALM SIG DATABANK");
+            gfx.setCursor(10, 24);
+            gfx.print("ALM SIG  DATABANK");
 
             // Brand Divider text
             gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setCursor(16, 68);
-            gfx.print("CASIO  WATER WR RESIST");
+            gfx.setCursor(10, 68);
+            gfx.print("CASIO  WR RESIST");
 
             // Miniature 4x4 Calculator Keypad Graphics!
-            int startY = 80;
+            int startY = 78;
             const char* keys[4][4] = {
                 {"7", "8", "9", "/"},
                 {"4", "5", "6", "*"},
@@ -484,10 +484,9 @@ private:
             
             for (int r = 0; r < 4; r++) {
                 for (int c = 0; c < 4; c++) {
-                    int bx = 10 + c * 27;
+                    int bx = 8 + c * 28;
                     int by = startY + r * 18;
-                    gfx.drawRoundRect(bx, by, 25, 15, 2, colorPrimary);
-                    // Color code math operators differently!
+                    gfx.drawRoundRect(bx, by, 26, 16, 2, colorPrimary);
                     if (c == 3 || (r == 3 && c == 2)) {
                         gfx.setTextColor(colorAccent, colorBg);
                     } else {
@@ -502,12 +501,12 @@ private:
         // Overdraw time inside top LCD window
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(14, 37);
+        gfx.setCursor(10, 36);
         gfx.printf("%02d:%02d", h, m);
 
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setTextSize(2);
-        gfx.setCursor(94, 43);
+        gfx.setCursor(100, 42);
         gfx.printf("%02d", s);
     }
 
@@ -525,47 +524,47 @@ private:
             gfx.drawRoundRect(4, 18, 120, 140, 6, colorPrimary);
             
             // Top Left: World Time Radar Round Globe Window
-            gfx.drawCircle(32, 46, 22, colorPrimary);
-            gfx.drawCircle(32, 46, 21, colorAccent);
-            gfx.drawFastHLine(10, 46, 44, colorPrimary);
-            gfx.drawFastVLine(32, 24, 44, colorPrimary);
+            gfx.drawCircle(28, 44, 18, colorPrimary);
+            gfx.drawCircle(28, 44, 17, colorAccent);
+            gfx.drawFastHLine(10, 44, 36, colorPrimary);
+            gfx.drawFastVLine(28, 26, 36, colorPrimary);
 
             // Top Right: Status indicators and World Time Zone Box
-            gfx.drawRect(58, 24, 60, 44, colorPrimary);
+            gfx.drawRect(52, 24, 68, 42, colorPrimary);
             gfx.setTextColor(colorAccent, colorBg);
             gfx.setTextSize(1);
-            gfx.setCursor(62, 28);
+            gfx.setCursor(56, 28);
             gfx.print("WORLD TIME");
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(62, 40);
-            gfx.print("LON NYC TYO");
-            gfx.setCursor(62, 52);
+            gfx.setCursor(56, 38);
+            gfx.print("NYC LON TYO");
+            gfx.setCursor(56, 48);
             gfx.printf("TMP:%.0fC", tempC);
 
             // Bottom Panoramic Main Display Frame
-            gfx.drawRoundRect(8, 74, 112, 58, 4, colorAccent);
-            gfx.drawRoundRect(9, 75, 110, 56, 3, colorPrimary);
+            gfx.drawRoundRect(4, 70, 120, 64, 4, colorAccent);
+            gfx.drawRoundRect(5, 71, 118, 62, 3, colorPrimary);
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(14, 80);
-            gfx.print("5 ALARMS   10 YEAR BAT");
+            gfx.setCursor(10, 74);
+            gfx.print("5 ALARMS  10Y BAT");
             
             // Footer branding
             gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setCursor(20, 142);
-            gfx.print("ILLUMINATOR - WR100M");
+            gfx.setCursor(8, 142);
+            gfx.print("ILLUMINATOR - WR");
         }
 
         // Radar scan pulse (dynamic radar beam in the circle!)
         float angleR = s * (2.0f * M_PI / 15.0f);
-        int rx = 32 + (int)(cos(angleR) * 16);
-        int ry = 46 + (int)(sin(angleR) * 16);
-        gfx.fillCircle(32, 46, 3, colorAccent);
+        int rx = 28 + (int)(cos(angleR) * 13);
+        int ry = 44 + (int)(sin(angleR) * 13);
+        gfx.fillCircle(28, 44, 2, colorAccent);
         gfx.fillCircle(rx, ry, 2, colorText);
 
         // Big Main LCD Time
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(14, 96);
+        gfx.setCursor(10, 88);
         if (s % 2 == 0) {
             gfx.printf("%02d:%02d", h, m);
         } else {
@@ -574,7 +573,7 @@ private:
 
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setTextSize(2);
-        gfx.setCursor(94, 102);
+        gfx.setCursor(100, 94);
         gfx.printf("%02d", s);
     }
 
@@ -589,47 +588,47 @@ private:
             gfx.fillRect(0, 16, 128, 144, colorBg);
             
             // Dive rotating Bezel frame
-            gfx.drawCircle(64, 76, 54, colorPrimary);
-            gfx.drawCircle(64, 76, 52, colorAccent);
+            gfx.drawCircle(64, 70, 44, colorPrimary);
+            gfx.drawCircle(64, 70, 42, colorAccent);
             
             // Bezel ticks (0, 15, 30, 45 marine markings)
             for (int i = 0; i < 12; i++) {
                 float a = i * (2.0f * M_PI / 12.0f);
-                int tx1 = 64 + (int)(cos(a) * 46);
-                int ty1 = 76 + (int)(sin(a) * 46);
-                int tx2 = 64 + (int)(cos(a) * 50);
-                int ty2 = 76 + (int)(sin(a) * 50);
+                int tx1 = 64 + (int)(cos(a) * 36);
+                int ty1 = 70 + (int)(sin(a) * 36);
+                int tx2 = 64 + (int)(cos(a) * 40);
+                int ty2 = 70 + (int)(sin(a) * 40);
                 gfx.drawLine(tx1, ty1, tx2, ty2, colorAccent);
             }
             // Triangle marking at 12 o'clock (top)
-            gfx.fillTriangle(64, 24, 58, 32, 70, 32, colorPrimary);
+            gfx.fillTriangle(64, 26, 58, 34, 70, 34, colorPrimary);
 
             // Seiko Marine badge
             gfx.setTextColor(colorPrimary, colorBg);
             gfx.setTextSize(1);
-            gfx.setCursor(48, 38);
+            gfx.setCursor(49, 38);
             gfx.print("SEIKO");
             gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(24, 110);
-            gfx.print("DIVER'S 200m AUTOMATIC");
+            gfx.setCursor(22, 94);
+            gfx.print("DIVER'S 200m");
             
             // Telemetry sub-box
-            gfx.drawRoundRect(14, 134, 100, 22, 4, colorPrimary);
+            gfx.drawRoundRect(6, 130, 116, 22, 4, colorPrimary);
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(22, 141);
-            gfx.printf("TEMP: %.1fC DEPTH: 0m", tempC);
+            gfx.setCursor(12, 137);
+            gfx.printf("TEMP:%.1fC DEPTH:0m", tempC);
         }
 
         // Bold Luminescent Digital Chronometer Display in center
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(18, 66);
+        gfx.setCursor(10, 58);
         gfx.printf("%02d:%02d", h, m);
 
         // Seconds indicator on right
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setTextSize(2);
-        gfx.setCursor(98, 72);
+        gfx.setCursor(100, 64);
         gfx.printf("%02d", s);
     }
 

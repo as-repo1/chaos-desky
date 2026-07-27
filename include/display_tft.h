@@ -574,64 +574,64 @@ private:
             // Item 1: Checked
             tft.setTextColor(COLOR_ACCENT, COLOR_BG);
             tft.setCursor(8, 48);
-            tft.print("[X] 1. Ship Desky Hub");
+            tft.print("[X] 1. Ship Desky");
             
             // Item 2: Active Focus
             tft.setTextColor(COLOR_TEXT, COLOR_BG);
             tft.setCursor(8, 68);
-            tft.print("[>] 2. Deep Pomo Flow");
+            tft.print("[>] 2. Deep Pomo");
 
             // Item 3: Pending
             tft.setTextColor(COLOR_TEXT, COLOR_BG);
             tft.setCursor(8, 88);
-            tft.print("[ ] 3. Hydrate & Break");
+            tft.print("[ ] 3. Hydration");
 
             // Item 4: Pending
             tft.setTextColor(COLOR_TEXT, COLOR_BG);
             tft.setCursor(8, 108);
-            tft.print("[ ] 4. Check Telemetry");
+            tft.print("[ ] 4. Telemetry");
 
             // Banner summary at bottom
-            tft.fillRoundRect(8, 132, 112, 20, 4, COLOR_PRIMARY);
+            tft.fillRoundRect(6, 130, 116, 22, 4, COLOR_PRIMARY);
             tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-            tft.setCursor(14, 138);
-            tft.print(customBannerText.length() > 0 ? customBannerText.substring(0, 16) : "READY FOR ACTION");
+            tft.setCursor(10, 137);
+            tft.print(customBannerText.length() > 0 ? customBannerText.substring(0, 16) : "DESKY TASK HUB");
         }
     }
 
     // --- Page 5: Detailed Indoor Climate Analysis ---
     void renderIndoorClimatePage(const SensorData& s, bool fullRedraw) {
         if (fullRedraw) {
-            tft.drawRoundRect(4, 16, 120, 40, 6, COLOR_PRIMARY);
-            tft.drawRoundRect(4, 60, 120, 84, 6, COLOR_ACCENT);
+            tft.drawRoundRect(4, 16, 120, 42, 6, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 62, 120, 82, 6, COLOR_ACCENT);
         }
 
-        // Hero Temp & Humidity Header Card
-        GfxIconRenderer::drawThermometer(tft, 8, 20, COLOR_TEXT, COLOR_ALERT);
+        // Hero Temp & Humidity Header Card (Clear separation)
+        GfxIconRenderer::drawThermometer(tft, 8, 22, COLOR_TEXT, COLOR_ALERT);
         tft.setTextSize(2);
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(24, 20);
+        tft.setCursor(20, 24);
         tft.printf("%.1fC", s.tempC);
 
-        GfxIconRenderer::drawDroplet(tft, 72, 20, COLOR_PRIMARY);
-        tft.setCursor(88, 20);
+        GfxIconRenderer::drawDroplet(tft, 76, 22, COLOR_PRIMARY);
+        tft.setCursor(88, 24);
         tft.printf("%.0f%%", s.humidity);
 
         // 2-Column Sensor Grid Card
         tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
 
-        tft.setCursor(10, 66);
+        tft.setCursor(10, 68);
         tft.printf("PRESS: %.1fhPa", s.pressureHpa);
-        tft.setCursor(10, 80);
+        tft.setCursor(10, 82);
         tft.printf("ALT:   %.0fm", s.altitudeM);
 
-        tft.setCursor(10, 96);
+        tft.setCursor(10, 98);
         tft.printf("HEAT IND: %.1fC", s.heatIndexC);
-        tft.setCursor(10, 110);
+        tft.setCursor(10, 112);
         tft.printf("DEW PT:   %.1fC", s.dewPointC);
-        tft.setCursor(10, 124);
-        tft.printf("MIN/MAX: %.0f/%.0fC", s.minTempC, s.maxTempC);
+        tft.setCursor(10, 126);
+        tft.printf("MIN/MAX : %.0f/%.0fC", s.minTempC, s.maxTempC);
     }
 
     // --- Page 6: Phone Notifications Log ---
