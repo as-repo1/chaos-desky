@@ -12,22 +12,21 @@
     2. Barometric Pressure Graph & Zambretti Forecast.
     3. Pomodoro Timer & Clock.
     4. Free Heap RAM Status & Web QR Code.
-    5. Custom User Banner / Uploaded Image.
+    5. To-Do List & Daily Focus Dashboard.
     6. Indoor Climate Sensor Telemetry.
-    7. iPhone Phone Notifications Log.
-    8. Custom Watch Face Studio (Swiss Analog, Cyber Chrono, Modern Digital, Neon Nixie).
+    7. Notification Center.
+    8. Custom Watch Face Studio (10 Iconic Watch Faces: Swiss, Cyber, Modern Digital, Nixie, Casio F-91W, Casio G-Shock, Casio CA-53W Calculator, Casio Royale, Seiko Diver, Pulsar LED).
     9. Network Monitor.
     10. 3D Warp Space Screensaver.
-  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 display modes (Telemetry HUD, Digital Clock, Temp/Humidity Sparklines, Custom Text Ticker, Bitmap Viewer, Cyber Cat Mascot).
+  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 display modes (Telemetry HUD, Digital Clock, Temp/Humidity Sparklines, Custom Text Marquee Ticker, Retro Cyber Radar, Cyber Cat Mascot).
 
-- 📱 **BLE iPhone Notification Sync (ANCS Client)**:
-  - ESP32 advertises over Bluetooth as `ChaosDesky-Watch`.
-  - Receives incoming phone calls, WhatsApp messages, iMessages, and app notifications from paired iPhones and displays popup banners on both screens.
+- 📱 **BLE Smartwatch Sync & Notifications**:
+  - ESP32 advertises over Bluetooth for incoming notifications and popup banners.
 
 - 🌐 **Embedded Tabbed Web Dashboard**:
-  - Embedded web interface hosted on LittleFS with 5 tabs (Telemetry, Watch Faces, Smartwatch, Media, Settings).
-  - HTML5 Canvas converter for uploading custom images to TFT or OLED.
-  - Web controls for Pomodoro timers, 11 color themes, screen rotation, carousel page selection, and test notifications.
+  - Embedded web interface hosted on LittleFS with 5 tabs (Telemetry, Watch Faces, Smartwatch, Marquee Ticker, Settings, Optimization Hub).
+  - Instant marquee ticker publisher to broadcast messages across the OLED screen.
+  - Web controls for Pomodoro timers, 11 color themes, screen rotation, carousel page selection, feature toggles, and test notifications.
 
 - 🎨 **11 Color Themes**:
   - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, Material You.

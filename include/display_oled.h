@@ -255,23 +255,25 @@ private:
     }
 
     void drawMode4_CustomImage() {
-        if (LittleFS.exists("/custom_oled.raw")) {
-            File f = LittleFS.open("/custom_oled.raw", "r");
-            if (f && f.size() >= 1024) {
-                uint8_t buffer[1024];
-                f.read(buffer, 1024);
-                f.close();
-                oled.drawBitmap(0, 0, buffer, 128, 64, SSD1306_WHITE, SSD1306_BLACK);
-                return;
-            }
-        }
-        
+        // Mode 4: Retro Cyber Radar Graphic
+        oled.drawCircle(64, 32, 28, SSD1306_WHITE);
+        oled.drawCircle(64, 32, 18, SSD1306_WHITE);
+        oled.drawCircle(64, 32, 8, SSD1306_WHITE);
+        oled.drawLine(36, 32, 92, 32, SSD1306_WHITE);
+        oled.drawLine(64, 4, 64, 60, SSD1306_WHITE);
+
+        // Blinking / Rotating Target
+        int sec = millis() / 500;
+        int tx = 64 + (int)(cos(sec * 0.7f) * 20);
+        int ty = 32 + (int)(sin(sec * 0.7f) * 20);
+        oled.fillCircle(tx, ty, 3, SSD1306_WHITE);
+
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
-        oled.setCursor(10, 20);
-        oled.print("NO OLED IMAGE UPLOADED");
-        oled.setCursor(10, 38);
-        oled.print("Upload via Web UI!");
+        oled.setCursor(4, 4);
+        oled.print("RADAR");
+        oled.setCursor(96, 4);
+        oled.print("ACTIVE");
     }
 };
 
