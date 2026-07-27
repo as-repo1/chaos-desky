@@ -101,6 +101,44 @@ public:
         gfx.drawFastVLine(x + 6, y + 14, 3, colorPins);
         gfx.drawFastVLine(x + 11, y + 14, 3, colorPins);
     }
+
+    // Draw Phone Handset Icon 📞
+    static void drawPhone(Adafruit_GFX& gfx, int16_t x, int16_t y, uint16_t color) {
+        gfx.fillCircle(x + 4, y + 4, 2, color);
+        gfx.fillCircle(x + 12, y + 12, 2, color);
+        gfx.drawLine(x + 4, y + 4, x + 12, y + 12, color);
+        gfx.drawLine(x + 5, y + 3, x + 13, y + 11, color);
+    }
+
+    // Draw Chat Message Bubble 💬
+    static void drawChatBubble(Adafruit_GFX& gfx, int16_t x, int16_t y, uint16_t color) {
+        gfx.fillRoundRect(x + 1, y + 1, 14, 10, 3, color);
+        gfx.fillTriangle(x + 3, y + 10, x + 7, y + 10, x + 2, y + 14, color);
+    }
+
+    // Draw Warning Triangle ⚠️
+    static void drawWarningTriangle(Adafruit_GFX& gfx, int16_t x, int16_t y, uint16_t colorBg, uint16_t colorFg) {
+        gfx.fillTriangle(x + 8, y + 1, x + 1, y + 14, x + 15, y + 14, colorBg);
+        gfx.drawTriangle(x + 8, y + 1, x + 1, y + 14, x + 15, y + 14, colorFg);
+        gfx.drawFastVLine(x + 8, y + 5, 5, colorFg);
+        gfx.drawPixel(x + 8, y + 12, colorFg);
+    }
+
+    // Draw Trend Arrow (Up/Down/Flat) 📈
+    static void drawTrendArrow(Adafruit_GFX& gfx, int16_t x, int16_t y, float trend, uint16_t color) {
+        if (trend > 0.5f) {
+            // Rising ▲
+            gfx.fillTriangle(x + 4, y + 1, x + 1, y + 7, x + 7, y + 7, color);
+            gfx.fillRect(x + 3, y + 7, 3, 5, color);
+        } else if (trend < -0.5f) {
+            // Falling ▼
+            gfx.fillRect(x + 3, y + 1, 3, 5, color);
+            gfx.fillTriangle(x + 4, y + 11, x + 1, y + 5, x + 7, y + 5, color);
+        } else {
+            // Stable ═
+            gfx.fillRect(x + 1, y + 4, 7, 3, color);
+        }
+    }
 };
 
 #endif // GFX_ICONS_H

@@ -49,29 +49,44 @@ private:
                            uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         
         int cx = 64;
-        int cy = 76;
-        int r = 48;
+        int cy = 74;
+        int r = 46;
 
-        // Outer Bezel
+        // Double Outer Bezel
+        gfx.drawCircle(cx, cy, r + 2, colorPrimary);
         gfx.drawCircle(cx, cy, r, colorPrimary);
-        gfx.drawCircle(cx, cy, r - 1, colorPrimary);
 
-        // 12 Hour Ticks
-        for (int i = 0; i < 12; i++) {
-            float angle = i * (2.0f * M_PI / 12.0f);
-            int x1 = cx + (int)(cos(angle) * (r - 6));
-            int y1 = cy + (int)(sin(angle) * (r - 6));
-            int x2 = cx + (int)(cos(angle) * (r - 2));
-            int y2 = cy + (int)(sin(angle) * (r - 2));
-            gfx.drawLine(x1, y1, x2, y2, colorAccent);
+        // 60 Minute Ticks & 12 Hour Ticks
+        for (int i = 0; i < 60; i++) {
+            float angle = i * (2.0f * M_PI / 60.0f);
+            if (i % 5 == 0) {
+                int x1 = cx + (int)(cos(angle) * (r - 7));
+                int y1 = cy + (int)(sin(angle) * (r - 7));
+                int x2 = cx + (int)(cos(angle) * (r - 2));
+                int y2 = cy + (int)(sin(angle) * (r - 2));
+                gfx.drawLine(x1, y1, x2, y2, colorAccent);
+            } else {
+                int x = cx + (int)(cos(angle) * (r - 3));
+                int y = cy + (int)(sin(angle) * (r - 3));
+                gfx.drawPixel(x, y, colorPrimary);
+            }
         }
 
-        // Hour Hand
+        // Cardinal Hour Labels (12, 3, 6, 9)
+        gfx.setTextSize(1);
+        gfx.setTextColor(colorText, colorBg);
+        gfx.setCursor(cx - 5, cy - r + 9); gfx.print("12");
+        gfx.setCursor(cx + r - 12, cy - 3); gfx.print("3");
+        gfx.setCursor(cx - 3, cy + r - 14); gfx.print("6");
+        gfx.setCursor(cx - r + 6, cy - 3); gfx.print("9");
+
+        // Hour Hand (Thick)
         float angleH = ((h % 12) + m / 60.0f) * (2.0f * M_PI / 12.0f) - (M_PI / 2.0f);
-        int hx = cx + (int)(cos(angleH) * (r - 20));
-        int hy = cy + (int)(sin(angleH) * (r - 20));
+        int hx = cx + (int)(cos(angleH) * (r - 18));
+        int hy = cy + (int)(sin(angleH) * (r - 18));
         gfx.drawLine(cx, cy, hx, hy, colorPrimary);
         gfx.drawLine(cx + 1, cy, hx + 1, hy, colorPrimary);
+        gfx.drawLine(cx - 1, cy, hx - 1, hy, colorPrimary);
 
         // Minute Hand
         float angleM = (m + s / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
@@ -88,10 +103,9 @@ private:
         // Center Pin
         gfx.fillCircle(cx, cy, 3, colorAccent);
 
-        // Weather Complication Badge below center
-        gfx.setTextSize(1);
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setCursor(24, 134);
+        // Weather Complication Badge below dial
+        gfx.drawRoundRect(14, 130, 100, 18, 4, colorAccent);
+        gfx.setCursor(20, 135);
         gfx.printf("%.1fC | %s", w.valid ? w.tempC : tempC, w.cityName.substring(0, 8).c_str());
     }
 
@@ -100,11 +114,15 @@ private:
                           const OutdoorWeatherData& w, float tempC,
                           uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         
-        // Digital Time Header
+        // Digital Time Header with Blinking Colon
         gfx.setTextSize(2);
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setCursor(16, 24);
-        gfx.printf("%02d:%02d:%02d", h, m, s);
+        if (s % 2 == 0) {
+            gfx.printf("%02d:%02d:%02d", h, m, s);
+        } else {
+            gfx.printf("%02d %02d %02d", h, m, s);
+        }
 
         // Sub-Dial Mini Analog Clock
         int cx = 64;
@@ -112,6 +130,7 @@ private:
         int r = 32;
 
         gfx.drawCircle(cx, cy, r, colorPrimary);
+        gfx.drawCircle(cx, cy, r - 1, colorPrimary);
 
         float angleM = (m + s / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
         int mx = cx + (int)(cos(angleM) * (r - 6));
@@ -124,13 +143,14 @@ private:
         gfx.drawLine(cx, cy, sx, sy, colorAccent);
         gfx.fillCircle(cx, cy, 2, colorAccent);
 
-        // Telemetry Footer
+        // Telemetry Footer Box
+        gfx.drawRoundRect(4, 122, 120, 24, 4, colorPrimary);
         gfx.setTextSize(1);
         gfx.setTextColor(colorText, colorBg);
         gfx.setCursor(8, 126);
-        gfx.printf("INDOOR: %.1f C", tempC);
-        gfx.setCursor(8, 138);
-        gfx.printf("OUTDOOR:%.1f C", w.tempC);
+        gfx.printf("INDOOR:  %.1f C", tempC);
+        gfx.setCursor(8, 135);
+        gfx.printf("OUTDOOR: %.1f C", w.tempC);
     }
 
     // --- Style 2: Modern Minimalist Digital Weather ---
@@ -138,7 +158,8 @@ private:
                             const OutdoorWeatherData& w, float tempC,
                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         
-        gfx.fillRoundRect(4, 24, 120, 48, 6, colorPrimary);
+        gfx.fillRoundRect(4, 24, 120, 48, 8, colorPrimary);
+        gfx.drawRoundRect(4, 24, 120, 48, 8, colorAccent);
         gfx.setTextColor(colorBg, colorPrimary);
         gfx.setTextSize(3);
         gfx.setCursor(10, 36);
@@ -149,7 +170,7 @@ private:
         gfx.printf("%02d", s);
 
         // Weather Stats Box
-        gfx.drawRoundRect(4, 78, 120, 64, 4, colorAccent);
+        gfx.drawRoundRect(4, 78, 120, 64, 6, colorAccent);
         gfx.setTextColor(colorText, colorBg);
         gfx.setCursor(10, 84);
         gfx.printf("CITY: %s", w.cityName.substring(0, 10).c_str());
@@ -166,7 +187,11 @@ private:
                          const OutdoorWeatherData& w, float tempC,
                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         
-        // Digit 1 & 2 (Hours)
+        // Faux Glow Outline
+        gfx.drawRoundRect(5, 29, 36, 52, 4, colorPrimary);
+        gfx.drawRoundRect(43, 29, 36, 52, 4, colorPrimary);
+        gfx.drawRoundRect(83, 29, 40, 52, 4, colorAccent);
+
         gfx.drawRoundRect(6, 30, 34, 50, 4, colorAccent);
         gfx.drawRoundRect(44, 30, 34, 50, 4, colorAccent);
         gfx.drawRoundRect(84, 30, 38, 50, 4, colorPrimary);

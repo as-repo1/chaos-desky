@@ -230,10 +230,11 @@ public:
             // Creamy Laser Wipe Page Transition
             for (int y = 0; y < 160; y += 16) {
                 tft.fillRect(0, y, 128, 16, COLOR_PRIMARY);
-                delay(2);
+                delay(1);
                 tft.fillRect(0, y, 128, 16, COLOR_BG);
             }
-            drawPageHeader();
+            drawPageHeader(timeStr);
+            drawPageDots();
             lastRenderedPage = currentPage;
             pageNeedsFullRedraw = false;
         }
@@ -262,139 +263,178 @@ private:
         if (n.category == NOTIF_WARNING) headerColor = COLOR_WARN;
         else if (n.category == NOTIF_ALERT || n.category == NOTIF_CALL) headerColor = COLOR_ALERT;
 
-        tft.fillRect(4, 20, 120, 120, COLOR_BG);
-        tft.drawRect(4, 20, 120, 120, headerColor);
+        tft.fillRoundRect(4, 20, 120, 120, 6, COLOR_BG);
+        tft.drawRoundRect(4, 20, 120, 120, 6, headerColor);
 
-        tft.fillRect(4, 20, 120, 18, headerColor);
+        tft.fillRoundRect(4, 20, 120, 20, 6, headerColor);
         tft.setTextColor(COLOR_BG, headerColor);
         tft.setTextSize(1);
-        tft.setCursor(8, 25);
 
         switch (n.category) {
-            case NOTIF_INFO:    tft.print("ℹ️ INFO ALERT"); break;
-            case NOTIF_MESSAGE: tft.print("💬 NEW MESSAGE"); break;
-            case NOTIF_CALL:    tft.print("📞 INCOMING CALL"); break;
-            case NOTIF_WARNING: tft.print("⚠️ WARNING!"); break;
-            case NOTIF_ALERT:   tft.print("🚨 CRITICAL ALERT"); break;
+            case NOTIF_INFO:
+                tft.setCursor(24, 26);
+                tft.print("INFO ALERT");
+                break;
+            case NOTIF_MESSAGE:
+                GfxIconRenderer::drawChatBubble(tft, 8, 23, COLOR_BG);
+                tft.setCursor(26, 26);
+                tft.print("NEW MESSAGE");
+                break;
+            case NOTIF_CALL:
+                GfxIconRenderer::drawPhone(tft, 8, 22, COLOR_BG);
+                tft.setCursor(26, 26);
+                tft.print("INCOMING CALL");
+                break;
+            case NOTIF_WARNING:
+                GfxIconRenderer::drawWarningTriangle(tft, 6, 22, COLOR_BG, headerColor);
+                tft.setCursor(26, 26);
+                tft.print("WARNING!");
+                break;
+            case NOTIF_ALERT:
+                GfxIconRenderer::drawWarningTriangle(tft, 6, 22, COLOR_BG, headerColor);
+                tft.setCursor(26, 26);
+                tft.print("CRITICAL ALERT");
+                break;
         }
 
         tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
         tft.setTextSize(1);
-        tft.setCursor(10, 44);
+        tft.setCursor(10, 46);
         tft.print(n.title.substring(0, 18));
 
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(10, 60);
+        tft.setCursor(10, 62);
         tft.print(n.message.substring(0, 18));
 
         if (n.message.length() > 18) {
-            tft.setCursor(10, 75);
+            tft.setCursor(10, 77);
             tft.print(n.message.substring(18, 36));
         }
 
         if (n.message.length() > 36) {
-            tft.setCursor(10, 90);
+            tft.setCursor(10, 92);
             tft.print(n.message.substring(36, 54));
         }
 
-        // Progress bar
-        tft.drawRect(8, 120, 112, 10, headerColor);
+        // Rounded Progress bar
+        tft.drawRoundRect(8, 120, 112, 10, 3, headerColor);
         int fillWidth = (int)((1.0f - progress) * 108.0f);
         if (fillWidth > 0) {
-            tft.fillRect(10, 122, fillWidth, 6, headerColor);
+            tft.fillRoundRect(10, 122, fillWidth, 6, 2, headerColor);
         }
 
-        tft.fillRect(0, 146, 128, 14, headerColor);
+        tft.fillRoundRect(4, 134, 120, 12, 3, headerColor);
         tft.setTextColor(COLOR_BG, headerColor);
-        tft.setCursor(4, 149);
+        tft.setCursor(10, 136);
         tft.print("DISMISSING NOTIF...");
     }
 
-    void drawPageHeader() {
-        tft.fillRoundRect(2, 2, 124, 16, 4, COLOR_PRIMARY);
-        tft.drawRoundRect(2, 2, 124, 16, 4, COLOR_ACCENT);
-        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+    void drawPageHeader(const String& timeStr) {
+        tft.fillRect(0, 0, 128, 14, COLOR_BG);
+        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
         tft.setTextSize(1);
-        tft.setCursor(6, 6);
+        tft.setCursor(4, 2);
+        tft.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
 
+        // Center Title
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(44, 2);
         switch (currentPage) {
-            case 0: tft.print("1/10 OUTDOOR WEATHER"); break;
-            case 1: tft.print("2/10 BARO FORECASTER"); break;
-            case 2: tft.print("3/10 POMODORO HUB   "); break;
-            case 3: tft.print("4/10 SYSTEM & QR    "); break;
-            case 4: tft.print("5/10 CUSTOM MEDIA   "); break;
-            case 5: tft.print("6/10 INDOOR CLIMATE "); break;
-            case 6: tft.print("7/10 BLE RADAR HUD  "); break;
-            case 7: tft.print("8/10 BIG DIGITAL CLK"); break;
-            case 8: tft.print("9/10 NETWORK MONITOR"); break;
-            case 9: tft.print("10/10 3D WARP SPACE "); break;
+            case 0: tft.print("WEATHER"); break;
+            case 1: tft.print("BARO"); break;
+            case 2: tft.print("POMODORO"); break;
+            case 3: tft.print("SYSTEM"); break;
+            case 4: tft.print("MEDIA"); break;
+            case 5: tft.print("CLIMATE"); break;
+            case 6: tft.print("NOTIFS"); break;
+            case 7: tft.print("WATCH"); break;
+            case 8: tft.print("NETWORK"); break;
+            case 9: tft.print("WARP"); break;
+        }
+
+        GfxIconRenderer::drawWifiSignal(tft, 108, 1, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
+        tft.drawFastHLine(0, 14, 128, COLOR_PRIMARY);
+    }
+
+    void drawPageDots() {
+        tft.fillRect(0, 150, 128, 10, COLOR_BG);
+        int startX = (128 - (TOTAL_TFT_PAGES * 8)) / 2;
+        for (int i = 0; i < TOTAL_TFT_PAGES; i++) {
+            int x = startX + (i * 8) + 3;
+            if (i == currentPage) {
+                tft.fillCircle(x, 154, 2, COLOR_PRIMARY);
+            } else {
+                tft.drawCircle(x, 154, 2, COLOR_TEXT);
+            }
         }
     }
 
     // --- Page 0: Outdoor Weather ---
     void renderOutdoorWeatherPage(const OutdoorWeatherData& w, bool fullRedraw) {
         if (fullRedraw) {
-            tft.drawFastHLine(4, 82, 120, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 18, 120, 58, 6, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 80, 120, 66, 6, COLOR_ACCENT);
+            drawWeatherIcon(85, 34, w.iconCode);
         }
 
+        // Location & Main Temp Card
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(4, 22);
+        tft.setCursor(10, 22);
         tft.setTextSize(1);
-        tft.printf("LOCATION: %-10s", w.cityName.c_str());
+        tft.printf("%-10s", w.cityName.c_str());
 
         tft.setTextSize(3);
         tft.setTextColor(COLOR_ACCENT, COLOR_BG);
         tft.setCursor(10, 36);
         if (w.valid) {
-            tft.printf("%2.0fC ", w.tempC);
+            tft.printf("%2.0fC", w.tempC);
         } else {
-            tft.print("--C ");
-        }
-
-        if (fullRedraw) {
-            drawWeatherIcon(85, 36, w.iconCode);
+            tft.print("--C");
         }
 
         tft.setTextSize(1);
         tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-        tft.setCursor(4, 68);
-        tft.printf("STATUS: %-12s", w.condition.c_str());
+        tft.setCursor(10, 62);
+        tft.printf("%-14s", w.condition.c_str());
 
+        // Secondary Metrics Card
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(4, 88);
-        tft.printf("HUMIDITY: %2.0f%% ", w.humidity);
-        tft.setCursor(4, 102);
-        tft.printf("TEMP MIN: %4.1fC", w.tempMinC);
-        tft.setCursor(4, 116);
-        tft.printf("TEMP MAX: %4.1fC", w.tempMaxC);
-        tft.setCursor(4, 130);
-        tft.printf("WIND:     %4.1fm/s", w.windSpeedMs);
+        GfxIconRenderer::drawDroplet(tft, 8, 85, COLOR_PRIMARY);
+        tft.setCursor(24, 88);
+        tft.printf("HUM: %2.0f%%", w.humidity);
 
-        tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-        tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-        tft.setCursor(4, 149);
-        tft.print(w.valid ? "LIVE API SYNC OK   " : "NO API KEY / WIFI  ");
+        GfxIconRenderer::drawThermometer(tft, 8, 102, COLOR_TEXT, COLOR_ALERT);
+        tft.setCursor(24, 106);
+        tft.printf("MIN/MAX: %.0f/%.0fC", w.tempMinC, w.tempMaxC);
+
+        GfxIconRenderer::drawGauge(tft, 8, 122, COLOR_PRIMARY, COLOR_ACCENT);
+        tft.setCursor(24, 126);
+        tft.printf("WIND: %.1fm/s", w.windSpeedMs);
     }
 
     // --- Page 1: Pressure Graph & Zambretti ---
     void renderPressureGraphPage(SensorManager& sm, bool fullRedraw) {
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setTextSize(1);
-        tft.setCursor(4, 20);
-        tft.printf("PRESS: %6.1f hPa", sm.data.pressureHpa);
-
         String forecast = ZambrettiForecaster::calculateForecast(sm.data.pressureHpa, sm.getPastPressure());
+        float trendVal = sm.data.pressureHpa - sm.getPastPressure();
 
         if (fullRedraw) {
-            tft.fillRect(4, 32, 120, 20, COLOR_PRIMARY);
-            tft.drawRect(4, 58, 120, 62, COLOR_PRIMARY);
+            tft.fillRoundRect(4, 18, 120, 20, 4, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 42, 120, 80, 6, COLOR_PRIMARY);
         }
-        
-        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-        tft.setCursor(8, 38);
-        tft.printf("%-20s", forecast.c_str());
 
-        float trendVal = sm.data.pressureHpa - sm.getPastPressure();
+        // Zambretti Forecast Pill
+        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+        tft.setTextSize(1);
+        tft.setCursor(8, 24);
+        tft.printf("%-18s", forecast.c_str());
+
+        // Pressure & Trend
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(8, 46);
+        tft.printf("P: %6.1fhPa", sm.data.pressureHpa);
+        GfxIconRenderer::drawTrendArrow(tft, 110, 44, trendVal, trendVal > 0.5f ? COLOR_GOOD : trendVal < -0.5f ? COLOR_ALERT : COLOR_PRIMARY);
+
+        // Graph Plot
         uint16_t graphColor = COLOR_GOOD;
         if (trendVal > 1.5f) graphColor = COLOR_PRIMARY;
         else if (trendVal < -1.5f) graphColor = COLOR_ALERT;
@@ -407,94 +447,78 @@ private:
             }
             if (maxP - minP < 2.0f) { maxP += 1.0f; minP -= 1.0f; }
 
-            int step = 118 / (sm.historyCount - 1);
+            int step = 110 / (sm.historyCount - 1);
             for (int i = 0; i < sm.historyCount - 1; i++) {
-                int x1 = 5 + (i * step);
-                int y1 = 118 - (int)(((sm.pressureHistory[i] - minP) / (maxP - minP)) * 56.0f);
-                int x2 = 5 + ((i + 1) * step);
-                int y2 = 118 - (int)(((sm.pressureHistory[i + 1] - minP) / (maxP - minP)) * 56.0f);
+                int x1 = 8 + (i * step);
+                int y1 = 114 - (int)(((sm.pressureHistory[i] - minP) / (maxP - minP)) * 52.0f);
+                int x2 = 8 + ((i + 1) * step);
+                int y2 = 114 - (int)(((sm.pressureHistory[i + 1] - minP) / (maxP - minP)) * 52.0f);
                 tft.drawLine(x1, y1, x2, y2, graphColor);
             }
         }
 
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(4, 124);
-        tft.print("COMFORT: ");
+        // Comfort Indicator Dot
+        tft.setCursor(8, 128);
+        tft.print("AIR: ");
         if (sm.data.humidity >= 40.0f && sm.data.humidity <= 60.0f) {
+            tft.fillCircle(40, 131, 3, COLOR_GOOD);
             tft.setTextColor(COLOR_GOOD, COLOR_BG);
-            tft.print("IDEAL (GOOD) ");
+            tft.print(" IDEAL ");
         } else if (sm.data.humidity > 60.0f) {
+            tft.fillCircle(40, 131, 3, COLOR_ALERT);
             tft.setTextColor(COLOR_ALERT, COLOR_BG);
-            tft.print("HUMID (MOLD) ");
+            tft.print(" HUMID ");
         } else {
+            tft.fillCircle(40, 131, 3, COLOR_WARN);
             tft.setTextColor(COLOR_WARN, COLOR_BG);
-            tft.print("DRY (AIR)   ");
+            tft.print(" DRY   ");
         }
-
-        tft.fillRect(0, 146, 128, 14, graphColor);
-        tft.setTextColor(COLOR_BG, graphColor);
-        tft.setCursor(4, 149);
-        tft.printf("TREND: %-+5.1fhPa/6h", trendVal);
     }
 
     // --- Page 2: Pomodoro Hub ---
     void renderPomodoroPage(PomodoroTimer& pomo, const String& timeStr, bool fullRedraw) {
-        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-        tft.setTextSize(2);
-        tft.setCursor(18, 22);
-        tft.print(timeStr.length() > 5 ? timeStr.substring(0, 5) : timeStr);
-
         uint16_t stateColor = COLOR_PRIMARY;
         if (pomo.state == POMO_WORK) stateColor = COLOR_ALERT;
         else if (pomo.state == POMO_BREAK) stateColor = COLOR_GOOD;
         else if (pomo.state == POMO_PAUSED) stateColor = COLOR_WARN;
 
-        tft.fillRect(10, 44, 108, 18, stateColor);
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 18, 120, 128, 8, stateColor);
+        }
+
+        // State Badge Pill
+        tft.fillRoundRect(24, 24, 80, 18, 9, stateColor);
         tft.setTextColor(COLOR_BG, stateColor);
         tft.setTextSize(1);
-        tft.setCursor(34, 49);
+        tft.setCursor(34, 29);
         tft.printf("%-8s", pomo.getStateString().c_str());
 
+        // Hero Countdown Timer
         tft.setTextSize(3);
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(16, 68);
+        tft.setCursor(16, 52);
         tft.print(pomo.getFormattedTime());
 
-        if (fullRedraw) {
-            tft.drawRect(10, 98, 108, 14, COLOR_PRIMARY);
-        }
-        int fillWidth = (int)(pomo.getProgress() * 104.0f);
+        // Progress Arc Bar
+        tft.drawRoundRect(12, 84, 104, 12, 4, stateColor);
+        int fillWidth = (int)(pomo.getProgress() * 100.0f);
         if (fillWidth > 0) {
-            tft.fillRect(12, 100, fillWidth, 10, stateColor);
-            if (fillWidth < 104) {
-                tft.fillRect(12 + fillWidth, 100, 104 - fillWidth, 10, COLOR_BG);
-            }
-        } else {
-            tft.fillRect(12, 100, 104, 10, COLOR_BG);
+            tft.fillRoundRect(14, 86, fillWidth, 8, 3, stateColor);
         }
 
+        // Session Stats
         tft.setTextSize(1);
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(10, 122);
-        tft.printf("SESSIONS DONE: %-3d", pomo.completedSessions);
-        tft.setCursor(10, 134);
-        tft.printf("WORK:%2dm | REST:%2dm", pomo.workDurationMins, pomo.breakDurationMins);
-
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
-            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-            tft.setCursor(4, 149);
-            tft.print("CONTROL VIA WEB UI ");
-        }
+        tft.setCursor(14, 104);
+        tft.printf("SESSIONS: %d", pomo.completedSessions);
+        tft.setCursor(14, 118);
+        tft.printf("WORK:%dm | REST:%dm", pomo.workDurationMins, pomo.breakDurationMins);
+        tft.setCursor(14, 130);
+        tft.print("CONTROL VIA WEB UI");
     }
 
     // --- Page 3: System QR ---
     void renderSystemQrPage(const String& ipStr, bool fullRedraw) {
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setTextSize(1);
-        tft.setCursor(4, 20);
-        tft.printf("IP: %-15s", ipStr.c_str());
-
         if (fullRedraw && ipStr.length() > 7 && ipStr != "0.0.0.0") {
             String qrUrl = "http://" + ipStr;
             QRCode qrcode;
@@ -503,9 +527,9 @@ private:
 
             int scale = 3;
             int xOffset = (128 - (qrcode.size * scale)) / 2;
-            int yOffset = 34;
+            int yOffset = 20;
 
-            tft.fillRect(xOffset - 2, yOffset - 2, (qrcode.size * scale) + 4, (qrcode.size * scale) + 4, ST77XX_WHITE);
+            tft.fillRoundRect(xOffset - 4, yOffset - 4, (qrcode.size * scale) + 8, (qrcode.size * scale) + 8, 6, ST77XX_WHITE);
 
             for (uint8_t y = 0; y < qrcode.size; y++) {
                 for (uint8_t x = 0; x < qrcode.size; x++) {
@@ -516,14 +540,18 @@ private:
             }
         }
 
-        tft.setCursor(4, 128);
-        tft.printf("RAM FREE: %5u KB", ESP.getFreeHeap() / 1024);
+        // IP Address Badge
+        tft.fillRoundRect(8, 112, 112, 16, 4, COLOR_PRIMARY);
+        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+        tft.setTextSize(1);
+        tft.setCursor(12, 116);
+        tft.printf("IP: %-15s", ipStr.c_str());
 
-        // USER REQUEST: Format RAM line as "RAM -f : <value> KB" and remove "SCAN QR FOR WEB DASH"
-        tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-        tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-        tft.setCursor(4, 149);
-        tft.printf("RAM -f : %u KB", ESP.getFreeHeap() / 1024);
+        // RAM Line Gauge
+        uint32_t freeKb = ESP.getFreeHeap() / 1024;
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(8, 134);
+        tft.printf("RAM -f: %u KB", freeKb);
     }
 
     // --- Page 4: Custom User Image / Banner ---
@@ -540,102 +568,95 @@ private:
                         }
                     }
                     f.close();
-                    
-                    tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
-                    tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-                    tft.setCursor(4, 149);
-                    tft.print("CUSTOM USER IMAGE  ");
                     return;
                 }
             }
 
-            tft.fillRect(4, 25, 120, 115, COLOR_PRIMARY);
-            tft.drawRect(4, 25, 120, 115, COLOR_ACCENT);
-            
-            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 20, 120, 125, 8, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
             tft.setTextSize(2);
-            tft.setCursor(14, 40);
+            tft.setCursor(14, 36);
             tft.print("CHAOS");
-            tft.setCursor(14, 60);
+            tft.setCursor(14, 56);
             tft.print("DESKY");
 
             tft.setTextSize(1);
-            tft.setCursor(10, 90);
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(10, 85);
             tft.print(customBannerText.substring(0, 18));
-            tft.setCursor(10, 105);
             if (customBannerText.length() > 18) {
+                tft.setCursor(10, 100);
                 tft.print(customBannerText.substring(18, 36));
             }
-
-            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-            tft.setCursor(4, 149);
-            tft.print("WEB TEXT BANNER    ");
         }
     }
 
     // --- Page 5: Detailed Indoor Climate Analysis ---
     void renderIndoorClimatePage(const SensorData& s, bool fullRedraw) {
-        tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setTextSize(1);
-
-        tft.setCursor(4, 22);
-        tft.printf("INDOOR TEMP: %4.1fC", s.tempC);
-        tft.setCursor(4, 38);
-        tft.printf("HUMIDITY:    %4.0f%%", s.humidity);
-        tft.setCursor(4, 54);
-        tft.printf("PRESSURE: %6.1fhPa", s.pressureHpa);
-        tft.setCursor(4, 70);
-        tft.printf("ALTITUDE:    %4.0fm", s.altitudeM);
-
-        tft.setCursor(4, 90);
-        tft.printf("HEAT INDEX:  %4.1fC", s.heatIndexC);
-        tft.setCursor(4, 106);
-        tft.printf("DEW POINT:   %4.1fC", s.dewPointC);
-        tft.setCursor(4, 122);
-        tft.printf("TEMP MIN:    %4.1fC", s.minTempC);
-        tft.setCursor(4, 134);
-        tft.printf("TEMP MAX:    %4.1fC", s.maxTempC);
-
         if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_PRIMARY);
-            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
-            tft.setCursor(4, 149);
-            tft.print("INDOOR CLIMATE HUD ");
+            tft.drawRoundRect(4, 18, 120, 42, 6, COLOR_PRIMARY);
+            tft.drawRoundRect(4, 64, 120, 82, 6, COLOR_ACCENT);
         }
+
+        // Hero Temp & Humidity Header Card
+        GfxIconRenderer::drawThermometer(tft, 8, 22, COLOR_TEXT, COLOR_ALERT);
+        tft.setTextSize(2);
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setCursor(24, 22);
+        tft.printf("%.1fC", s.tempC);
+
+        GfxIconRenderer::drawDroplet(tft, 72, 22, COLOR_PRIMARY);
+        tft.setCursor(88, 22);
+        tft.printf("%.0f%%", s.humidity);
+
+        // 2-Column Sensor Grid Card
+        tft.setTextSize(1);
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+
+        tft.setCursor(10, 70);
+        tft.printf("PRESS: %.1fhPa", s.pressureHpa);
+        tft.setCursor(10, 84);
+        tft.printf("ALT:   %.0fm", s.altitudeM);
+
+        tft.setCursor(10, 102);
+        tft.printf("HEAT IND: %.1fC", s.heatIndexC);
+        tft.setCursor(10, 116);
+        tft.printf("DEW PT:   %.1fC", s.dewPointC);
+        tft.setCursor(10, 130);
+        tft.printf("MIN/MAX: %.0f/%.0fC", s.minTempC, s.maxTempC);
     }
 
     // --- Page 6: Phone Notifications Log ---
     void renderPhoneNotifPage(const PhoneNotificationLog& p, bool fullRedraw) {
-        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-        tft.setTextSize(1);
-        tft.setCursor(4, 22);
-        tft.printf("BLE: %s", p.connected ? "CONNECTED" : "PAIRING...");
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 18, 120, 128, 8, COLOR_PRIMARY);
+        }
 
-        tft.setTextColor(COLOR_ACCENT, COLOR_BG);
-        tft.setCursor(4, 38);
+        // Connection Dot
+        tft.fillCircle(12, 26, 3, p.connected ? COLOR_GOOD : COLOR_WARN);
+        tft.setTextColor(COLOR_TEXT, COLOR_BG);
+        tft.setTextSize(1);
+        tft.setCursor(20, 23);
+        tft.print(p.connected ? "BLE CONNECTED" : "BLE PAIRING...");
+
+        // Chat Bubble Container
+        tft.fillRoundRect(8, 38, 112, 80, 6, COLOR_PRIMARY);
+        tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+        tft.setCursor(14, 44);
         tft.printf("APP: %s", p.lastApp.c_str());
+        tft.setCursor(14, 58);
+        tft.printf("FROM: %s", p.lastSender.substring(0, 14).c_str());
+
+        tft.setCursor(14, 76);
+        tft.print(p.lastMessage.substring(0, 16));
+        if (p.lastMessage.length() > 16) {
+            tft.setCursor(14, 90);
+            tft.print(p.lastMessage.substring(16, 32));
+        }
 
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
-        tft.setCursor(4, 54);
-        tft.printf("FROM: %s", p.lastSender.substring(0, 16).c_str());
-
-        tft.setCursor(4, 70);
-        tft.print(p.lastMessage.substring(0, 18));
-        if (p.lastMessage.length() > 18) {
-            tft.setCursor(4, 84);
-            tft.print(p.lastMessage.substring(18, 36));
-        }
-
-        tft.setCursor(4, 110);
-        tft.printf("TOTAL NOTIFS: %d", p.totalCount);
-
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-            tft.setCursor(4, 149);
-            tft.print("PHONE NOTIF LOG    ");
-        }
+        tft.setCursor(10, 126);
+        tft.printf("TOTAL RECEIVED: %d", p.totalCount);
     }
 
     // --- Page 7: Custom Watch Face Dial ---
@@ -648,42 +669,32 @@ private:
         }
 
         watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG);
-
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-            tft.setCursor(4, 149);
-            tft.print("WATCH FACE STUDIO  ");
-        }
     }
 
     // --- Page 8: Network & Wi-Fi Monitor ---
     void renderNetworkMonitorPage(const String& ipStr, bool fullRedraw) {
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 18, 120, 128, 8, COLOR_PRIMARY);
+        }
+
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setTextSize(1);
 
-        tft.setCursor(4, 22);
+        tft.setCursor(10, 24);
         tft.printf("SSID: %-12s", WiFi.SSID().c_str());
-        tft.setCursor(4, 38);
+        tft.setCursor(10, 40);
         tft.printf("IP:   %-15s", ipStr.c_str());
-        tft.setCursor(4, 54);
-        tft.printf("GATEWAY: %-11s", WiFi.gatewayIP().toString().c_str());
-        tft.setCursor(4, 70);
-        tft.printf("SUBNET:  %-11s", WiFi.subnetMask().toString().c_str());
+        tft.setCursor(10, 56);
+        tft.printf("GW:   %-15s", WiFi.gatewayIP().toString().c_str());
 
-        tft.setCursor(4, 90);
+        tft.setCursor(10, 78);
         tft.printf("MAC: %s", WiFi.macAddress().c_str());
-        tft.setCursor(4, 106);
+        tft.setCursor(10, 94);
         tft.printf("RSSI: %d dBm", WiFi.RSSI());
-        tft.setCursor(4, 122);
+        tft.setCursor(10, 110);
         tft.printf("CHANNEL: %d", WiFi.channel());
 
-        if (fullRedraw) {
-            tft.fillRect(0, 146, 128, 14, COLOR_ACCENT);
-            tft.setTextColor(COLOR_BG, COLOR_ACCENT);
-            tft.setCursor(4, 149);
-            tft.print("WIFI DIAGNOSTICS   ");
-        }
+        GfxIconRenderer::drawWifiSignal(tft, 100, 94, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
     }
 
     // --- Page 9: System Hardware & Performance ---

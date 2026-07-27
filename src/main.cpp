@@ -176,7 +176,7 @@ void loop() {
         timeStr = getFormattedNtpTime();
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
-        oledMgr.draw(sensorMgr.data, notificationMgr, localIpStr, timeStr, rssi);
+        oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi);
         tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, ancsClientMgr.phoneLog, notificationMgr, localIpStr, timeStr);
     }
 }

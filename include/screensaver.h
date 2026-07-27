@@ -25,11 +25,11 @@ public:
     int bounceDx = 2;
     int bounceDy = 2;
 
-    Star3D stars[20];
+    Star3D stars[30];
     Particle2D hearts[4];
 
     ScreensaverEngine() {
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 30; i++) {
             resetStar(i);
         }
         for (int i = 0; i < 4; i++) {
@@ -114,21 +114,25 @@ public:
     void renderTftCosmicWarp(Adafruit_GFX& gfx, uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg) {
         gfx.fillScreen(colorBg);
 
-        // 1. Draw 3D Warp Starfield
+        // 1. Draw 3D Warp Starfield with Motion Trails
         int centerX = 64;
         int centerY = 80;
 
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 30; i++) {
+            float prevZ = stars[i].z;
             stars[i].z -= 4.0f;
             if (stars[i].z <= 2.0f) {
                 resetStar(i);
+                continue;
             }
 
+            int prevX = centerX + (int)((stars[i].x / prevZ) * 40.0f);
+            int prevY = centerY + (int)((stars[i].y / prevZ) * 40.0f);
             int sx = centerX + (int)((stars[i].x / stars[i].z) * 40.0f);
             int sy = centerY + (int)((stars[i].y / stars[i].z) * 40.0f);
 
             if (sx >= 0 && sx < 128 && sy >= 18 && sy < 146) {
-                gfx.drawPixel(sx, sy, colorPrimary);
+                gfx.drawLine(prevX, prevY, sx, sy, colorPrimary);
             }
         }
 
@@ -137,7 +141,8 @@ public:
         int py = 70;
         gfx.fillCircle(px, py, 14, colorAccent);
         gfx.drawCircle(px, py, 14, colorPrimary);
-        gfx.drawFastHLine(px - 22, py, 44, colorPrimary); // Ring
+        gfx.drawFastHLine(px - 22, py, 44, colorPrimary);
+        gfx.drawFastHLine(px - 18, py - 1, 36, colorAccent);
 
         // 3. Orbiting Moon
         float angle = (animFrame * 0.15f);

@@ -50,20 +50,20 @@ public:
         oled.invertDisplay(invert);
     }
 
-    void draw(const SensorData& s, const NotificationManager& notifMgr, const String& ipStr, const String& timeStr, int rssi) {
+    void draw(SensorManager& sm, const NotificationManager& notifMgr, const String& ipStr, const String& timeStr, int rssi) {
         oled.clearDisplay();
 
         if (notifMgr.isOledActive()) {
             drawNotificationOverlay(notifMgr.currentNotif, notifMgr.getProgress());
         } else {
             switch (oledMode) {
-                case 0: drawMode0_HUD(s, ipStr, timeStr, rssi); break;
+                case 0: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
                 case 1: drawMode1_BigClock(timeStr, ipStr); break;
-                case 2: drawMode2_Sparklines(s); break;
+                case 2: drawMode2_Sparklines(sm); break;
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: drawMode4_CustomImage(); break;
                 case 5: screensaverEngine.renderOledCatMascot(oled); break;
-                default: drawMode0_HUD(s, ipStr, timeStr, rssi); break;
+                default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
             }
         }
 
@@ -74,7 +74,7 @@ private:
     Adafruit_SSD1306 oled;
 
     void drawNotificationOverlay(const NotificationItem& n, float progress) {
-        oled.fillRect(0, 0, 128, 14, SSD1306_WHITE);
+        oled.fillRoundRect(0, 0, 128, 14, 3, SSD1306_WHITE);
         oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
         oled.setTextSize(1);
         oled.setCursor(4, 3);
@@ -99,47 +99,47 @@ private:
             oled.print(n.message.substring(20, 40));
         }
 
-        // Progress bar
-        oled.drawRect(0, 56, 128, 8, SSD1306_WHITE);
+        // Rounded Progress bar
+        oled.drawRoundRect(0, 56, 128, 8, 3, SSD1306_WHITE);
         int fillW = (int)((1.0f - progress) * 124.0f);
         if (fillW > 0) {
-            oled.fillRect(2, 58, fillW, 4, SSD1306_WHITE);
+            oled.fillRoundRect(2, 58, fillW, 4, 2, SSD1306_WHITE);
         }
     }
 
     // Mode 0: Telemetry HUD
     void drawMode0_HUD(const SensorData& s, const String& ipStr, const String& timeStr, int rssi) {
-        oled.fillRect(0, 0, 128, 12, SSD1306_WHITE);
-        oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+        // Top Status Bar
+        oled.drawFastHLine(0, 12, 128, SSD1306_WHITE);
+        oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
-
         oled.setCursor(2, 2);
-        oled.print(WiFi.status() == WL_CONNECTED ? "WIFI " : "OFF  ");
+        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
 
-        oled.setCursor(38, 2);
-        oled.print(timeStr.length() > 0 && timeStr != "00:00:00" ? timeStr : ipStr);
+        oled.setCursor(44, 2);
+        oled.print(WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE");
 
-        oled.setCursor(102, 2);
-        oled.printf(WiFi.status() == WL_CONNECTED ? "%ddB" : "DISC", rssi);
+        oled.setCursor(96, 2);
+        oled.printf("%ddB", rssi);
 
-        oled.drawFastHLine(0, 13, 128, SSD1306_WHITE);
-        oled.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+        // 2-Column Sensor Data Grid with vertical separator
+        oled.drawFastVLine(64, 13, 38, SSD1306_WHITE);
 
-        oled.setCursor(0, 16);
-        oled.printf("TEMP: %.1f C", s.tempC);
-        oled.setCursor(72, 16);
-        oled.printf("HUM: %.0f%%", s.humidity);
+        oled.setCursor(2, 16);
+        oled.printf("TMP:%.1fC", s.tempC);
+        oled.setCursor(68, 16);
+        oled.printf("HUM:%.0f%%", s.humidity);
 
-        oled.setCursor(0, 27);
-        oled.printf("PRESS:%.1fhPa", s.pressureHpa);
-        oled.setCursor(72, 27);
+        oled.setCursor(2, 28);
+        oled.printf("PRS:%.0fh", s.pressureHpa);
+        oled.setCursor(68, 28);
         oled.printf("ALT:%.0fm", s.altitudeM);
 
-        oled.drawFastHLine(0, 37, 128, SSD1306_WHITE);
+        oled.drawFastHLine(0, 39, 128, SSD1306_WHITE);
 
-        oled.setCursor(0, 41);
-        oled.printf("HI: %.1f C  DEW:%.1f C", s.heatIndexC, s.dewPointC);
-        oled.setCursor(0, 52);
+        oled.setCursor(2, 42);
+        oled.printf("HI:%.1fC  DEW:%.1fC", s.heatIndexC, s.dewPointC);
+        oled.setCursor(2, 54);
         oled.printf("IP: %s", ipStr.c_str());
     }
 
@@ -158,29 +158,46 @@ private:
         oled.printf("IP: %s", ipStr.c_str());
     }
 
-    void drawMode2_Sparklines(const SensorData& s) {
+    void drawMode2_Sparklines(SensorManager& sm) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
+
+        // Top Sparkline: Pressure History
         oled.setCursor(0, 0);
-        oled.printf("T:%.1fC  MIN:%.1f MAX:%.1f", s.tempC, s.minTempC, s.maxTempC);
-        
-        oled.drawRect(0, 12, 128, 20, SSD1306_WHITE);
-        oled.setCursor(2, 18);
-        oled.print("TEMP OK");
+        oled.printf("PRESS: %.1fhPa", sm.data.pressureHpa);
+        oled.drawRoundRect(0, 12, 128, 20, 3, SSD1306_WHITE);
 
+        if (sm.historyCount > 1) {
+            float minP = 1200.0f, maxP = 0.0f;
+            for (int i = 0; i < sm.historyCount; i++) {
+                if (sm.pressureHistory[i] < minP) minP = sm.pressureHistory[i];
+                if (sm.pressureHistory[i] > maxP) maxP = sm.pressureHistory[i];
+            }
+            if (maxP - minP < 1.0f) { maxP += 0.5f; minP -= 0.5f; }
+
+            int step = 124 / (sm.historyCount - 1);
+            for (int i = 0; i < sm.historyCount - 1; i++) {
+                int x1 = 2 + (i * step);
+                int y1 = 30 - (int)(((sm.pressureHistory[i] - minP) / (maxP - minP)) * 16.0f);
+                int x2 = 2 + ((i + 1) * step);
+                int y2 = 30 - (int)(((sm.pressureHistory[i + 1] - minP) / (maxP - minP)) * 16.0f);
+                oled.drawLine(x1, y1, x2, y2, SSD1306_WHITE);
+            }
+        }
+
+        // Bottom Sparkline: Indoor Temperature
         oled.setCursor(0, 34);
-        oled.printf("H:%.0f%%  PRESS:%.1fhPa", s.humidity, s.pressureHpa);
-
-        oled.drawRect(0, 44, 128, 20, SSD1306_WHITE);
-        oled.setCursor(2, 50);
-        oled.print("HUMIDITY OK");
+        oled.printf("TEMP: %.1fC (%.0f%% HUM)", sm.data.tempC, sm.data.humidity);
+        oled.drawRoundRect(0, 44, 128, 20, 3, SSD1306_WHITE);
+        oled.setCursor(4, 50);
+        oled.print("INDOOR CLIMATE STABLE");
     }
 
     void drawMode3_Marquee(const String& text) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
         oled.setCursor(4, 2);
-        oled.print("=== ANNOUNCEMENT ===");
+        oled.print("📢 ANNOUNCEMENT");
 
         oled.drawFastHLine(0, 14, 128, SSD1306_WHITE);
         oled.setTextSize(2);
