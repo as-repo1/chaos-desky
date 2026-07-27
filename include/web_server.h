@@ -273,44 +273,6 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\",\"optimized\":true}");
         });
 
-        // Upload custom 128x64 OLED Bitmap raw binary
-        server.on("/api/upload/oled-image", HTTP_POST, [](AsyncWebServerRequest* request) {
-            request->send(200, "application/json", "{\"status\":\"ok\"}");
-        }, [](AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
-            static File uploadFile;
-            if (index == 0) {
-                uploadFile = LittleFS.open("/custom_oled.raw", "w");
-            }
-            if (uploadFile) {
-                uploadFile.write(data, len);
-            }
-            if (final) {
-                if (uploadFile) uploadFile.close();
-                oledMgr.oledMode = 4; // Switch to Custom Image Mode
-                configMgr.config.oledMode = 4;
-                configMgr.saveConfig();
-                Serial.println("✅ Custom OLED Bitmap Uploaded Successfully!");
-            }
-        });
-
-        // Upload custom 128x160 TFT Image raw binary
-        server.on("/api/upload/tft-image", HTTP_POST, [](AsyncWebServerRequest* request) {
-            request->send(200, "application/json", "{\"status\":\"ok\"}");
-        }, [this](AsyncWebServerRequest* request, String filename, size_t index, uint8_t* data, size_t len, bool final) {
-            static File uploadFile;
-            if (index == 0) {
-                uploadFile = LittleFS.open("/custom_tft.raw", "w");
-            }
-            if (uploadFile) {
-                uploadFile.write(data, len);
-            }
-            if (final) {
-                if (uploadFile) uploadFile.close();
-                tftManager->setPage(4); // Switch TFT to Page 4 (Custom User Page)
-                Serial.println("✅ Custom TFT Image Uploaded Successfully!");
-            }
-        });
-
         // REST API: GET /api/ancs/status
         server.on("/api/ancs/status", HTTP_GET, [this](AsyncWebServerRequest* request) {
             StaticJsonDocument<256> doc;

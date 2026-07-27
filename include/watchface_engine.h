@@ -12,7 +12,11 @@ enum WatchFaceStyle {
     WATCHFACE_MODERN_DIGITAL = 2,
     WATCHFACE_NEON_NIXIE = 3,
     WATCHFACE_CASIO_F91W = 4,
-    WATCHFACE_CASIO_GSHOCK = 5
+    WATCHFACE_CASIO_GSHOCK = 5,
+    WATCHFACE_CASIO_CALCULATOR = 6,
+    WATCHFACE_CASIO_ROYALE = 7,
+    WATCHFACE_SEIKO_DIVER = 8,
+    WATCHFACE_PULSAR_LED = 9
 };
 
 class WatchFaceEngine {
@@ -60,6 +64,18 @@ public:
                 break;
             case WATCHFACE_CASIO_GSHOCK:
                 renderCasioGShock(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CASIO_CALCULATOR:
+                renderCasioCalculator(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CASIO_ROYALE:
+                renderCasioRoyale(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_SEIKO_DIVER:
+                renderSeikoDiver(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_PULSAR_LED:
+                renderPulsarLED(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             default:
                 renderCasioF91W(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
@@ -204,77 +220,101 @@ private:
         gfx.fillCircle(cx, cy, 2, colorAccent);
     }
 
-    // --- Style 2: Modern Minimalist Digital Weather ---
+    // --- Style 2: Modern Minimalist Digital (Fixed UI & Zero Overlap) ---
     void renderModernDigital(Adafruit_GFX& gfx, int h, int m, int s,
                              const OutdoorWeatherData& w, float tempC,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
-            gfx.fillRoundRect(4, 24, 120, 48, 8, colorPrimary);
-            gfx.drawRoundRect(4, 24, 120, 48, 8, colorAccent);
             
-            // Weather Stats Box
-            gfx.drawRoundRect(4, 78, 120, 68, 6, colorAccent);
-            gfx.setTextColor(colorText, colorBg);
+            // Clean top title badge
+            gfx.fillRoundRect(6, 20, 116, 18, 4, colorPrimary);
+            gfx.setTextColor(colorBg, colorPrimary);
             gfx.setTextSize(1);
-            gfx.setCursor(10, 86);
-            gfx.printf("CITY: %-10s", w.cityName.substring(0, 10).c_str());
-            gfx.setCursor(10, 100);
-            gfx.printf("OUT TEMP: %.1fC", w.tempC);
-            gfx.setCursor(10, 114);
-            gfx.printf("COND: %-10s", w.condition.substring(0, 10).c_str());
-            gfx.setCursor(10, 128);
-            gfx.printf("WIND: %.1fm/s", w.windSpeedMs);
+            gfx.setCursor(14, 25);
+            gfx.print("MODERN DIGITAL HUD");
+
+            // Main digital time container frame
+            gfx.drawRoundRect(4, 44, 120, 48, 6, colorAccent);
+            gfx.drawRoundRect(5, 45, 118, 46, 5, colorPrimary);
+            
+            // Environmental Telemetry Box below
+            gfx.drawRoundRect(4, 98, 120, 56, 6, colorPrimary);
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(12, 106);
+            gfx.printf("CITY : %-10s", w.cityName.substring(0, 10).c_str());
+            gfx.setCursor(12, 120);
+            gfx.printf("TEMP : %.1fC / %.1fC", tempC, w.tempC);
+            gfx.setCursor(12, 134);
+            gfx.printf("WIND : %.1f m/s (%s)", w.windSpeedMs, w.condition.substring(0, 4).c_str());
         }
 
-        // Overdraw Digits cleanly over colorPrimary box
-        gfx.setTextColor(colorBg, colorPrimary);
+        // Clean time rendering with exact zero-overlap margins
+        gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(12, 36);
+        gfx.setCursor(10, 56);
         gfx.printf("%02d:%02d", h, m);
 
+        // Separated sleek second pillbox
+        gfx.setTextColor(colorAccent, colorBg);
         gfx.setTextSize(2);
-        gfx.setCursor(98, 42);
+        gfx.setCursor(98, 62);
         gfx.printf("%02d", s);
     }
 
-    // --- Style 3: Retro Neon Nixie Tube ---
+    // --- Style 3: Retro Neon Nixie Tube (Fixed Geometry & Glass Glow) ---
     void renderNeonNixie(Adafruit_GFX& gfx, int h, int m, int s,
                          const OutdoorWeatherData& w, float tempC,
                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
-            // Faux Glow Outline Boxes
-            gfx.drawRoundRect(4, 28, 38, 52, 6, colorPrimary);
-            gfx.drawRoundRect(45, 28, 38, 52, 6, colorPrimary);
-            gfx.drawRoundRect(86, 28, 38, 52, 6, colorAccent);
+            
+            // 3 Staggered Nixie Glass Vacuum Tubes (Each 40px wide, zero clash)
+            // Tube 1 (Hours): x=2 to x=42
+            gfx.drawRoundRect(2, 24, 40, 56, 8, colorPrimary);
+            gfx.drawRoundRect(4, 26, 36, 52, 6, colorAccent);
+            
+            // Tube 2 (Mins): x=44 to x=84
+            gfx.drawRoundRect(44, 24, 40, 56, 8, colorPrimary);
+            gfx.drawRoundRect(46, 26, 36, 52, 6, colorAccent);
 
-            gfx.drawRoundRect(6, 30, 34, 48, 4, colorAccent);
-            gfx.drawRoundRect(47, 30, 34, 48, 4, colorAccent);
-            gfx.drawRoundRect(88, 30, 34, 48, 4, colorPrimary);
+            // Tube 3 (Secs): x=86 to x=126
+            gfx.drawRoundRect(86, 24, 40, 56, 8, colorPrimary);
+            gfx.drawRoundRect(88, 26, 36, 52, 6, colorPrimary);
 
+            // Cathode glowing filament coils at bottom of tubes
+            gfx.drawFastHLine(8, 72, 28, colorPrimary);
+            gfx.drawFastHLine(50, 72, 28, colorPrimary);
+            gfx.drawFastHLine(92, 72, 28, colorAccent);
+
+            // USSR Tech Telemetry Box
+            gfx.drawRect(6, 88, 116, 64, colorAccent);
             gfx.setTextSize(1);
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(14, 94);
+            gfx.print("[- IN-14 NIXIE CORE -]");
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(14, 90);
-            gfx.print("[ NIXIE TUBE CHOP ]");
-            gfx.setCursor(14, 106);
-            gfx.printf("CITY: %-10s", w.condition.c_str());
-            gfx.setCursor(14, 122);
-            gfx.printf("TEMP: %.1f C", w.tempC);
+            gfx.setCursor(14, 110);
+            gfx.printf("AMB TEMP : %.1f C", tempC);
+            gfx.setCursor(14, 124);
+            gfx.printf("OUT TEMP : %.1f C", w.tempC);
+            gfx.setCursor(14, 138);
+            gfx.printf("STATUS   : %-10s", w.condition.c_str());
         }
 
-        // Number overdraw inside boxes
+        // Perfectly centered Size 3 digits inside each 40px vacuum tube box!
         gfx.setTextColor(colorText, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(11, 42);
+        gfx.setCursor(6, 40);
         gfx.printf("%02d", h);
-        gfx.setCursor(52, 42);
+        
+        gfx.setCursor(48, 40);
         gfx.printf("%02d", m);
 
         gfx.setTextColor(colorAccent, colorBg);
-        gfx.setCursor(93, 42);
+        gfx.setCursor(90, 40);
         gfx.printf("%02d", s);
     }
 
@@ -402,6 +442,242 @@ private:
         gfx.print("SEC");
         gfx.setTextSize(2);
         gfx.setCursor(94, 108);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🧮 NEW: Style 6: Casio CA-53W Calculator Databank Watch
+    // =========================================================
+    void renderCasioCalculator(Adafruit_GFX& gfx, int h, int m, int s,
+                               const OutdoorWeatherData& w, float tempC,
+                               uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+
+            // Outer rectangular Calculator case
+            gfx.drawRoundRect(4, 18, 120, 140, 4, colorPrimary);
+            
+            // Recessed LCD Top Screen
+            gfx.drawRect(8, 22, 112, 42, colorAccent);
+            gfx.drawRect(9, 23, 110, 40, colorPrimary);
+
+            // LCD indicators
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setTextSize(1);
+            gfx.setCursor(14, 26);
+            gfx.print("ALM SIG DATABANK");
+
+            // Brand Divider text
+            gfx.setTextColor(colorPrimary, colorBg);
+            gfx.setCursor(16, 68);
+            gfx.print("CASIO  WATER WR RESIST");
+
+            // Miniature 4x4 Calculator Keypad Graphics!
+            int startY = 80;
+            const char* keys[4][4] = {
+                {"7", "8", "9", "/"},
+                {"4", "5", "6", "*"},
+                {"1", "2", "3", "-"},
+                {"0", ".", "=", "+"}
+            };
+            
+            for (int r = 0; r < 4; r++) {
+                for (int c = 0; c < 4; c++) {
+                    int bx = 10 + c * 27;
+                    int by = startY + r * 18;
+                    gfx.drawRoundRect(bx, by, 25, 15, 2, colorPrimary);
+                    // Color code math operators differently!
+                    if (c == 3 || (r == 3 && c == 2)) {
+                        gfx.setTextColor(colorAccent, colorBg);
+                    } else {
+                        gfx.setTextColor(colorText, colorBg);
+                    }
+                    gfx.setCursor(bx + 9, by + 4);
+                    gfx.print(keys[r][c]);
+                }
+            }
+        }
+
+        // Overdraw time inside top LCD window
+        gfx.setTextColor(colorText, colorBg);
+        gfx.setTextSize(3);
+        gfx.setCursor(14, 37);
+        gfx.printf("%02d:%02d", h, m);
+
+        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextSize(2);
+        gfx.setCursor(94, 43);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🗺️ NEW: Style 7: Casio Royale (AE-1200 World Time Radar)
+    // =========================================================
+    void renderCasioRoyale(Adafruit_GFX& gfx, int h, int m, int s,
+                           const OutdoorWeatherData& w, float tempC,
+                           uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+
+            // Outer Casio Royale Chassis
+            gfx.drawRoundRect(4, 18, 120, 140, 6, colorPrimary);
+            
+            // Top Left: World Time Radar Round Globe Window
+            gfx.drawCircle(32, 46, 22, colorPrimary);
+            gfx.drawCircle(32, 46, 21, colorAccent);
+            gfx.drawFastHLine(10, 46, 44, colorPrimary);
+            gfx.drawFastVLine(32, 24, 44, colorPrimary);
+
+            // Top Right: Status indicators and World Time Zone Box
+            gfx.drawRect(58, 24, 60, 44, colorPrimary);
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setTextSize(1);
+            gfx.setCursor(62, 28);
+            gfx.print("WORLD TIME");
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(62, 40);
+            gfx.print("LON NYC TYO");
+            gfx.setCursor(62, 52);
+            gfx.printf("TMP:%.0fC", tempC);
+
+            // Bottom Panoramic Main Display Frame
+            gfx.drawRoundRect(8, 74, 112, 58, 4, colorAccent);
+            gfx.drawRoundRect(9, 75, 110, 56, 3, colorPrimary);
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(14, 80);
+            gfx.print("5 ALARMS   10 YEAR BAT");
+            
+            // Footer branding
+            gfx.setTextColor(colorPrimary, colorBg);
+            gfx.setCursor(20, 142);
+            gfx.print("ILLUMINATOR - WR100M");
+        }
+
+        // Radar scan pulse (dynamic radar beam in the circle!)
+        float angleR = s * (2.0f * M_PI / 15.0f);
+        int rx = 32 + (int)(cos(angleR) * 16);
+        int ry = 46 + (int)(sin(angleR) * 16);
+        gfx.fillCircle(32, 46, 3, colorAccent);
+        gfx.fillCircle(rx, ry, 2, colorText);
+
+        // Big Main LCD Time
+        gfx.setTextColor(colorText, colorBg);
+        gfx.setTextSize(3);
+        gfx.setCursor(14, 96);
+        if (s % 2 == 0) {
+            gfx.printf("%02d:%02d", h, m);
+        } else {
+            gfx.printf("%02d %02d", h, m);
+        }
+
+        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextSize(2);
+        gfx.setCursor(94, 102);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🌊 NEW: Style 8: Seiko Diver (Luminescent Prospex Marine)
+    // =========================================================
+    void renderSeikoDiver(Adafruit_GFX& gfx, int h, int m, int s,
+                          const OutdoorWeatherData& w, float tempC,
+                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+            
+            // Dive rotating Bezel frame
+            gfx.drawCircle(64, 76, 54, colorPrimary);
+            gfx.drawCircle(64, 76, 52, colorAccent);
+            
+            // Bezel ticks (0, 15, 30, 45 marine markings)
+            for (int i = 0; i < 12; i++) {
+                float a = i * (2.0f * M_PI / 12.0f);
+                int tx1 = 64 + (int)(cos(a) * 46);
+                int ty1 = 76 + (int)(sin(a) * 46);
+                int tx2 = 64 + (int)(cos(a) * 50);
+                int ty2 = 76 + (int)(sin(a) * 50);
+                gfx.drawLine(tx1, ty1, tx2, ty2, colorAccent);
+            }
+            // Triangle marking at 12 o'clock (top)
+            gfx.fillTriangle(64, 24, 58, 32, 70, 32, colorPrimary);
+
+            // Seiko Marine badge
+            gfx.setTextColor(colorPrimary, colorBg);
+            gfx.setTextSize(1);
+            gfx.setCursor(48, 38);
+            gfx.print("SEIKO");
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(24, 110);
+            gfx.print("DIVER'S 200m AUTOMATIC");
+            
+            // Telemetry sub-box
+            gfx.drawRoundRect(14, 134, 100, 22, 4, colorPrimary);
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(22, 141);
+            gfx.printf("TEMP: %.1fC DEPTH: 0m", tempC);
+        }
+
+        // Bold Luminescent Digital Chronometer Display in center
+        gfx.setTextColor(colorText, colorBg);
+        gfx.setTextSize(3);
+        gfx.setCursor(18, 66);
+        gfx.printf("%02d:%02d", h, m);
+
+        // Seconds indicator on right
+        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextSize(2);
+        gfx.setCursor(98, 72);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🔴 NEW: Style 9: 1972 Hamilton Pulsar (Vintage Ruby LED)
+    // =========================================================
+    void renderPulsarLED(Adafruit_GFX& gfx, int h, int m, int s,
+                         const OutdoorWeatherData& w, float tempC,
+                         uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        
+        if (fullRedraw) {
+            // Fill with deep contrast background
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+
+            // Cushion curved Gold/Stainless steel Pulsar case frame
+            gfx.drawRoundRect(6, 24, 116, 124, 24, colorPrimary);
+            gfx.drawRoundRect(8, 26, 112, 120, 22, colorPrimary);
+            
+            // Deep red tinted glass filter viewing screen
+            gfx.drawRoundRect(16, 52, 96, 56, 10, colorAccent);
+            gfx.drawRoundRect(17, 53, 94, 54, 9, colorAccent);
+
+            // Vintage branding above and below glass window
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setTextSize(1);
+            gfx.setCursor(44, 36);
+            gfx.print("PULSAR");
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(26, 116);
+            gfx.print("TIME COMPUTER");
+            
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(28, 130);
+            gfx.printf("SOLID STATE %.0fC", tempC);
+        }
+
+        // Ruby Red glowing LED digital characters centered inside tinted glass!
+        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextSize(3);
+        gfx.setCursor(22, 68);
+        if (s % 2 == 0) {
+            gfx.printf("%02d:%02d", h, m);
+        } else {
+            gfx.printf("%02d %02d", h, m);
+        }
+
+        gfx.setTextSize(2);
+        gfx.setCursor(94, 74);
         gfx.printf("%02d", s);
     }
 };

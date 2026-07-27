@@ -558,40 +558,44 @@ private:
         tft.printf("RAM -f: %u KB", freeKb);
     }
 
-    // --- Page 4: Custom User Image / Banner ---
+    // --- Page 4: To-Do List & Daily Priorities ---
     void renderCustomUserPage(bool fullRedraw) {
         if (fullRedraw) {
-            if (LittleFS.exists("/custom_tft.raw")) {
-                File f = LittleFS.open("/custom_tft.raw", "r");
-                if (f && f.size() >= 128 * 128 * 2) {
-                    uint16_t lineBuf[128];
-                    for (int y = 18; y < 146 && f.available(); y++) {
-                        f.read((uint8_t*)lineBuf, 128 * 2);
-                        for (int x = 0; x < 128; x++) {
-                            tft.drawPixel(x, y, lineBuf[x]);
-                        }
-                    }
-                    f.close();
-                    return;
-                }
-            }
-
-            tft.drawRoundRect(4, 16, 120, 128, 8, COLOR_PRIMARY);
+            tft.fillRect(0, 16, 128, 144, COLOR_BG);
+            tft.drawRoundRect(2, 18, 124, 140, 6, COLOR_PRIMARY);
+            
             tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
-            tft.setTextSize(2);
-            tft.setCursor(14, 32);
-            tft.print("CHAOS");
-            tft.setCursor(14, 52);
-            tft.print("DESKY");
-
             tft.setTextSize(1);
+            tft.setCursor(10, 26);
+            tft.print("DAILY FOCUS TARGETS:");
+            
+            tft.drawFastHLine(8, 38, 112, COLOR_PRIMARY);
+            
+            // Item 1: Checked
+            tft.setTextColor(COLOR_ACCENT, COLOR_BG);
+            tft.setCursor(8, 48);
+            tft.print("[X] 1. Ship Desky Hub");
+            
+            // Item 2: Active Focus
             tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(10, 80);
-            tft.print(customBannerText.substring(0, 18));
-            if (customBannerText.length() > 18) {
-                tft.setCursor(10, 96);
-                tft.print(customBannerText.substring(18, 36));
-            }
+            tft.setCursor(8, 68);
+            tft.print("[>] 2. Deep Pomo Flow");
+
+            // Item 3: Pending
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(8, 88);
+            tft.print("[ ] 3. Hydrate & Break");
+
+            // Item 4: Pending
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(8, 108);
+            tft.print("[ ] 4. Check Telemetry");
+
+            // Banner summary at bottom
+            tft.fillRoundRect(8, 132, 112, 20, 4, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.setCursor(14, 138);
+            tft.print(customBannerText.length() > 0 ? customBannerText.substring(0, 16) : "READY FOR ACTION");
         }
     }
 

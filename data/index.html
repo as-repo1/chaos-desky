@@ -384,13 +384,17 @@
                 </div>
                 <div class="card-body">
                     <p class="card-desc">Select custom watch face styles and 11 color themes for TFT Page 8!</p>
-                    <div class="btn-group">
-                        <button onclick="setWatchface(0)" class="btn btn-primary">🕒 Swiss Analog</button>
+                    <div class="btn-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button onclick="setWatchface(0)" class="btn">🕒 Swiss Analog</button>
                         <button onclick="setWatchface(1)" class="btn">⏱️ Cyber Chrono</button>
                         <button onclick="setWatchface(2)" class="btn">☀️ Modern Digital</button>
                         <button onclick="setWatchface(3)" class="btn">🔴 Neon Nixie</button>
-                        <button onclick="setWatchface(4)" class="btn btn-primary" style="background: linear-gradient(135deg, #0056b3, #001f3f); border-left: 4px solid #ff3333; font-weight: bold;">⌚ Casio F-91W</button>
-                        <button onclick="setWatchface(5)" class="btn" style="background: linear-gradient(135deg, #32383e, #1a1c20); border: 1px solid #ff9900; font-weight: bold;">🛡️ Casio G-Shock</button>
+                        <button onclick="setWatchface(4)" class="btn btn-primary" style="background: linear-gradient(135deg, #0056b3, #001f3f); border-left: 4px solid #38bdf8; font-weight: bold;">⌚ Casio F-91W</button>
+                        <button onclick="setWatchface(5)" class="btn" style="background: linear-gradient(135deg, #32383e, #1a1c20); border-left: 4px solid #f97316; font-weight: bold;">🛡️ Casio G-Shock</button>
+                        <button onclick="setWatchface(6)" class="btn" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #10b981; font-weight: bold;">🧮 Casio CA-53W</button>
+                        <button onclick="setWatchface(7)" class="btn" style="background: linear-gradient(135deg, #334155, #1e293b); border-left: 4px solid #ec4899; font-weight: bold;">🗺️ Casio Royale</button>
+                        <button onclick="setWatchface(8)" class="btn">🌊 Seiko Diver</button>
+                        <button onclick="setWatchface(9)" class="btn" style="color: #ef4444; border-color: #ef4444;">🔴 Pulsar LED 1972</button>
                     </div>
                     <hr class="divider">
                     <div class="control-row">
@@ -437,7 +441,7 @@
                             <option value="1">1: Big Digital Clock & Date</option>
                             <option value="2">2: Temp & Humidity Sparklines</option>
                             <option value="3">3: Custom Text Marquee Ticker</option>
-                            <option value="4">4: Uploaded 128x64 Bitmap Image</option>
+                            <option value="4">4: Retro Cyber Radar Graphic</option>
                             <option value="5">🐱 5: Cute Cyber Cat Mascot Screensaver</option>
                         </select>
                     </div>
@@ -505,31 +509,20 @@
                 </div>
             </section>
 
-            <!-- Card 5: Custom Banner & HTML5 Image Uploader -->
+            <!-- Card 5: Custom Banner Ticker -->
             <section class="card" id="card-media">
                 <div class="card-header" onclick="toggleCard('card-media')">
-                    <h2>📝 Custom Text Banner & HTML5 Image Uploader</h2>
+                    <h2>📝 Custom OLED Text Banner & Marquee</h2>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="card-body">
+                    <p class="card-desc">Broadcast instant marquee ticker messages across your OLED display!</p>
                     <div class="form-group">
                         <label class="form-label">Custom Banner Text:</label>
                         <div style="display:flex; gap:8px;">
                             <input type="text" id="marquee-input" placeholder="Type announcement text...">
                             <button onclick="sendCustomText()" class="btn btn-primary">Publish</button>
                         </div>
-                    </div>
-                    <hr class="divider">
-                    <div class="form-group">
-                        <label class="form-label">Select Photo File:</label>
-                        <input type="file" id="image-file-input" accept="image/*" onchange="previewUserImage(event)">
-                    </div>
-                    <div class="preview-box">
-                        <canvas id="preview-canvas" width="128" height="128"></canvas>
-                    </div>
-                    <div class="btn-group" style="margin-top:12px;">
-                        <button onclick="uploadToTft()" class="btn btn-primary">Upload to TFT (P5)</button>
-                        <button onclick="uploadToOled()" class="btn">Upload to OLED (M4)</button>
                     </div>
                 </div>
             </section>
@@ -776,59 +769,6 @@
             const b = document.getElementById('pomo-break-slider').value;
             await fetch('/api/pomo/config', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `work=${w}&break=${b}` });
             showToast("Pomodoro Timers Saved!");
-        }
-
-        function previewUserImage(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.getElementById('preview-canvas');
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, 128, 128);
-                };
-                img.src = evt.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        async function uploadToTft() {
-            const canvas = document.getElementById('preview-canvas');
-            const ctx = canvas.getContext('2d');
-            const imgData = ctx.getImageData(0, 0, 128, 128);
-            const buffer = new Uint8Array(128 * 128 * 2);
-            let idx = 0;
-            for (let i = 0; i < imgData.data.length; i += 4) {
-                const r = imgData.data[i];
-                const g = imgData.data[i + 1];
-                const b = imgData.data[i + 2];
-                const rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3);
-                buffer[idx++] = (rgb565 >> 8) & 0xFF;
-                buffer[idx++] = rgb565 & 0xFF;
-            }
-            await fetch('/api/upload/tft-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: buffer });
-            showToast("TFT Custom Image Uploaded!");
-        }
-
-        async function uploadToOled() {
-            const canvas = document.getElementById('preview-canvas');
-            const ctx = canvas.getContext('2d');
-            const imgData = ctx.getImageData(0, 0, 128, 64);
-            const buffer = new Uint8Array(128 * 64 / 8);
-            for (let y = 0; y < 64; y++) {
-                for (let x = 0; x < 128; x++) {
-                    const idx = (y * 128 + x) * 4;
-                    const brightness = (imgData.data[idx] + imgData.data[idx+1] + imgData.data[idx+2]) / 3;
-                    if (brightness > 128) {
-                        const byteIdx = Math.floor(x + (y / 8) * 128);
-                        buffer[byteIdx] |= (1 << (y % 8));
-                    }
-                }
-            }
-            await fetch('/api/upload/oled-image', { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: buffer });
-            showToast("OLED Custom Bitmap Uploaded!");
         }
 
         async function saveOptimizations() {

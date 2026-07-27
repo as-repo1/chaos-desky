@@ -207,7 +207,7 @@ void loop() {
             tftMgr.setPage(7); // Jump straight to Watchface Studio (Page 7)
             Serial.println("➡️ D26 (Right) Double Click: Switched OLED to Clock & TFT to Watchfaces!");
         } else {
-            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 6; // Cycle all 6 Watch Faces!
+            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10; // Cycle all 10 Iconic Watch Faces!
             tftMgr.forceRedraw();
             Serial.printf("➡️ D26 (Right) Double Click: Cycled TFT Watch Face to %d\n", watchFaceEngine.activeStyle);
         }
