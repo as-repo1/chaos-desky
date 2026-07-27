@@ -4,6 +4,26 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [1.8.0] - 2026-07-27
+
+### ✨ Added & Overhauled
+- **🎛️ Fully Customizable Macro & Button Studio (`/api/buttons/config`)**:
+  - Re-mapped mechanical key functionality from hardcoded loops into a clean, event-driven dispatcher (`executeButtonAction()`).
+  - Added full web dashboard customizer (Card 9) allowing real-time assignment of Single Click, Double Click, and Long Hold events for both Left (D25) and Right (D26) keys with automatic LittleFS persistence.
+- **🤝 Simultaneous Dual-Button Combo Detection (`DualSwitchComboDetector`)**:
+  - Implemented an 80ms coincidence timing window in `mech_switch.h` to cleanly recognize simultaneous button presses without delaying individual click events.
+  - Configurable global super-macros including instant **WiFi Credentials & QR Broadcast** and stealth dual screensaver activation.
+- **🧠 Smart Context-Aware Controls**:
+  - Button clicks automatically adapt based on active screen context. On interactive pages (To-Do List & Pomodoro Timer), clicks effortlessly transform into item selectors, live task completion checkboxes, and timer control shortcuts.
+- **📟 8 Iconic OLED Clock Styles (`display_oled.h`)**:
+  - Expanded OLED multi-face clock options from 6 to 8 styles by adding **Style 6: Cyberpunk Boxed Frame** and **Style 7: Radial Horizon Arc Clock**.
+- **⚡ Ultra-Fast Fluid OLED Marquee Announcement Speed**:
+  - Upgraded custom text scrolling ticker to an ultra-responsive **45ms** update frequency with an 8-pixel per frame advancement rate, providing lightning-fast, smooth banner animations.
+- **📚 Complete Documentation Refresh**:
+  - Comprehensive updates across `README.md`, `README_ARCHITECTURE.md`, and `README_PIN_DIAGRAM.md` reflecting the new Macro Engine, hardware schematics, and UI capabilities.
+
+---
+
 ## [1.7.5] - 2026-07-27
 
 ### ✨ Added & Enhanced

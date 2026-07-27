@@ -440,9 +440,10 @@
                             <option value="0">0: Full Telemetry HUD</option>
                             <option value="1">1: OLED Multi-Clock Face</option>
                             <option value="2">2: Temp & Humidity Sparklines</option>
-                            <option value="3">3: Custom Text Marquee Ticker</option>
+                            <option value="3">3: Custom Text Marquee Ticker (Fast Speed)</option>
                             <option value="4">4: Retro Cyber Radar Graphic</option>
                             <option value="5">🐱 5: Cute Cyber Cat Mascot Screensaver</option>
+                            <option value="6">🌐 6: Dedicated WiFi Credentials & IP Broadcast</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -454,6 +455,8 @@
                             <option value="3">🪟 3: Retro Airport Flip Clock</option>
                             <option value="4">🔤 4: Oversized Vertical Stack Clock</option>
                             <option value="5">🚥 5: Binary Segment Gauge Clock</option>
+                            <option value="6">👾 6: Cyberpunk Boxed Frame Clock</option>
+                            <option value="7">📡 7: Radial Horizon Arc Clock</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -471,6 +474,15 @@
                 </div>
                 <div class="card-body">
                     <p class="card-desc">Pair iPhone over Bluetooth with <strong>chaos-desky</strong> to receive live notifications!</p>
+                    <div class="form-group" style="background:#131c2e; padding:12px; border-radius:8px; border:1px solid #3b82f6; margin-bottom:15px;">
+                        <label class="form-label" style="color:#60a5fa; font-weight:700;">⚙️ System & Alert Notifications Display Target:</label>
+                        <select id="global-notif-target" onchange="saveNotifTargetPref()" style="width:100%; margin-top:6px; background:#0f172a; color:#fff; padding:8px; border-radius:6px; border:1px solid #334155;">
+                            <option value="2">Both Displays (TFT Color + OLED Clock)</option>
+                            <option value="0">TFT Color Screen Only</option>
+                            <option value="1">OLED Clock & Ticker Only</option>
+                        </select>
+                        <small style="color:#94a3b8; display:block; margin-top:6px;">Choose whether system alerts, BLE popups, theme changes, and timers show on OLED, TFT, or both screens.</small>
+                    </div>
                     <div class="metrics-grid">
                         <div class="metric">
                             <span class="label">BLE Sync State</span>
@@ -604,35 +616,160 @@
                 </div>
             </section>
 
-            <!-- Card 9: Dual Mechanical Switches & BLE UART Command Hub -->
-            <section class="card" id="card-mech-ble">
+            <!-- Card 9: Dual Mechanical Switches, Macro Studio & BLE UART -->
+            <section class="card open" id="card-mech-ble">
                 <div class="card-header" onclick="toggleCard('card-mech-ble')">
-                    <h2>⌨️ Dual Mechanical Switches & 📡 BLE UART Telemetry</h2>
+                    <h2>🕹️ Mechanical Macro & Button Studio & 📡 BLE Hub</h2>
                     <span class="arrow">▼</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Your hardware hub features resistorless dual mechanical switches (Left D25 & Right D26) with manual navigation by default and open Nordic UART BLE telemetry!</p>
+                    <p class="card-desc">Customize your dual mechanical keyboard switches (Left D25 & Right D26) dynamically! Configure single clicks, double clicks, long holds, and simultaneous dual-button combos with zero-latency software debounce.</p>
                     
-                    <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-bottom: 15px;">
-                        <h3 style="margin-top:0; font-size:1rem; color:#38bdf8;">⬅️ Left Key (Pin D25 ➔ GND) — OLED Controls & To-Do / Notes Jump</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Controls your Left Display (OLED) and gives instant productivity shortcuts:</p>
+                    <div class="macro-deck" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px;">
+                        <!-- Left Switch (D25) Column -->
+                        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.4); padding: 16px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                            <h3 style="margin-top:0; font-size:1.05rem; color:#38bdf8; display:flex; align-items:center; gap:8px;">
+                                <span>⬅️ Left Switch (Pin D25)</span>
+                            </h3>
+                            <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:12px;">Primary display cycling & task navigation.</p>
+                            
+                            <div style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Single Click Macro:</label>
+                                <select id="btn-left-single" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="1">📺 Cycle OLED Display Mode (HUD/Clock/Radar)</option>
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="6">🎨 Cycle TFT Color Themes</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled / No Action</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Double Click Macro:</label>
+                                <select id="btn-left-double" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="1">📺 Cycle OLED Display Mode</option>
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="6">🎨 Cycle TFT Color Themes</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Long Press (&gt;700ms) Macro:</label>
+                                <select id="btn-left-long" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="1">📺 Cycle OLED Display Mode</option>
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="6">🎨 Cycle TFT Color Themes</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Right Switch (D26) Column -->
+                        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(244, 63, 94, 0.4); padding: 16px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                            <h3 style="margin-top:0; font-size:1.05rem; color:#f43f5e; display:flex; align-items:center; gap:8px;">
+                                <span>➡️ Right Switch (Pin D26)</span>
+                            </h3>
+                            <p style="font-size:0.8rem; color:#94a3b8; margin-bottom:12px;">TFT screen navigation & watchface studio.</p>
+                            
+                            <div style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Single Click Macro:</label>
+                                <select id="btn-right-single" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="1">📺 Cycle OLED Display Mode</option>
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="6">🎨 Cycle TFT Color Themes</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Double Click Macro:</label>
+                                <select id="btn-right-double" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="1">📺 Cycle OLED Display Mode</option>
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="6">🎨 Cycle TFT Color Themes</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label" style="font-size:0.85rem; color:#e2e8f0;">Long Press (&gt;700ms) Macro:</label>
+                                <select id="btn-right-long" class="macro-select" style="width:100%; padding:8px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:6px; margin-top:4px;">
+                                    <option value="6">🎨 Cycle TFT Color Themes & Casio F-91W</option>
+                                    <option value="1">📺 Cycle OLED Display Mode</option>
+                                    <option value="2">⏩ Next TFT Carousel Page</option>
+                                    <option value="3">⏱️ Toggle Pomodoro Work / Pause</option>
+                                    <option value="4">📋 Jump to To-Do & Notes Hub</option>
+                                    <option value="5">⌚ Jump to Watchface Studio & Cycle</option>
+                                    <option value="7">🌐 Show WiFi AP Credentials & IP</option>
+                                    <option value="8">🚀 Launch Dual 3D Screensavers</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Simultaneous Both-Buttons Combo (D25 + D26) Column -->
+                        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.5); padding: 16px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); grid-column: 1 / -1;">
+                            <h3 style="margin-top:0; font-size:1.05rem; color:#c084fc; display:flex; align-items:center; gap:8px;">
+                                <span>🤝 Simultaneous Combo Press (Hold Left D25 + Right D26 Together)</span>
+                            </h3>
+                            <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:12px;">Trigger an instant global super-macro across both OLED & TFT displays simultaneously!</p>
+                            
+                            <div style="display:flex; flex-wrap:wrap; gap:12px; align-items:center;">
+                                <label class="form-label" style="font-size:0.9rem; color:#e2e8f0; margin:0;">Dual-Button Combo Action:</label>
+                                <select id="btn-combo" class="macro-select" style="flex:1; min-width:260px; padding:10px; background:#1e293b; color:#c084fc; font-weight:bold; border:1px solid #a855f7; border-radius:6px;">
+                                    <option value="7">🌐 WiFi Credentials & QR Code Mode (Broadcast AP Status & IP)</option>
+                                    <option value="8">🚀 Instant Stealth & Dual Screensaver Launch</option>
+                                    <option value="4">📋 Emergency Jump to To-Do Focus Hub</option>
+                                    <option value="9">🔄 Reset Pomodoro Timer to Full Work Mode</option>
+                                    <option value="5">⌚ Sync Both Screens to Watchface Studio</option>
+                                    <option value="10">🚫 Disabled</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: right; margin-bottom: 24px;">
+                        <button class="btn btn-primary" onclick="saveMacroDeck()" style="background: linear-gradient(135deg, #a855f7, #6366f1); font-weight:bold; padding:12px 24px; box-shadow: 0 4px 15px rgba(168,85,247,0.4);">
+                            💾 Save Macro Deck to LittleFS
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 14px 18px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 16px;">
+                        <h3 style="margin-top:0; font-size:1rem; color:#34d399;">⚡ Smart Context-Aware Controls (Interactive TFT Pages)</h3>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">When viewing interactive TFT pages, your single clicks automatically transform from screen cycling into intuitive item controllers:</p>
                         <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li><strong>Single Click:</strong> Switches pages/modes directly on the <strong>OLED Display</strong> (HUD ➔ Big Clock ➔ Sparkline ➔ Marquee ➔ Cyber Cat)!</li>
-                            <li><strong>Double Click:</strong> Instantly jumps to the <strong>To-Do List (Page 4)</strong> and <strong>Notes / Logs (Page 6)</strong> screens on the TFT! Toggles back and forth on each double-click!</li>
-                            <li><strong>Long Press (&gt;700ms):</strong> Quick-jumps to Pomodoro screen and toggles timer Work/Pause (Customizable via power-user options)!</li>
+                            <li><strong>On Page 4 (To-Do List Hub):</strong> Left Single-Click moves focus down your task list; Right Single-Click checks/un-checks the active task! Double-Click navigates away.</li>
+                            <li><strong>On Page 2 (Pomodoro Timer):</strong> Left Single-Click toggles Work/Pause; Right Single-Click resets the timer to 25m!</li>
                         </ul>
                     </div>
 
-                    <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #f43f5e; margin-bottom: 15px;">
-                        <h3 style="margin-top:0; font-size:1rem; color:#f43f5e;">➡️ Right Key (Pin D26 ➔ GND) — TFT Navigation & Watchface Sync</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Controls your Right Display (TFT) and syncs time displays across screens:</p>
-                        <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li><strong>Single Click:</strong> Manually switches pages directly on the <strong>TFT Display</strong>!</li>
-                            <li><strong>Double Click:</strong> Switches the OLED display to the <strong>Big Clock Face</strong>, jumps the TFT to Watchface Studio, and switches between multiple iconic watch faces (Swiss, Nixie, <strong>Casio F-91W</strong>, and <strong>Casio G-Shock</strong>)!</li>
-                            <li><strong>Long Press (&gt;700ms):</strong> Instant hotkey to snap straight to your iconic Casio F-91W watchface and cycle themes!</li>
-                        </ul>
-                    </div>
-                    
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #34d399;">
                         <h3 style="margin-top:0; font-size:1rem; color:#34d399;">📡 BLE Nordic UART & PC Telemetry Receiver</h3>
                         <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Open any Bluetooth Terminal app on iOS/Android or desktop script and connect to <strong>chaos-desky</strong> without OS encryption pairing errors!</p>

@@ -87,6 +87,92 @@ void setupWiFi() {
     }
 }
 
+DualSwitchComboDetector comboDetector;
+
+void executeButtonAction(int action) {
+    switch (action) {
+        case ACT_CYCLE_OLED:
+            configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
+            configMgr.saveConfig();
+            Serial.printf("🔘 Macro Action: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
+            break;
+            
+        case ACT_NEXT_TFT_PAGE:
+            tftMgr.nextPage();
+            lastCarouselMs = millis();
+            Serial.printf("🔘 Macro Action: Switched to TFT Page %d\n", tftMgr.currentPage);
+            break;
+            
+        case ACT_TOGGLE_POMO:
+            tftMgr.setPage(2); // Jump to Pomodoro page
+            if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
+                pomoTimer.startWork();
+                notificationMgr.trigger("Pomodoro Timer", "Work Timer Started!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            } else {
+                pomoTimer.pause();
+                notificationMgr.trigger("Pomodoro Timer", "Timer Paused", NOTIF_WARNING, NOTIF_TARGET_USER_PREF, 2);
+            }
+            break;
+            
+        case ACT_JUMP_TODO:
+            if (tftMgr.currentPage == 4) {
+                tftMgr.setPage(6); // Toggle back and forth with Notes / Notif log
+            } else {
+                tftMgr.setPage(4); // Snap straight to To-Do Board
+            }
+            Serial.println("🔘 Macro Action: Jumped to To-Do & Notes Board!");
+            break;
+            
+        case ACT_JUMP_WATCH:
+            configMgr.config.oledMode = 1; // Big Clock Mode
+            configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
+            configMgr.saveConfig();
+            if (tftMgr.currentPage != 7) {
+                tftMgr.setPage(7); // Jump straight to Watchface Studio
+            } else {
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
+                tftMgr.forceRedraw();
+            }
+            Serial.println("🔘 Macro Action: Jumped & Cycled Watchface Studio!");
+            break;
+            
+        case ACT_CYCLE_THEMES:
+            if (tftMgr.currentPage == 7) {
+                watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
+                tftMgr.forceRedraw();
+                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            } else {
+                configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
+                configMgr.saveConfig();
+                tftMgr.forceRedraw();
+                notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            }
+            break;
+            
+        case ACT_WIFI_INFO:
+            configMgr.config.oledMode = 6; // Mode 6: Dedicated WiFi Credentials & IP Broadcast
+            tftMgr.setPage(3);             // Page 3: System QR Code & IP Dashboard
+            notificationMgr.trigger("WiFi Broadcast", "Broadcasting Credentials", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+            Serial.println("🔘 Macro Action: Broadcasting WiFi & QR Code across both screens!");
+            break;
+            
+        case ACT_SCREENSAVER:
+            configMgr.config.oledMode = 5; // OLED screensaver
+            tftMgr.setPage(9);             // Warp screensaver page
+            Serial.println("🔘 Macro Action: Launched Dual Screensavers!");
+            break;
+            
+        case ACT_RESET_POMO:
+            pomoTimer.reset();
+            tftMgr.setPage(2);
+            notificationMgr.trigger("Pomodoro Timer", "Timer Reset to 25m!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            break;
+            
+        default:
+            break;
+    }
+}
+
 void setup() {
     Serial.begin(115200);
     delay(500);
@@ -103,6 +189,7 @@ void setup() {
 
     // Load Persistent Config
     configMgr.begin();
+    notificationMgr.userPreference = (NotificationTarget)configMgr.config.notifTarget;
 
     // Apply Loaded Configuration to Modules
     tftMgr.setRotation(configMgr.config.tftRotation);
@@ -156,75 +243,61 @@ void loop() {
     }
 
     // ==============================================================
-    // ⬅️ LEFT KEY (D25) — OLED CONTROL & TO-DO / NOTES JUMP
+    // 🤝 SIMULTANEOUS COMBO CHECK (LEFT + RIGHT HELD TOGETHER)
     // ==============================================================
-    SwitchAction action1 = mechSwitch1Mgr.update();
-    if (action1 == SWITCH_SINGLE_CLICK) {
-        // Single Click -> Switches pages/modes on the OLED display!
-        configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 5;
-        configMgr.saveConfig();
-        Serial.printf("⬅️ D25 (Left) Single Click: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
-    } 
-    else if (action1 == SWITCH_DOUBLE_CLICK) {
-        // Double Click -> Jump to To-Do List (Page 4) & Notes / Notifs (Page 6) on the TFT!
-        if (tftMgr.currentPage == 4) {
-            tftMgr.setPage(6); // Toggle to Notes / Notifs Log
-            Serial.println("⬅️ D25 (Left) Double Click: Jumped to Notes / Notifs Page!");
-        } else {
-            tftMgr.setPage(4); // Snap straight to To-Do / Custom User Notes Board
-            Serial.println("⬅️ D25 (Left) Double Click: Jumped to To-Do & Notes Page!");
-        }
-    } 
-    else if (action1 == SWITCH_LONG_PRESS) {
-        // Current Default Long Press -> Toggle Pomodoro Timer Work/Pause & Quick-Jump to Pomodoro (P2)
-        tftMgr.setPage(2);
-        if (pomoTimer.state == POMO_IDLE || pomoTimer.state == POMO_PAUSED) {
-            pomoTimer.startWork();
-            notificationMgr.trigger("Pomodoro Timer", "Work Timer Started (25m)!", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
-        } else {
-            pomoTimer.pause();
-            notificationMgr.trigger("Pomodoro Timer", "Timer Paused", NOTIF_WARNING, NOTIF_TARGET_BOTH, 3);
-        }
-        Serial.println("⬅️ D25 (Left) Long Press: Toggled Pomodoro Timer!");
+    if (comboDetector.update(mechSwitch1Mgr, mechSwitch2Mgr)) {
+        Serial.println("🤝 Simultaneous Dual-Button Combo Detected!");
+        executeButtonAction(configMgr.config.btnCombo);
     }
 
     // ==============================================================
-    // ➡️ RIGHT KEY (D26) — TFT NAVIGATION & WATCHFACE CONTROL
+    // ⬅️ LEFT KEY (D25) — INTERACTIVE CONTEXT & MACRO STUDIO
+    // ==============================================================
+    SwitchAction action1 = mechSwitch1Mgr.update();
+    if (action1 == SWITCH_SINGLE_CLICK) {
+        // A1: Context-Aware Navigation on interactive screens!
+        if (tftMgr.currentPage == 4) {
+            // On To-Do List: move focus down through items
+            tftMgr.todoSelectedIdx = (tftMgr.todoSelectedIdx + 1) % 4;
+            tftMgr.forceRedraw();
+            Serial.printf("⬅️ Context Control: Moved To-Do focus to item %d\n", tftMgr.todoSelectedIdx + 1);
+        } else if (tftMgr.currentPage == 2) {
+            // On Pomodoro: toggle work/pause
+            executeButtonAction(ACT_TOGGLE_POMO);
+        } else {
+            // Execute Web-Configurable Single Click Macro
+            executeButtonAction(configMgr.config.btnLeftSingle);
+        }
+    } else if (action1 == SWITCH_DOUBLE_CLICK) {
+        executeButtonAction(configMgr.config.btnLeftDouble);
+    } else if (action1 == SWITCH_LONG_PRESS) {
+        executeButtonAction(configMgr.config.btnLeftLong);
+    }
+
+    // ==============================================================
+    // ➡️ RIGHT KEY (D26) — INTERACTIVE ACTION & MACRO STUDIO
     // ==============================================================
     SwitchAction action2 = mechSwitch2Mgr.update();
     if (action2 == SWITCH_SINGLE_CLICK) {
-        // Single Click -> Switches pages manually on the TFT display!
-        tftMgr.nextPage();
-        lastCarouselMs = currentMs; // Reset timer if auto-slideshow is active
-        Serial.printf("➡️ D26 (Right) Single Click: Manual Switch to TFT Page %d\n", tftMgr.currentPage);
-    } 
-    else if (action2 == SWITCH_DOUBLE_CLICK) {
-        // Double Click -> Switch OLED to Clock Face (Mode 1) & cycle clock faces on both displays!
-        configMgr.config.oledMode = 1; // Set OLED to Big Clock Mode
-        configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 6; // Cycle all 6 OLED Clock Faces!
-        configMgr.saveConfig();
-        
-        if (tftMgr.currentPage != 7) {
-            tftMgr.setPage(7); // Jump straight to Watchface Studio (Page 7)
-            Serial.println("➡️ D26 (Right) Double Click: Switched OLED to Clock & TFT to Watchfaces!");
+        // A1: Context-Aware Action on interactive screens!
+        if (tftMgr.currentPage == 4) {
+            // On To-Do List: Toggle check mark of selected task!
+            tftMgr.todoChecked[tftMgr.todoSelectedIdx] = !tftMgr.todoChecked[tftMgr.todoSelectedIdx];
+            tftMgr.forceRedraw();
+            String msg = tftMgr.todoChecked[tftMgr.todoSelectedIdx] ? "Task Completed!" : "Task Re-Opened!";
+            notificationMgr.trigger("To-Do Target", msg, NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            Serial.println("➡️ Context Control: Toggled To-Do item checkbox!");
+        } else if (tftMgr.currentPage == 2) {
+            // On Pomodoro: Reset timer
+            executeButtonAction(ACT_RESET_POMO);
         } else {
-            watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10; // Cycle all 10 Iconic Watch Faces!
-            tftMgr.forceRedraw();
-            Serial.printf("➡️ D26 (Right) Double Click: Cycled TFT to %d & OLED Clock to %d\n", watchFaceEngine.activeStyle, configMgr.config.oledClockStyle);
+            // Execute Web-Configurable Single Click Macro
+            executeButtonAction(configMgr.config.btnRightSingle);
         }
-    } 
-    else if (action2 == SWITCH_LONG_PRESS) {
-        // Current Default Long Press -> Cycle through all 11 TFT Color Themes & snap to Casio F-91W!
-        if (tftMgr.currentPage == 7) {
-            watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
-            tftMgr.forceRedraw();
-            notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_BOTH, 2);
-        } else {
-            configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
-            configMgr.saveConfig();
-            tftMgr.forceRedraw();
-            notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
-        }
+    } else if (action2 == SWITCH_DOUBLE_CLICK) {
+        executeButtonAction(configMgr.config.btnRightDouble);
+    } else if (action2 == SWITCH_LONG_PRESS) {
+        executeButtonAction(configMgr.config.btnRightLong);
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
@@ -253,8 +326,13 @@ void loop() {
         tftMgr.nextPage();
     }
 
-    // 6. Update Displays (Dynamic 100ms Refresh for Fast Marquee Ticker)
-    uint32_t oledInterval = (configMgr.config.oledMode == 3 || configMgr.config.oledMode == 5 || notificationMgr.isOledActive()) ? 100 : 500;
+    // 6. Update Displays (Dynamic 45ms Refresh for High-Speed Marquee Ticker)
+    uint32_t oledInterval = 500;
+    if (configMgr.config.oledMode == 3) {
+        oledInterval = 45; // Ultra-fast scrolling text speed for announce page!
+    } else if (configMgr.config.oledMode == 5 || notificationMgr.isOledActive()) {
+        oledInterval = 100; // Smooth animations for mascot & notifications
+    }
     if (currentMs - lastOledRefreshMs >= oledInterval) {
         lastOledRefreshMs = currentMs;
         timeStr = getFormattedNtpTime();

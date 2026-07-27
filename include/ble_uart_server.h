@@ -66,7 +66,7 @@ public:
     void onConnect(BLEServer* pServer) override {
         deviceConnected = true;
         Serial.println("📲 Bluetooth Terminal / PC Telemetry Connected!");
-        notificationMgr.trigger("BLE Connected", "UART Server & Telemetry Active", NOTIF_INFO, NOTIF_TARGET_BOTH, 5);
+        notificationMgr.trigger("BLE Connected", "UART Server & Telemetry Active", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 5);
         
         // Welcome Banner
         sendReply("\r\n===========================\r\n🚀 CHAOS DESKY BLE UART\r\nType 'help' for commands\r\n===========================\r\n");
@@ -149,7 +149,7 @@ public:
             else if (cmd.startsWith("pc:") || cmd.startsWith("PC:") || cmd.startsWith("msg:")) {
                 String text = cmd.substring(3);
                 latestTelemetry = text;
-                notificationMgr.trigger("PC Telemetry", text, NOTIF_INFO, NOTIF_TARGET_BOTH, 10);
+                notificationMgr.trigger("PC Telemetry", text, NOTIF_INFO, NOTIF_TARGET_USER_PREF, 10);
                 sendReply("✅ Telemetry Displayed on Hub\r\n");
             }
             else {

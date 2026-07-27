@@ -49,6 +49,11 @@ graph LR
         ESP -- "GPIO 17 (RST)"  --> TFT
     end
 
+    subgraph Mechanical_Switches ["Mechanical Macro Switch Deck"]
+        ESP -- "GPIO 25 (INPUT_PULLUP)" --> SW_LEFT["Left Switch (Key 1)"] --> GND_SW["GND"]
+        ESP -- "GPIO 26 (INPUT_PULLUP)" --> SW_RIGHT["Right Switch (Key 2)"] --> GND_SW
+    end
+
     subgraph Digital_IO ["Digital IO"]
         ESP -- "GPIO 4 (DATA)"  --> DHT[DHT11 Sensor]
     end

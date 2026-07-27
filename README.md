@@ -1,46 +1,61 @@
-# ⚡ chaos-desky — ESP32 Dual-Display Desktop Hub
+# ⚡ chaos-desky — ESP32 Dual-Display Desktop & Command Hub
 
-**chaos-desky** is a standalone ESP32 dual-display desktop companion device. It combines an ST7735 color TFT screen, an SSD1306 OLED display, environmental sensors (DHT11 and BMP180), BLE iPhone notification popups, watch faces, animated screensavers, and an embedded LittleFS web control dashboard.
+**chaos-desky** is an advanced standalone ESP32 dual-display desktop companion and tactical workstation hub. It combines a vibrant 1.8" ST7735 color TFT screen, an ultra-crisp 0.96" SSD1306 OLED display, dual mechanical keyboard switches with dynamic macro customization, environmental sensors (DHT11 & BMP180), BLE telemetry & notifications, multi-brand watch faces, animated screensavers, and an embedded LittleFS interactive web dashboard.
 
 ---
 
-## 🛠️ Features Overview
+## 🛠️ Key Features & Capabilities
 
-- 🖥️ **Dual Display Setup**:
-  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page carousel display (default 180° rotation) with laser wipe page transitions:
-    1. Outdoor Weather & OpenWeatherMap Forecast (Configurable Location).
-    2. Barometric Pressure Graph & Zambretti Forecast.
-    3. Pomodoro Timer & Clock.
-    4. Free Heap RAM Status & Web QR Code.
-    5. To-Do List & Daily Focus Dashboard.
-    6. Indoor Climate Sensor Telemetry.
-    7. Notification Center.
+- 🖥️ **Dual Display Command Center**:
+  - **1.8" SPI Color TFT LCD (ST7735, 128x160)**: 10-page custom carousel display (default 180° rotation) featuring smooth laser-wipe page transitions:
+    1. Outdoor Weather & OpenWeatherMap Forecast (Custom City & Country).
+    2. Barometric Pressure Graph & Zambretti Forecast Engine.
+    3. Pomodoro Work/Break Timer & Action Hub.
+    4. Free Heap RAM Status, WiFi Details & Interactive Web QR Code Dashboard.
+    5. To-Do List & Daily Focus Dashboard with Live Checkoff Controls.
+    6. Indoor Climate Sensor Telemetry (Temperature, Humidity, Dew Point, Heat Index, Altitude).
+    7. BLE Notification Center & Message Logs.
     8. Custom Watch Face Studio (10 Iconic Watch Faces: Swiss, Cyber, Modern Digital, Nixie, Casio F-91W, Casio G-Shock, Casio CA-53W Calculator, Casio Royale, Seiko Diver, Pulsar LED).
-    9. Network Monitor.
+    9. Network Scan Monitor & Signal RSSI Analysis.
     10. 3D Warp Space Screensaver.
-  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 display modes (Telemetry HUD, Digital Clock, Temp/Humidity Sparklines, Custom Text Marquee Ticker, Retro Cyber Radar, Cyber Cat Mascot).
+  - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 7 distinct operational modes:
+    1. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
+    2. **8 Iconic OLED Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Oversized Vertical Stack, Binary Segment Gauges, Cyberpunk Boxed Frame, and Radial Horizon Arc Clock!
+    3. **Sparkline Telemetry**: Historical Barometric pressure and indoor climate trend lines.
+    4. **Fast-Speed Marquee Ticker**: High-speed, fluid 45ms scrolling custom announcements.
+    5. **Retro Cyber Radar**: Futuristic rotating sweeping radar vector graphic.
+    6. **Cute Cyber Cat Mascot**: Animated blinking feline desk pet screensaver.
+    7. **Dedicated WiFi AP Credentials**: Broadcasts current network status, IP, SSID, and password!
 
-- 📱 **BLE Smartwatch Sync & Notifications**:
-  - ESP32 advertises over Bluetooth for incoming notifications and popup banners.
+- 🕹️ **Resistorless Dual Mechanical Switches & Macro Studio**:
+  - Direct connection to internal ESP32 pullups on **GPIO 25 (Left Key)** and **GPIO 26 (Right Key)** to GND.
+  - **Dynamic Macro Deck**: Configure Custom Single Clicks, Double Clicks, and Long Holds directly from the Web Dashboard and store in persistent LittleFS!
+  - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches simultaneously to fire instant global macros (e.g., instant WiFi Credentials Broadcast across both screens or stealth dual screensaver launch!).
+  - **⚡ Smart Context-Aware Controls**: When viewing interactive screens (such as the To-Do Board or Pomodoro Timer), single clicks automatically transform from carousel switching into instinctive item controllers (moving task focus down, checking/unchecking items, or toggling/resetting timers!).
+
+- 📡 **BLE Smartwatch Sync, Telemetry & Command Hub**:
+  - Open Nordic UART BLE receiver allowing lossless telemetry broadcast from PC gaming monitors or mobile terminals without OS encryption pairing errors.
+  - Send wireless terminal commands (`casio`, `gshock`, `page <0..9>`, or `pc:CPU=52C, GPU=61C`).
 
 - 🌐 **Embedded Tabbed Web Dashboard**:
-  - Embedded web interface hosted on LittleFS with 5 tabs (Telemetry, Watch Faces, Smartwatch, Marquee Ticker, Settings, Optimization Hub).
-  - Instant marquee ticker publisher to broadcast messages across the OLED screen.
-  - Web controls for Pomodoro timers, 11 color themes, screen rotation, carousel page selection, feature toggles, and test notifications.
+  - Full mobile-responsive UI hosted on LittleFS featuring interactive cards: Telemetry, Watch Face Customizer, Mechanical Macro & Button Studio, BLE Hub, Marquee Publisher, and Resource Optimization Hub.
+  - Real-time sliders for OLED contrast/brightness, 11 TFT color themes, screen rotation, carousel page masking, and feature toggling.
 
-- 🎨 **11 Color Themes**:
-  - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, Material You.
+- 🎨 **11 Tailored Color Themes**:
+  - Cyberpunk, Matrix, Dark Glass, Retro, Dracula, Nord, Gruvbox, Monochrome, Nothing UI, One UI, and Material You.
 
 ---
 
 ## 🔌 Hardware Wiring
 
-| Component | Interface | ESP32 GPIO Pins |
-| :--- | :--- | :--- |
-| **OLED Display (SSD1306)** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` |
-| **BMP180 Sensor** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` |
-| **DHT11 Sensor** | Digital | Data: `GPIO 4` |
-| **TFT Display (ST7735)** | SPI | CS: `GPIO 15`, DC: `GPIO 16`, RST: `GPIO 17`, MOSI: `GPIO 13`, SCK: `GPIO 14` |
+| Component | Interface | ESP32 GPIO Pins | Notes |
+| :--- | :--- | :--- | :--- |
+| **OLED Display (SSD1306)** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` | Shared I2C Bus, 3.3V Power |
+| **BMP180 Sensor** | I2C | SDA: `GPIO 21`, SCL: `GPIO 22` | Shared I2C Bus, 3.3V Power |
+| **DHT11 Sensor** | Digital | Data: `GPIO 4` | Direct sensor data line |
+| **TFT Display (ST7735)** | SPI | CS: `GPIO 15`, DC: `GPIO 16`, RST: `GPIO 17`, MOSI: `GPIO 13`, SCK: `GPIO 14` | Dedicated Hardware SPI Bus |
+| **Left Mechanical Switch** | Digital (Pull-Up) | `GPIO 25` ➔ GND | No external resistors needed |
+| **Right Mechanical Switch** | Digital (Pull-Up) | `GPIO 26` ➔ GND | No external resistors needed |
 
 ---
 
@@ -48,7 +63,7 @@
 
 ```mermaid
 graph TD
-    ESP32["ESP32 Microcontroller"]
+    ESP32["ESP32 Microcontroller (240MHz)"]
 
     subgraph I2C_Bus ["I2C Bus (Shared)"]
         ESP32 -- "GPIO 21 (SDA)" --> OLED["0.96 inch OLED SSD1306"]
@@ -63,6 +78,11 @@ graph TD
         ESP32 -- "GPIO 15 (CS)"   --> TFT
         ESP32 -- "GPIO 16 (DC)"   --> TFT
         ESP32 -- "GPIO 17 (RST)"  --> TFT
+    end
+
+    subgraph Mechanical_Switches ["Dual Mechanical Key Deck"]
+        ESP32 -- "GPIO 25 (INPUT_PULLUP)" --> SW_LEFT["Left Mech Switch (D25)"] --> GND_SW["GND"]
+        ESP32 -- "GPIO 26 (INPUT_PULLUP)" --> SW_RIGHT["Right Mech Switch (D26)"] --> GND_SW
     end
 
     subgraph Digital_IO ["Digital IO"]
@@ -83,15 +103,15 @@ graph TD
 
 ---
 
-## 🚀 Building & Flashing
+## 🚀 Building, Flashing & Running
 
-1. Build firmware:
+1. Build & flash firmware to ESP32:
    ```bash
    pio run -t upload
    ```
-2. Upload LittleFS Web Dashboard:
+2. Upload embedded LittleFS Web Dashboard files (`data/` folder):
    ```bash
    pio run -t uploadfs
    ```
-3. Open web dashboard in browser:
-   `http://<ESP32_IP>` (e.g. `http://192.168.1.6`).
+3. Connect your device or smartphone to the WiFi network and navigate to the dashboard:
+   `http://<ESP32_IP>` (e.g. `http://192.168.1.6`). You can also hold both mechanical buttons together to immediately broadcast your IP address and QR code across both display screens!

@@ -20,6 +20,7 @@ public:
     
     int clickCount = 0;
     bool waitingForDoubleClick = false;
+    bool suppressNextAction = false;
     const unsigned long debounceDelay = 35; // 35ms software debounce (no hardware capacitor needed!)
     const unsigned long doubleClickGap = 350; // 350ms window for double click
     const unsigned long longPressTime = 700; // 700ms for long press
@@ -95,7 +96,50 @@ public:
         }
 
         lastState = reading;
+
+        if (detectedAction != SWITCH_NO_ACTION && suppressNextAction) {
+            detectedAction = SWITCH_NO_ACTION;
+            suppressNextAction = false;
+            waitingForDoubleClick = false;
+            clickCount = 0;
+        }
+
         return detectedAction;
+    }
+};
+
+class DualSwitchComboDetector {
+public:
+    unsigned long bothPressedStartTime = 0;
+    bool comboTriggered = false;
+    const unsigned long comboThresholdMs = 80; // 80ms overlap threshold for instant combo trigger!
+
+    bool update(MechSwitchManager& switch1, MechSwitchManager& switch2) {
+        if (switch1.pin < 0 || switch2.pin < 0) return false;
+
+        bool s1Active = (digitalRead(switch1.pin) == LOW);
+        bool s2Active = (digitalRead(switch2.pin) == LOW);
+        unsigned long currentMs = millis();
+
+        if (s1Active && s2Active) {
+            if (bothPressedStartTime == 0) {
+                bothPressedStartTime = currentMs;
+            } else if (!comboTriggered && (currentMs - bothPressedStartTime >= comboThresholdMs)) {
+                comboTriggered = true;
+                // Suppress both individual switch managers from firing single/double/long press on release!
+                switch1.suppressNextAction = true;
+                switch2.suppressNextAction = true;
+                return true; // Simultaneous Combo Event Detected!
+            }
+        } else {
+            if (!s1Active || !s2Active) {
+                bothPressedStartTime = 0;
+            }
+            if (!s1Active && !s2Active) {
+                comboTriggered = false;
+            }
+        }
+        return false;
     }
 };
 

@@ -14,7 +14,8 @@ enum NotificationCategory {
 enum NotificationTarget {
     NOTIF_TARGET_TFT = 0,
     NOTIF_TARGET_OLED = 1,
-    NOTIF_TARGET_BOTH = 2
+    NOTIF_TARGET_BOTH = 2,
+    NOTIF_TARGET_USER_PREF = 3
 };
 
 struct NotificationItem {
@@ -30,23 +31,28 @@ struct NotificationItem {
 class NotificationManager {
 public:
     NotificationItem currentNotif;
+    NotificationTarget userPreference = NOTIF_TARGET_BOTH;
 
     void trigger(const String& title, 
                  const String& message, 
                  NotificationCategory cat = NOTIF_INFO, 
-                 NotificationTarget target = NOTIF_TARGET_BOTH, 
+                 NotificationTarget target = NOTIF_TARGET_USER_PREF, 
                  unsigned long durationSec = 8) {
         
+        NotificationTarget effectiveTarget = target;
+        if (target == NOTIF_TARGET_USER_PREF) {
+            effectiveTarget = userPreference;
+        }
         currentNotif.title = title;
         currentNotif.message = message;
         currentNotif.category = cat;
-        currentNotif.target = target;
+        currentNotif.target = effectiveTarget;
         currentNotif.durationMs = durationSec * 1000;
         currentNotif.startMs = millis();
         currentNotif.active = true;
 
-        Serial.printf("🔔 Notification Triggered! Target: %d | Title: %s | Msg: %s\n", 
-                      (int)target, title.c_str(), message.c_str());
+        Serial.printf("🔔 Notification Triggered! Target: %d (Pref: %d) | Title: %s | Msg: %s\n", 
+                      (int)effectiveTarget, (int)userPreference, title.c_str(), message.c_str());
     }
 
     void update() {

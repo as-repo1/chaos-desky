@@ -279,8 +279,39 @@ public:
                 configMgr.config.featureScreensaverEnabled = (request->getParam("screensaver", true)->value() == "1");
             }
             configMgr.saveConfig();
-            notificationEngine->trigger("Optimization", "Resource & Feature Toggles Saved!", NOTIF_INFO, NOTIF_TARGET_BOTH, 3);
+            notificationEngine->trigger("Optimization", "Resource & Feature Toggles Saved!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
             request->send(200, "application/json", "{\"status\":\"ok\",\"optimized\":true}");
+        });
+
+        // REST API: GET /api/buttons/config (Macro & Button Studio Settings)
+        server.on("/api/buttons/config", HTTP_GET, [](AsyncWebServerRequest* request) {
+            StaticJsonDocument<512> doc;
+            doc["btnLeftSingle"]  = configMgr.config.btnLeftSingle;
+            doc["btnLeftDouble"]  = configMgr.config.btnLeftDouble;
+            doc["btnLeftLong"]    = configMgr.config.btnLeftLong;
+            doc["btnRightSingle"] = configMgr.config.btnRightSingle;
+            doc["btnRightDouble"] = configMgr.config.btnRightDouble;
+            doc["btnRightLong"]   = configMgr.config.btnRightLong;
+            doc["btnCombo"]       = configMgr.config.btnCombo;
+
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/buttons/config (Save Macro & Button Mappings)
+        server.on("/api/buttons/config", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("btnLeftSingle", true))  configMgr.config.btnLeftSingle  = request->getParam("btnLeftSingle", true)->value().toInt();
+            if (request->hasParam("btnLeftDouble", true))  configMgr.config.btnLeftDouble  = request->getParam("btnLeftDouble", true)->value().toInt();
+            if (request->hasParam("btnLeftLong", true))    configMgr.config.btnLeftLong    = request->getParam("btnLeftLong", true)->value().toInt();
+            if (request->hasParam("btnRightSingle", true)) configMgr.config.btnRightSingle = request->getParam("btnRightSingle", true)->value().toInt();
+            if (request->hasParam("btnRightDouble", true)) configMgr.config.btnRightDouble = request->getParam("btnRightDouble", true)->value().toInt();
+            if (request->hasParam("btnRightLong", true))   configMgr.config.btnRightLong   = request->getParam("btnRightLong", true)->value().toInt();
+            if (request->hasParam("btnCombo", true))       configMgr.config.btnCombo       = request->getParam("btnCombo", true)->value().toInt();
+
+            configMgr.saveConfig();
+            notificationEngine->trigger("Macro Studio", "Custom Switch Deck Saved!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+            request->send(200, "application/json", "{\"status\":\"ok\",\"saved\":true}");
         });
 
         // REST API: GET /api/ancs/status
@@ -304,6 +335,26 @@ public:
             int cat = request->hasParam("category", true) ? request->getParam("category", true)->value().toInt() : 1;
 
             ancsClient->simulateNotification(sender, text, (NotificationCategory)cat);
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: GET /api/notify/target (System Alerts Display Preference)
+        server.on("/api/notify/target", HTTP_GET, [](AsyncWebServerRequest* request) {
+            StaticJsonDocument<128> doc;
+            doc["notifTarget"] = configMgr.config.notifTarget;
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/notify/target (Save System Alerts Display Preference)
+        server.on("/api/notify/target", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("target", true)) {
+                configMgr.config.notifTarget = request->getParam("target", true)->value().toInt();
+                notificationEngine->userPreference = (NotificationTarget)configMgr.config.notifTarget;
+                configMgr.saveConfig();
+                notificationEngine->trigger("Alert Target", "Display Preference Updated!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+            }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 

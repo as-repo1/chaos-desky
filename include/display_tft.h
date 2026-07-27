@@ -42,6 +42,11 @@ public:
     uint16_t enabledPagesMask = 0x03FF; // Bitmask for pages 0..9 (default: all 10 enabled)
     int currentRotation = TFT_ROTATION;
     String customBannerText = "ChaosDesky Standalone Station";
+    
+    // Interactive To-Do List State (Context-Aware Controls)
+    int todoSelectedIdx = 0; // Currently focused task index (0 to 3)
+    bool todoChecked[4] = { true, false, false, false };
+    String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
 
     // Color definitions (16-bit RGB565 format)
     uint16_t COLOR_BG       = ST77XX_BLACK;
@@ -571,31 +576,24 @@ private:
             
             tft.drawFastHLine(8, 38, 112, COLOR_PRIMARY);
             
-            // Item 1: Checked
-            tft.setTextColor(COLOR_ACCENT, COLOR_BG);
-            tft.setCursor(8, 48);
-            tft.print("[X] 1. Ship Desky");
-            
-            // Item 2: Active Focus
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(8, 68);
-            tft.print("[>] 2. Deep Pomo");
-
-            // Item 3: Pending
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(8, 88);
-            tft.print("[ ] 3. Hydration");
-
-            // Item 4: Pending
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(8, 108);
-            tft.print("[ ] 4. Telemetry");
+            for (int i = 0; i < 4; i++) {
+                int y = 46 + (i * 20);
+                if (i == todoSelectedIdx) {
+                    tft.fillRoundRect(6, y - 2, 116, 18, 4, COLOR_ACCENT);
+                    tft.setTextColor(COLOR_BG, COLOR_ACCENT);
+                } else {
+                    tft.setTextColor(todoChecked[i] ? COLOR_GOOD : COLOR_TEXT, COLOR_BG);
+                }
+                tft.setCursor(12, y + 3);
+                String prefix = todoChecked[i] ? "[X] " : "[ ] ";
+                tft.printf("%s%d. %s", prefix.c_str(), i + 1, todoTitles[i].substring(0, 10).c_str());
+            }
 
             // Banner summary at bottom
             tft.fillRoundRect(6, 130, 116, 22, 4, COLOR_PRIMARY);
             tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
             tft.setCursor(10, 137);
-            tft.print(customBannerText.length() > 0 ? customBannerText.substring(0, 16) : "DESKY TASK HUB");
+            tft.print("CLICK TO TOGGLE!");
         }
     }
 

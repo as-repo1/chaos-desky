@@ -31,7 +31,7 @@ public:
         phoneLog.lastTimeMs = millis();
         phoneLog.totalCount++;
 
-        notificationMgr.trigger(sender, text, cat, NOTIF_TARGET_BOTH, 10);
+        notificationMgr.trigger(sender, text, cat, NOTIF_TARGET_USER_PREF, 10);
     }
 };
 

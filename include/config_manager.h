@@ -34,6 +34,32 @@ struct SystemConfig {
     bool featureBleEnabled        = true; // Enable BLE UART radio
     bool featureWeatherEnabled    = true; // Enable OWM cloud HTTPS fetches
     bool featureScreensaverEnabled= true; // Enable TFT Warp Screensaver math
+
+    // System Change & Alert Notifications Display Target (0=TFT Only, 1=OLED Only, 2=Both Displays)
+    int notifTarget = 2;
+
+    // Custom Macro & Button Studio Mappings
+    int btnLeftSingle   = 2;  // ACT_NEXT_TFT_PAGE (Left single click switches TFT pages)
+    int btnLeftDouble   = 4;  // ACT_JUMP_TODO (Left double click enters To-Do functionality)
+    int btnLeftLong     = 3;  // ACT_TOGGLE_POMO
+    int btnRightSingle  = 1;  // ACT_CYCLE_OLED (Right single click switches OLED modes)
+    int btnRightDouble  = 5;  // ACT_JUMP_WATCH (Right double click enters Watch Studio functionality)
+    int btnRightLong    = 6;  // ACT_CYCLE_THEMES
+    int btnCombo        = 7;  // ACT_WIFI_INFO
+};
+
+enum CustomButtonAction {
+    ACT_DEFAULT_NAV     = 0,
+    ACT_CYCLE_OLED      = 1,
+    ACT_NEXT_TFT_PAGE   = 2,
+    ACT_TOGGLE_POMO     = 3,
+    ACT_JUMP_TODO       = 4,
+    ACT_JUMP_WATCH      = 5,
+    ACT_CYCLE_THEMES    = 6,
+    ACT_WIFI_INFO       = 7,
+    ACT_SCREENSAVER     = 8,
+    ACT_RESET_POMO      = 9,
+    ACT_NO_ACTION       = 10
 };
 
 class ConfigManager {
@@ -55,7 +81,7 @@ public:
             return false;
         }
 
-        StaticJsonDocument<1024> doc;
+        StaticJsonDocument<1536> doc;
         DeserializationError error = deserializeJson(doc, file);
         file.close();
 
@@ -97,6 +123,15 @@ public:
         config.featureBleEnabled         = doc["featureBleEnabled"] | true;
         config.featureWeatherEnabled     = doc["featureWeatherEnabled"] | true;
         config.featureScreensaverEnabled = doc["featureScreensaverEnabled"] | true;
+        config.notifTarget               = doc["notifTarget"] | 2;
+
+        config.btnLeftSingle  = doc["btnLeftSingle"]  | 2;
+        config.btnLeftDouble  = doc["btnLeftDouble"]  | 4;
+        config.btnLeftLong    = doc["btnLeftLong"]    | 3;
+        config.btnRightSingle = doc["btnRightSingle"] | 1;
+        config.btnRightDouble = doc["btnRightDouble"] | 5;
+        config.btnRightLong   = doc["btnRightLong"]   | 6;
+        config.btnCombo       = doc["btnCombo"]       | 7;
 
         Serial.println("✅ Configuration loaded successfully from LittleFS!");
         return true;
@@ -109,7 +144,7 @@ public:
             return false;
         }
 
-        StaticJsonDocument<1024> doc;
+        StaticJsonDocument<1536> doc;
         doc["wifiSsid"]         = config.wifiSsid;
         doc["wifiPass"]         = config.wifiPass;
         doc["openWeatherKey"]   = config.openWeatherKey;
@@ -135,6 +170,15 @@ public:
         doc["featureBleEnabled"]        = config.featureBleEnabled;
         doc["featureWeatherEnabled"]    = config.featureWeatherEnabled;
         doc["featureScreensaverEnabled"]= config.featureScreensaverEnabled;
+        doc["notifTarget"]              = config.notifTarget;
+
+        doc["btnLeftSingle"]  = config.btnLeftSingle;
+        doc["btnLeftDouble"]  = config.btnLeftDouble;
+        doc["btnLeftLong"]    = config.btnLeftLong;
+        doc["btnRightSingle"] = config.btnRightSingle;
+        doc["btnRightDouble"] = config.btnRightDouble;
+        doc["btnRightLong"]   = config.btnRightLong;
+        doc["btnCombo"]       = config.btnCombo;
 
         if (serializeJson(doc, file) == 0) {
             Serial.println("❌ Failed to write JSON to /config.json!");

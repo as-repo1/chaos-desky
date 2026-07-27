@@ -281,3 +281,77 @@ updateSensors();
 updateWeather();
 updatePomodoro();
 updateBleRadar();
+
+// Load Mechanical Button & Macro Studio Settings
+async function loadMacroDeck() {
+    try {
+        const res = await fetch('/api/buttons/config');
+        if (res.ok) {
+            const cfg = await res.json();
+            if (document.getElementById('btn-left-single')) document.getElementById('btn-left-single').value = cfg.btnLeftSingle ?? 2;
+            if (document.getElementById('btn-left-double')) document.getElementById('btn-left-double').value = cfg.btnLeftDouble ?? 4;
+            if (document.getElementById('btn-left-long'))   document.getElementById('btn-left-long').value   = cfg.btnLeftLong ?? 3;
+            if (document.getElementById('btn-right-single')) document.getElementById('btn-right-single').value = cfg.btnRightSingle ?? 1;
+            if (document.getElementById('btn-right-double')) document.getElementById('btn-right-double').value = cfg.btnRightDouble ?? 5;
+            if (document.getElementById('btn-right-long'))   document.getElementById('btn-right-long').value   = cfg.btnRightLong ?? 6;
+            if (document.getElementById('btn-combo'))        document.getElementById('btn-combo').value        = cfg.btnCombo ?? 7;
+        }
+    } catch (e) {
+        console.warn("Could not load macro deck configuration:", e);
+    }
+}
+
+// Save Mechanical Button & Macro Studio Settings
+async function saveMacroDeck() {
+    const p = new URLSearchParams();
+    p.append('btnLeftSingle', document.getElementById('btn-left-single').value);
+    p.append('btnLeftDouble', document.getElementById('btn-left-double').value);
+    p.append('btnLeftLong',   document.getElementById('btn-left-long').value);
+    p.append('btnRightSingle', document.getElementById('btn-right-single').value);
+    p.append('btnRightDouble', document.getElementById('btn-right-double').value);
+    p.append('btnRightLong',   document.getElementById('btn-right-long').value);
+    p.append('btnCombo',        document.getElementById('btn-combo').value);
+
+    try {
+        const res = await fetch('/api/buttons/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: p.toString()
+        });
+        if (res.ok) {
+            showToast("🕹️ Mechanical Macro Deck Saved to LittleFS!");
+        }
+    } catch (e) {
+        showToast("Error saving macro deck!");
+    }
+}
+
+async function loadNotifTargetPref() {
+    try {
+        const res = await fetch('/api/notify/target');
+        if (res.ok) {
+            const data = await res.json();
+            if (document.getElementById('global-notif-target')) {
+                document.getElementById('global-notif-target').value = data.notifTarget ?? 2;
+            }
+        }
+    } catch(e) {
+        console.warn("Could not load notif target pref:", e);
+    }
+}
+
+async function saveNotifTargetPref() {
+    const target = document.getElementById('global-notif-target').value;
+    try {
+        const res = await fetch(`/api/notify/target?target=${target}`, { method: 'POST' });
+        if (res.ok) {
+            showToast("⚙️ System Alert Target Preference Saved!");
+        }
+    } catch(e) {
+        showToast("Error saving target preference!");
+    }
+}
+
+loadMacroDeck();
+loadNotifTargetPref();
+

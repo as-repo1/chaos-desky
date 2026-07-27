@@ -78,6 +78,7 @@ public:
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: drawMode4_CustomImage(); break;
                 case 5: screensaverEngine.renderOledScreensaver(oled); break;
+                case 6: drawMode6_WifiInfo(ipStr, AP_SSID, AP_PASS); break;
                 default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
             }
         }
@@ -170,6 +171,8 @@ private:
             case 3: drawOledClock_RetroFlip(timeStr, s); break;
             case 4: drawOledClock_VerticalStack(timeStr, s); break;
             case 5: drawOledClock_BinaryGauges(timeStr, s); break;
+            case 6: drawOledClock_CyberpunkBox(timeStr, s); break;
+            case 7: drawOledClock_RadialHorizon(timeStr, s); break;
             default: drawOledClock_DigitalHUD(timeStr, ipStr, s); break;
         }
     }
@@ -365,6 +368,51 @@ private:
         }
     }
 
+    // --- OLED Clock Style 6: Cyberpunk Boxed Frame Clock ---
+    void drawOledClock_CyberpunkBox(const String& timeStr, const SensorData& s) {
+        oled.drawRect(0, 0, 128, 64, SSD1306_WHITE);
+        oled.drawRect(2, 2, 124, 60, SSD1306_WHITE);
+        oled.fillRect(8, 0, 48, 5, SSD1306_WHITE);
+        oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(10, 0);
+        oled.print("CYBER");
+        
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(3);
+        oled.setCursor(14, 16);
+        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        
+        int sec = timeStr.length() >= 8 ? timeStr.substring(6, 8).toInt() : 0;
+        oled.setTextSize(1);
+        oled.setCursor(102, 18);
+        oled.printf("%02d", sec);
+        
+        oled.drawFastHLine(8, 44, 112, SSD1306_WHITE);
+        oled.setCursor(12, 48);
+        oled.printf("TEMP: %.1fC  ALT:%dm", s.tempC, (int)s.altitudeM);
+    }
+
+    // --- OLED Clock Style 7: Radial Horizon Arc Clock ---
+    void drawOledClock_RadialHorizon(const String& timeStr, const SensorData& s) {
+        // Horizon curve emulation at bottom
+        oled.drawCircle(64, 88, 60, SSD1306_WHITE);
+        oled.drawCircle(64, 88, 62, SSD1306_WHITE);
+        
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(10, 4);
+        oled.print("=== RADIAL HORIZON ===");
+        
+        oled.setTextSize(3);
+        oled.setCursor(20, 20);
+        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        
+        oled.setTextSize(1);
+        oled.setCursor(14, 50);
+        oled.printf("HUM:%.0f%% | %.1fhPa", s.humidity, s.pressureHpa);
+    }
+
     void drawMode2_Sparklines(SensorManager& sm) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
@@ -422,7 +470,7 @@ private:
         oled.print(text);
         oled.setTextWrap(true);
 
-        scrollX -= 5;
+        scrollX -= 8;
         int textWidth = text.length() * 12;
         if (scrollX < -textWidth) {
             scrollX = 128;
@@ -454,6 +502,27 @@ private:
         oled.print("RADAR");
         oled.setCursor(96, 4);
         oled.print("ACTIVE");
+    }
+
+    void drawMode6_WifiInfo(const String& ipStr, const String& ssid, const String& pass) {
+        // Mode 6: WiFi Credentials & IP Broadcast Dashboard
+        oled.fillRoundRect(0, 0, 128, 14, 2, SSD1306_WHITE);
+        oled.setTextColor(SSD1306_BLACK, SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(14, 3);
+        oled.print("WIFI NETWORK INFO");
+        
+        oled.setTextColor(SSD1306_WHITE, SSD1306_BLACK);
+        oled.setCursor(2, 18);
+        oled.printf("IP  : %s", ipStr.c_str());
+        oled.setCursor(2, 30);
+        oled.printf("SSID: %s", ssid.c_str());
+        oled.setCursor(2, 42);
+        oled.printf("PASS: %s", pass.c_str());
+        
+        oled.drawRect(0, 53, 128, 11, SSD1306_WHITE);
+        oled.setCursor(14, 55);
+        oled.print("SCAN TFT FOR QR URL");
     }
 };
 
