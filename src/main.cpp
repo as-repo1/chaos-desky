@@ -253,13 +253,14 @@ void loop() {
         tftMgr.nextPage();
     }
 
-    // 6. Update Displays (Every 500 ms)
-    if (currentMs - lastOledRefreshMs >= 500) {
+    // 6. Update Displays (Dynamic 100ms Refresh for Fast Marquee Ticker)
+    uint32_t oledInterval = (configMgr.config.oledMode == 3 || configMgr.config.oledMode == 5 || notificationMgr.isOledActive()) ? 100 : 500;
+    if (currentMs - lastOledRefreshMs >= oledInterval) {
         lastOledRefreshMs = currentMs;
         timeStr = getFormattedNtpTime();
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
-        oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi);
+        oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi, configMgr.config.oledClockStyle);
         tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, ancsClientMgr.phoneLog, notificationMgr, localIpStr, timeStr);
     }
 }

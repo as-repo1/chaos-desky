@@ -422,7 +422,7 @@ private:
         oled.print(text);
         oled.setTextWrap(true);
 
-        scrollX -= 2;
+        scrollX -= 5;
         int textWidth = text.length() * 12;
         if (scrollX < -textWidth) {
             scrollX = 128;
