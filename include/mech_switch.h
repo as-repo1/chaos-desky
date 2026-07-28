@@ -17,6 +17,7 @@ public:
     unsigned long lastDebounceTime = 0;
     unsigned long buttonPressTime = 0;
     unsigned long lastReleaseTime = 0;
+    bool currentDebouncedState = HIGH; // Instance-specific debounced state
     
     int clickCount = 0;
     bool waitingForDoubleClick = false;
@@ -50,12 +51,11 @@ public:
 
         if ((currentMs - lastDebounceTime) > debounceDelay) {
             // State has settled after mechanical contact bounce
-            static bool buttonState = HIGH;
-            if (reading != buttonState) {
-                buttonState = reading;
+            if (reading != currentDebouncedState) {
+                currentDebouncedState = reading;
 
                 // Button PRESSED (LOW because of INPUT_PULLUP to GND)
-                if (buttonState == LOW) {
+                if (currentDebouncedState == LOW) {
                     buttonPressTime = currentMs;
                     if (instantTrigger) {
                         detectedAction = SWITCH_SINGLE_CLICK;
@@ -63,10 +63,10 @@ public:
                 } 
                 // Button RELEASED (HIGH)
                 else {
-                    unsigned long pressDuration = currentMs - buttonPressTime;
+                    unsigned long pressDuration = (currentMs >= buttonPressTime) ? (currentMs - buttonPressTime) : 0;
                     
                     if (pressDuration >= longPressTime) {
-                        if (!instantTrigger) detectedAction = SWITCH_LONG_PRESS;
+                        detectedAction = SWITCH_LONG_PRESS;
                         waitingForDoubleClick = false;
                         clickCount = 0;
                     } else if (pressDuration > 10 && !instantTrigger) {
@@ -91,9 +91,9 @@ public:
             }
             
             // Check for holding down (active long press before release)
-            if (buttonState == LOW && (currentMs - buttonPressTime >= longPressTime)) {
+            if (currentDebouncedState == LOW && (currentMs >= buttonPressTime) && (currentMs - buttonPressTime >= longPressTime)) {
                 detectedAction = SWITCH_LONG_PRESS;
-                buttonPressTime = currentMs + 5000; // prevent re-triggering until released
+                buttonPressTime = currentMs + 86400000UL; // prevent re-triggering until released without integer overflow bug
                 waitingForDoubleClick = false;
                 clickCount = 0;
             }

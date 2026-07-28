@@ -4,6 +4,20 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [2.1.0] - 2026-07-28 (Comprehensive Bug Purge & Interactive To-Do Sync)
+
+### ✨ Added & Enhanced
+- **📝 Interactive To-Do List Editor in Web Portal**: Added dedicated dashboard card to view, edit, check, and sync the 4 daily tasks in real time between the web app and the TFT display.
+- **💾 Task State & Checkbox Persistence**: All task titles and completion states are now fully serialized and persisted to `config.json` via LittleFS.
+
+### 🐛 Fixed & Optimized
+- **⌚ Fixed Watchface Studio Navigation Jump**: Corrected API route (`/api/tft/watchface`) that mistakenly navigated to Page 8 (Network Monitor) instead of Page 7 (Watchface Studio) when selecting watch styles online.
+- **🕹️ Flappy Bird Purge & Carousel Normalization**: Excluded all redundant Flappy Bird game code and normalized `TOTAL_TFT_PAGES` to 9 across both firmware and frontend JavaScript masks, removing CPU polling overhead.
+- **🌐 Web Dashboard Script Resolution**: Removed 100+ lines of redundant inline JS in `index.html` that collided with `app.js` logic and resolved broken endpoint targets for Pomodoro and Weather location persistence.
+- **🔘 Left Button Long-Hold Jump**: Removed blocking debouncer guard on button release, restoring instant jump to Home (Page 1) when long-pressing the Left navigation button.
+
+---
+
 ## [2.0.0] - 2026-07-27 (The Precision Optimization & Dedicated UX Update)
 
 ### ✨ Overhauled & Optimized

@@ -16,7 +16,11 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 0;  // 0 = pause (Manual Navigation Only)
-    uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
+    uint16_t enabledPagesMask = 0x01FF; // All 9 pages enabled by default (bitmask 0b111111111)
+
+    // To-Do List State Persistence
+    String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
+    bool todoChecked[4] = { true, false, false, false };
 
     int oledMode           = 0;  // 0: HUD, 1: Clock, 2: Sparklines, 3: Marquee Text, 4: Animated Screensavers, 5: WiFi Info
     int oledClockStyle     = 0;  // 0: Digital HUD, 1: Analog Minimal, 2: Cyber Matrix, 3: Retro Flip, 4: Vertical Stack, 5: Binary Segment, 6: Cyberpunk Box, 7: Radial Horizon
@@ -33,7 +37,7 @@ struct SystemConfig {
     bool featureScreensaverEnabled= true; // Enable OLED Animated Screensaver engine
 
     // System Change & Alert Notifications Display Target (0=TFT Only, 1=OLED Only, 2=Both Displays)
-    int notifTarget = 2;
+    int notifTarget = 1; // Default to 1 (OLED only) instead of 2 (Both TFT & OLED)
 
     // Dual-Button Simultaneous Combo Action
     int btnCombo = 7;  // ACT_WIFI_INFO
@@ -98,9 +102,12 @@ public:
         config.tftTheme        = doc["tftTheme"] | 0;
         config.tftRotation     = doc["tftRotation"] | 2;
         config.carouselSpeedSec= doc["carouselSpeedSec"] | 0;
-        config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
-        if ((config.enabledPagesMask & (1 << 9)) == 0) {
-            config.enabledPagesMask |= (1 << 9); // Safety: Auto-enable Page 9 (Flappy Bird) if migrating from 9-page config
+        config.enabledPagesMask= doc["enabledPagesMask"] | 0x01FF;
+        if (doc.containsKey("tT")) {
+            for (int i = 0; i < 4; i++) {
+                config.todoTitles[i] = doc["tT"][i].as<String>();
+                config.todoChecked[i] = doc["tC"][i] | false;
+            }
         }
 
         config.oledMode        = doc["oledMode"] | 0;
@@ -115,7 +122,7 @@ public:
         config.featureBleEnabled         = doc["featureBleEnabled"] | true;
         config.featureWeatherEnabled     = doc["featureWeatherEnabled"] | true;
         config.featureScreensaverEnabled = doc["featureScreensaverEnabled"] | true;
-        config.notifTarget               = doc["notifTarget"] | 2;
+        config.notifTarget               = doc["notifTarget"] | 1;
         config.btnCombo                  = doc["btnCombo"] | 7;
 
         Serial.println("✅ Configuration loaded successfully from LittleFS!");
@@ -140,6 +147,13 @@ public:
         doc["tftRotation"]       = config.tftRotation;
         doc["carouselSpeedSec"]  = config.carouselSpeedSec;
         doc["enabledPagesMask"]  = config.enabledPagesMask;
+
+        JsonArray tT = doc.createNestedArray("tT");
+        JsonArray tC = doc.createNestedArray("tC");
+        for (int i = 0; i < 4; i++) {
+            tT.add(config.todoTitles[i]);
+            tC.add(config.todoChecked[i]);
+        }
 
         doc["oledMode"]          = config.oledMode;
         doc["oledClockStyle"]    = config.oledClockStyle;

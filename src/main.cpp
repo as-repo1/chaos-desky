@@ -135,16 +135,10 @@ void executeButtonAction(int action) {
             break;
             
         case ACT_CYCLE_THEMES:
-            if (tftMgr.currentPage == 6) {
-                watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
-                tftMgr.forceRedraw();
-                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
-            } else {
-                configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
-                configMgr.saveConfig();
-                tftMgr.forceRedraw();
-                notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
-            }
+            configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
+            configMgr.saveConfig();
+            tftMgr.forceRedraw();
+            notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
             break;
             
         case ACT_WIFI_INFO:
@@ -187,12 +181,16 @@ void setup() {
 
     // Load Persistent Config
     configMgr.begin();
-    notificationMgr.userPreference = (NotificationTarget)configMgr.config.notifTarget;
+    notificationMgr.userPreference = NOTIF_TARGET_OLED; // Forced to OLED only based on user request
 
     // Apply Loaded Configuration to Modules
     tftMgr.setRotation(configMgr.config.tftRotation);
     tftMgr.applyTheme((TFTTheme)configMgr.config.tftTheme);
     tftMgr.enabledPagesMask = configMgr.config.enabledPagesMask;
+    for (int i = 0; i < 4; i++) {
+        tftMgr.todoTitles[i] = configMgr.config.todoTitles[i];
+        tftMgr.todoChecked[i] = configMgr.config.todoChecked[i];
+    }
     carouselIntervalMs = configMgr.config.carouselSpeedSec * 1000;
 
     oledMgr.oledMode = configMgr.config.oledMode;
@@ -262,6 +260,8 @@ void executePageRightButtonAction(int page, SwitchAction action) {
             case 4: // To-Do List Page
                 Serial.println("➡️ Right Button [To-Do]: Toggling task checkbox");
                 tftMgr.todoChecked[tftMgr.todoSelectedIdx] = !tftMgr.todoChecked[tftMgr.todoSelectedIdx];
+                configMgr.config.todoChecked[tftMgr.todoSelectedIdx] = tftMgr.todoChecked[tftMgr.todoSelectedIdx];
+                configMgr.saveConfig();
                 tftMgr.forceRedraw();
                 {
                     String msg = tftMgr.todoChecked[tftMgr.todoSelectedIdx] ? "Task Completed!" : "Task Re-Opened!";
@@ -293,18 +293,6 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 executeButtonAction(ACT_CYCLE_THEMES);
                 break;
 
-            case 9: // Flappy Bird Mini-Game
-                if (tftMgr.gameIsOver) {
-                    tftMgr.gameIsOver = false;
-                    tftMgr.gameBirdY = 80.0;
-                    tftMgr.gameBirdVelocity = -4.0;
-                    tftMgr.gamePipeX = 128;
-                    tftMgr.gameScore = 0;
-                } else {
-                    tftMgr.gameBirdVelocity = -4.0; // Flap!
-                }
-                break;
-
             default:
                 break;
         }
@@ -327,14 +315,6 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 break;
 
-            case 9: // Flappy Bird Mini-Game (Force Restart)
-                tftMgr.gameIsOver = false;
-                tftMgr.gameBirdY = 80.0;
-                tftMgr.gameBirdVelocity = -4.0;
-                tftMgr.gamePipeX = 128;
-                tftMgr.gameScore = 0;
-                break;
-
             default:
                 executeButtonAction(ACT_JUMP_TODO);
                 break;
@@ -344,10 +324,6 @@ void executePageRightButtonAction(int page, SwitchAction action) {
             case 2: // Pomodoro: Reset timer
                 Serial.println("➡️ Right Button Long-Hold [Pomodoro]: Resetting timer");
                 executeButtonAction(ACT_RESET_POMO);
-                break;
-            case 9: // Flappy Bird: Exit game
-                Serial.println("➡️ Right Button Long-Hold [Flappy]: Exiting game");
-                tftMgr.setPage(0);
                 break;
             default:
                 Serial.println("➡️ Right Button Long-Hold [Global]: Toggling Screensavers");
@@ -430,11 +406,9 @@ void loop() {
         tftMgr.nextPage();
     }
 
-    // 6. Update Displays (Dynamic 45ms Refresh for High-Speed Marquee Ticker)
+    // 6. Update Displays (Dynamic Refresh for High-Speed Marquee Ticker)
     uint32_t oledInterval = 500;
-    if (tftMgr.currentPage == 9) {
-        oledInterval = 33; // ~30 FPS for Flappy Bird Mini-Game!
-    } else if (configMgr.config.oledMode == 3) {
+    if (configMgr.config.oledMode == 3) {
         oledInterval = 45; // Fast scrolling speed for Custom Marquee Ticker
     } else if (configMgr.config.oledMode == 4 || notificationMgr.isOledActive()) {
         oledInterval = 75; // Smooth animations for OLED screensavers & notifications

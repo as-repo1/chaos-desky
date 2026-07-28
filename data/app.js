@@ -83,16 +83,23 @@ async function pomoAction(action) {
 
 // Save Custom Pomodoro Work/Break Durations
 async function savePomodoroConfig() {
-    const w = document.getElementById('work-mins-input').value;
-    const b = document.getElementById('break-mins-input').value;
-    await fetch(`/api/pomodoro/config?work=${w}&break=${b}`, { method: 'POST' });
+    const w = document.getElementById('pomo-work-slider')?.value || document.getElementById('work-mins-input')?.value || 25;
+    const b = document.getElementById('pomo-break-slider')?.value || document.getElementById('break-mins-input')?.value || 5;
+    const formData = new URLSearchParams();
+    formData.append('work', w);
+    formData.append('break', b);
+    await fetch('/api/pomodoro/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
     showToast(`Pomodoro Timer updated: ${w}m Work / ${b}m Rest`);
 }
 
-// Save 10-Page Enabled Carousel Bitmask
+// Save 9-Page Enabled Carousel Bitmask
 async function savePageMask() {
     let mask = 0;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 9; i++) {
         const chk = document.getElementById(`chk-page-${i}`);
         if (chk && chk.checked) {
             mask |= (1 << i);
@@ -118,15 +125,33 @@ async function setTftRotation(rot) {
     showToast(`TFT Rotation set to ${rot * 90}°`);
 }
 
-// Set OLED Display Mode (0-4)
+// Set OLED Display Mode (0-5)
 async function setOledMode(mode) {
     await fetch(`/api/oled/mode?mode=${mode}`, { method: 'POST' });
     showToast(`OLED Mode set to ${mode}`);
 }
 
+async function setOledClockStyle(style) {
+    await fetch(`/api/oled/clock-style?style=${style}`, { method: 'POST' });
+    showToast("OLED Clock Face Updated!");
+}
+
+function setWatchface(style) {
+    fetch('/api/tft/watchface', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `style=${style}` });
+    showToast("Watch Face Updated!");
+}
+
+function toggleCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (card) {
+        card.classList.toggle('open');
+    }
+}
+
 // Set OLED Contrast
 async function setOledContrast(val) {
-    document.getElementById('contrast-label').innerText = val;
+    const lbl = document.getElementById('contrast-label');
+    if (lbl) lbl.innerText = val;
     fetch(`/api/oled/contrast?level=${val}`, { method: 'POST' });
 }
 
@@ -252,4 +277,75 @@ async function saveNotifTargetPref() {
 }
 
 loadNotifTargetPref();
+
+// Weather location setup
+async function saveWeatherConfig() {
+    const key = document.getElementById('owm-key-input')?.value || "";
+    const city = document.getElementById('owm-city-input')?.value || "";
+    const country = document.getElementById('owm-country-input')?.value || "UK";
+    const fullCity = country ? `${city},${country}` : city;
+    const formData = new URLSearchParams();
+    if (key) formData.append('apiKey', key);
+    if (city) formData.append('city', fullCity);
+    await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+    showToast("Weather Location Saved!");
+    updateWeather();
+}
+
+// To-Do Task List Editor Sync
+async function loadTodoTasks() {
+    try {
+        const res = await fetch('/api/todo');
+        if (res.ok) {
+            const data = await res.json();
+            for (let i = 0; i < 4; i++) {
+                const input = document.getElementById(`todo-input-${i}`);
+                const chk = document.getElementById(`todo-chk-${i}`);
+                if (input && data.titles && data.titles[i]) input.value = data.titles[i];
+                if (chk && data.checked && data.checked[i] !== undefined) chk.checked = data.checked[i];
+            }
+        }
+    } catch (e) {
+        console.warn("Could not load to-do list:", e);
+    }
+}
+
+async function saveTodoTasks() {
+    const formData = new URLSearchParams();
+    for (let i = 0; i < 4; i++) {
+        const input = document.getElementById(`todo-input-${i}`);
+        const chk = document.getElementById(`todo-chk-${i}`);
+        if (input) formData.append(`t${i}`, input.value);
+        if (chk) formData.append(`c${i}`, chk.checked ? "1" : "0");
+    }
+    await fetch('/api/todo/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+    showToast("📝 To-Do Tasks Saved & Synced!");
+}
+
+async function saveOptimizations() {
+    const ble = document.getElementById('opt-ble-cb')?.checked ? "1" : "0";
+    const weather = document.getElementById('opt-weather-cb')?.checked ? "1" : "0";
+    const saver = document.getElementById('opt-saver-cb')?.checked ? "1" : "0";
+    const formData = new URLSearchParams();
+    formData.append('ble', ble);
+    formData.append('weather', weather);
+    formData.append('screensaver', saver);
+    await fetch('/api/optimize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
+    showToast("⚡ Resource Optimization Profile Saved!");
+}
+
+// Load To-Do list on boot
+loadTodoTasks();
 

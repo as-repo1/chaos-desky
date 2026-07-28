@@ -538,6 +538,36 @@
                 </div>
             </section>
 
+            <!-- Card: Interactive To-Do List Editor -->
+            <section class="card open" id="card-todo">
+                <div class="card-header" onclick="toggleCard('card-todo')">
+                    <h2>📝 Interactive To-Do List Editor</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Edit your daily task checklist. Checkboxes reflect directly on your TFT desktop dashboard!</p>
+                    <div class="form-group" style="display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:12px; background: rgba(0,0,0,0.25); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                            <input type="checkbox" id="todo-chk-0" style="width:20px; height:20px; cursor:pointer;">
+                            <input type="text" id="todo-input-0" maxlength="20" placeholder="Task 1..." style="flex:1;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:12px; background: rgba(0,0,0,0.25); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                            <input type="checkbox" id="todo-chk-1" style="width:20px; height:20px; cursor:pointer;">
+                            <input type="text" id="todo-input-1" maxlength="20" placeholder="Task 2..." style="flex:1;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:12px; background: rgba(0,0,0,0.25); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                            <input type="checkbox" id="todo-chk-2" style="width:20px; height:20px; cursor:pointer;">
+                            <input type="text" id="todo-input-2" maxlength="20" placeholder="Task 3..." style="flex:1;">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:12px; background: rgba(0,0,0,0.25); padding:8px 12px; border-radius:8px; border:1px solid var(--border-color);">
+                            <input type="checkbox" id="todo-chk-3" style="width:20px; height:20px; cursor:pointer;">
+                            <input type="text" id="todo-input-3" maxlength="20" placeholder="Task 4..." style="flex:1;">
+                        </div>
+                    </div>
+                    <button onclick="saveTodoTasks()" class="btn btn-primary full-width" style="margin-top:10px;">💾 Save & Sync To-Do Tasks</button>
+                </div>
+            </section>
+
             <!-- Card 6: Carousel Pages, Location & System Settings -->
             <section class="card" id="card-settings">
                 <div class="card-header" onclick="toggleCard('card-settings')">
@@ -686,108 +716,7 @@
         </main>
     </div>
 
-    <!-- Inlined Fast JavaScript Logic -->
-    <script>
-        function toggleCard(cardId) {
-            const card = document.getElementById(cardId);
-            if (card) {
-                card.classList.toggle('open');
-            }
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
-        }
-
-        async function fetchSensors() {
-            try {
-                const res = await fetch('/api/sensors');
-                const data = await res.json();
-                document.getElementById('temp-val').innerText = `${data.tempC.toFixed(1)} °C`;
-                document.getElementById('humid-val').innerText = `${data.humidity.toFixed(0)} %`;
-                document.getElementById('press-val').innerText = `${data.pressureHpa.toFixed(1)} hPa`;
-                document.getElementById('minmax-temp').innerText = `Min: ${data.minTempC.toFixed(1)}°C | Max: ${data.maxTempC.toFixed(1)}°C`;
-                document.getElementById('comfort-val').innerText = data.humidity < 40 ? 'Dry' : data.humidity > 70 ? 'Humid' : 'Ideal';
-                document.getElementById('alt-val').innerText = `Alt: ${data.altitudeM.toFixed(0)} m`;
-            } catch(e) {}
-        }
-
-        async function fetchWeather() {
-            try {
-                const res = await fetch('/api/weather');
-                const data = await res.json();
-                document.getElementById('out-temp-val').innerText = `${data.tempC.toFixed(1)} °C`;
-                document.getElementById('city-val').innerText = `City: ${data.cityName}`;
-            } catch(e) {}
-        }
-
-        function setTftPage(page) { fetch(`/api/tft/page?page=${page}`, { method: 'POST' }); showToast(`Jumped to TFT Page ${page + 1}`); }
-        function setTftTheme(theme) { fetch(`/api/tft/theme?theme=${theme}`, { method: 'POST' }); showToast("Theme Updated!"); }
-        function setTftRotation(rot) { fetch(`/api/tft/rotation?rot=${rot}`, { method: 'POST' }); showToast("Rotation Updated!"); }
-        function setOledMode(mode) { fetch(`/api/oled/mode?mode=${mode}`, { method: 'POST' }); showToast("OLED Mode Updated!"); }
-        function setOledClockStyle(style) { fetch(`/api/oled/clock-style?style=${style}`, { method: 'POST' }); showToast("OLED Clock Face Updated!"); }
-        function setOledContrast(val) { fetch(`/api/oled/contrast?level=${val}`, { method: 'POST' }); }
-        function setWatchface(style) { fetch('/api/tft/watchface', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `style=${style}` }); showToast("Watch Face Updated!"); }
-
-        async function sendCustomText() {
-            const txt = document.getElementById('marquee-input').value;
-            if (!txt) return;
-            await fetch('/api/oled/text', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `text=${encodeURIComponent(txt)}` });
-            showToast("Custom Announcement Sent!");
-        }
-
-        async function sendNotificationPopup() {
-            const title = document.getElementById('notif-title-input').value || "Alert";
-            const msg = document.getElementById('notif-msg-input').value || "Notification Received";
-            const target = document.getElementById('notif-target-select').value;
-            const cat = document.getElementById('notif-cat-select').value;
-            const duration = document.getElementById('notif-dur-slider').value;
-
-            await fetch('/api/notify', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `title=${encodeURIComponent(title)}&message=${encodeURIComponent(msg)}&target=${target}&category=${cat}&duration=${duration}` });
-            showToast("Live Notification Pushed!");
-        }
-
-        async function savePageMask() {
-            let mask = 0;
-            for (let i = 0; i < 9; i++) { if (document.getElementById(`chk-page-${i}`).checked) mask |= (1 << i); }
-            await fetch(`/api/tft/pagemask?mask=${mask}`, { method: 'POST' });
-            showToast("Page Filter Mask Saved!");
-        }
-
-        async function saveWeatherConfig() {
-            const key = document.getElementById('owm-key-input').value;
-            const city = document.getElementById('owm-city-input').value;
-            const country = document.getElementById('owm-country-input').value;
-            await fetch('/api/weather/config', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `key=${encodeURIComponent(key)}&city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}` });
-            showToast("Weather Location Saved!");
-        }
-
-        async function savePomodoroConfig() {
-            const w = document.getElementById('pomo-work-slider').value;
-            const b = document.getElementById('pomo-break-slider').value;
-            await fetch('/api/pomo/config', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `work=${w}&break=${b}` });
-            showToast("Pomodoro Timers Saved!");
-        }
-
-        async function saveOptimizations() {
-            const ble = document.getElementById('opt-ble-cb').checked ? 1 : 0;
-            const weather = document.getElementById('opt-weather-cb').checked ? 1 : 0;
-            const saver = document.getElementById('opt-saver-cb').checked ? 1 : 0;
-            await fetch('/api/optimize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `ble=${ble}&weather=${weather}&screensaver=${saver}`
-            });
-            showToast("⚡ Resource Optimization Profile Saved!");
-        }
-
-        setInterval(fetchSensors, 2000);
-        setInterval(fetchWeather, 10000);
-        fetchSensors();
-        fetchWeather();
-    </script>
+    <!-- External app logic -->
+    <script src="app.js"></script>
 </body>
 </html>

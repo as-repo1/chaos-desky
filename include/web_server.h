@@ -142,7 +142,7 @@ public:
             if (request->hasParam("style", true)) {
                 int st = request->getParam("style", true)->value().toInt();
                 watchFaceEngine.activeStyle = st;
-                tftManager->setPage(7); // Auto-jump to Watch Face Page
+                tftManager->setPage(6); // Auto-jump to Watch Face Page (Index 6)
             }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
@@ -308,6 +308,46 @@ public:
             int duration = request->hasParam("duration", true) ? request->getParam("duration", true)->value().toInt() : 8;
 
             notificationEngine->trigger(title, msg, (NotificationCategory)cat, (NotificationTarget)target, duration);
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
+        // REST API: GET /api/todo (Fetch To-Do List)
+        server.on("/api/todo", HTTP_GET, [this](AsyncWebServerRequest* request) {
+            StaticJsonDocument<512> doc;
+            JsonArray tT = doc.createNestedArray("titles");
+            JsonArray tC = doc.createNestedArray("checked");
+            for (int i = 0; i < 4; i++) {
+                tT.add(tftManager->todoTitles[i]);
+                tC.add(tftManager->todoChecked[i]);
+            }
+            doc["selected"] = tftManager->todoSelectedIdx;
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/todo/update (Update To-Do List)
+        server.on("/api/todo/update", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            bool modified = false;
+            for (int i = 0; i < 4; i++) {
+                String titleParam = "t" + String(i);
+                String checkParam = "c" + String(i);
+                if (request->hasParam(titleParam, true)) {
+                    tftManager->todoTitles[i] = request->getParam(titleParam, true)->value().substring(0, 20);
+                    configMgr.config.todoTitles[i] = tftManager->todoTitles[i];
+                    modified = true;
+                }
+                if (request->hasParam(checkParam, true)) {
+                    tftManager->todoChecked[i] = (request->getParam(checkParam, true)->value() == "1" || request->getParam(checkParam, true)->value() == "true");
+                    configMgr.config.todoChecked[i] = tftManager->todoChecked[i];
+                    modified = true;
+                }
+            }
+            if (modified) {
+                configMgr.saveConfig();
+                tftManager->forceRedraw();
+                notificationEngine->trigger("To-Do Target", "Task List Updated!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+            }
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
