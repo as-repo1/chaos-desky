@@ -16,7 +16,10 @@ enum WatchFaceStyle {
     WATCHFACE_CASIO_CALCULATOR = 6,
     WATCHFACE_CASIO_ROYALE = 7,
     WATCHFACE_SEIKO_DIVER = 8,
-    WATCHFACE_PULSAR_LED = 9
+    WATCHFACE_PULSAR_LED = 9,
+    WATCHFACE_CASIO_A168 = 10,
+    WATCHFACE_CASIO_DATABANK = 11,
+    WATCHFACE_CYBERPUNK_2077 = 12
 };
 
 class WatchFaceEngine {
@@ -76,6 +79,15 @@ public:
                 break;
             case WATCHFACE_PULSAR_LED:
                 renderPulsarLED(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CASIO_A168:
+                renderCasioA168(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CASIO_DATABANK:
+                renderCasioDataBank(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CYBERPUNK_2077:
+                renderCyberpunk2077(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             default:
                 renderCasioF91W(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
@@ -677,6 +689,184 @@ private:
 
         gfx.setTextSize(2);
         gfx.setCursor(94, 74);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🪙 Style 10: Casio A168 Vintage ElectroLuminescence (Gold/Silver Edition)
+    // =========================================================
+    void renderCasioA168(Adafruit_GFX& gfx, int h, int m, int s,
+                         const OutdoorWeatherData& w, float tempC,
+                         uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+
+            // Double Metallic outer bezel frame
+            gfx.drawRoundRect(4, 18, 120, 140, 8, colorPrimary);
+            gfx.drawRoundRect(5, 19, 118, 138, 7, colorAccent);
+
+            // Iconic ElectroLuminescence Header Banner
+            gfx.fillRect(8, 24, 112, 16, colorPrimary);
+            gfx.setTextColor(colorBg, colorPrimary);
+            gfx.setTextSize(1);
+            gfx.setCursor(12, 28);
+            gfx.print("CASIO");
+            gfx.setCursor(84, 28);
+            gfx.print("A168W");
+
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(10, 43);
+            gfx.print("ELECTRO LUMINESCENCE");
+
+            // Recessed Teal Cyan EL Backlit LCD Panel Frame
+            gfx.drawRect(10, 56, 108, 64, colorAccent);
+            gfx.drawRect(11, 57, 106, 62, colorPrimary);
+
+            // LCD indicators line
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(14, 62);
+            gfx.print("SU MO TU WE TH FR SA");
+
+            // Footer markings
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(16, 124);
+            gfx.print("WATER  WR  RESIST");
+            gfx.drawFastHLine(14, 134, 100, colorPrimary);
+
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(18, 142);
+            gfx.printf("AMB TEMP: %.1fC", tempC);
+        }
+
+        // Full Cyan EL Glow box for time
+        gfx.fillRect(14, 74, 100, 42, 0x03E0); // Deep Cyan EL LCD Panel
+        gfx.setTextColor(ST77XX_BLACK, 0x03E0);
+        gfx.setTextSize(3);
+        gfx.setCursor(18, 84);
+        if (s % 2 == 0) {
+            gfx.printf("%02d:%02d", h, m);
+        } else {
+            gfx.printf("%02d %02d", h, m);
+        }
+
+        gfx.setTextSize(2);
+        gfx.setCursor(92, 90);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 📞 Style 11: Casio DB-360 Databank Telememo 30
+    // =========================================================
+    void renderCasioDataBank(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, float tempC,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, colorBg);
+
+            // Databank rectangular chassis
+            gfx.drawRoundRect(4, 18, 120, 140, 5, colorPrimary);
+
+            // Header Banner
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setTextSize(1);
+            gfx.setCursor(10, 24);
+            gfx.print("CASIO  TELEMEMO 30");
+
+            // Dot Matrix Sub-Window Frame
+            gfx.drawRect(8, 36, 112, 42, colorPrimary);
+            gfx.drawRect(9, 37, 110, 40, colorAccent);
+
+            gfx.setTextColor(colorText, colorBg);
+            gfx.setCursor(12, 42);
+            gfx.print("NAME: CHAOS-DESKY");
+            gfx.setCursor(12, 52);
+            gfx.print("TEL : +888-ESP32");
+            gfx.setCursor(12, 62);
+            gfx.printf("MEM : [||||||..] %02d/30", (s % 30) + 1);
+
+            // Lower Screen Frame
+            gfx.drawRect(8, 82, 112, 56, colorAccent);
+            gfx.setTextColor(colorPrimary, colorBg);
+            gfx.setCursor(10, 86);
+            gfx.print("AUTO SCHEDULE / ALM");
+
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(10, 142);
+            gfx.print("DATA BANK  WR 50M");
+        }
+
+        // Overdraw time inside bottom screen window
+        gfx.setTextColor(colorText, colorBg);
+        gfx.setTextSize(3);
+        gfx.setCursor(12, 102);
+        gfx.printf("%02d:%02d", h, m);
+
+        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextSize(2);
+        gfx.setCursor(96, 108);
+        gfx.printf("%02d", s);
+    }
+
+    // =========================================================
+    // 🌃 Style 12: Cyberpunk 2077 Night City HUD Chronograph
+    // =========================================================
+    void renderCyberpunk2077(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, float tempC,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        if (fullRedraw) {
+            gfx.fillRect(0, 16, 128, 144, ST77XX_BLACK);
+
+            // Cyberpunk Angular Border Accents
+            gfx.drawFastHLine(0, 16, 128, ST77XX_YELLOW);
+            gfx.drawFastHLine(0, 159, 128, ST77XX_YELLOW);
+
+            gfx.drawTriangle(4, 20, 20, 20, 4, 36, ST77XX_YELLOW);
+            gfx.drawTriangle(124, 20, 108, 20, 124, 36, ST77XX_CYAN);
+
+            // Top Header
+            gfx.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+            gfx.setTextSize(1);
+            gfx.setCursor(24, 24);
+            gfx.print("CYBERPUNK 2077");
+
+            // Telemetry gauges
+            gfx.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
+            gfx.setCursor(10, 38);
+            gfx.printf("CPU:240M HEAP:%dK", ESP.getFreeHeap() / 1024);
+
+            gfx.drawRect(8, 48, 112, 6, ST77XX_YELLOW);
+            int barW = (s * 110) / 59;
+            gfx.fillRect(9, 49, barW, 4, ST77XX_CYAN);
+
+            // Main Time Outer Box (Angular neon cyan)
+            gfx.drawRoundRect(6, 60, 116, 62, 6, ST77XX_CYAN);
+            gfx.drawRoundRect(7, 61, 114, 60, 5, ST77XX_YELLOW);
+
+            gfx.setTextColor(ST77XX_MAGENTA, ST77XX_BLACK);
+            gfx.setCursor(12, 64);
+            gfx.print("NIGHT CITY // CHRONO");
+
+            // Footer
+            gfx.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+            gfx.setCursor(10, 128);
+            gfx.printf("TEMP: %.1fC | OUT: %.1fC", tempC, w.valid ? w.tempC : 0.0f);
+            gfx.setCursor(10, 142);
+            gfx.print("SYSTEM STATUS: ONLINE");
+        }
+
+        // Glitching Cyberpunk Digital Time
+        gfx.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
+        gfx.setTextSize(3);
+        gfx.setCursor(12, 82);
+        if (s % 2 == 0) {
+            gfx.printf("%02d:%02d", h, m);
+        } else {
+            gfx.printf("%02d %02d", h, m);
+        }
+
+        gfx.setTextColor(ST77XX_CYAN, ST77XX_BLACK);
+        gfx.setTextSize(2);
+        gfx.setCursor(94, 88);
         gfx.printf("%02d", s);
     }
 };

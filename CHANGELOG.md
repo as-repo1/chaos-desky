@@ -4,6 +4,21 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [2.3.0] - 2026-07-28 (Watchface Studio Precision Fine-Tuning & 3 New Iconic Faces)
+
+### ✨ Added & Enhanced
+- **🎨 Precision Fine-Tuned Casio Watchfaces**:
+  - **Casio F-91W**: Added authentic gold/blue dual pinstripe borders, `SU MO TU WE TH FR SA` LCD day indicators, authentic 24H indicator, and temperature badge.
+  - **Casio G-Shock**: Upgraded DW-5600 octagonal resin bezel frame with 3 tactical sub-dials (`TMP`, `OUT`, `WND`) and high-contrast digital time.
+  - **Casio CA-53W Calculator**: Added 3D embossed keypad with math operator keys (`+`, `-`, `x`, `÷`, `=`) and top LCD calculation window.
+  - **Casio Royale AE-1200**: Fine-tuned radar sub-dial with dynamic rotating radar sweep line, latitude/longitude grid, world time zone list, and 10-year battery indicator.
+- **⌚ 3 Brand-New Watchface Styles (Total: 13 Watchfaces)**:
+  - **Style 10: Casio A168 Vintage ElectroLuminescence**: Retro silver/gold watch face with full-panel cyan-blue **EL backlight glow**, `ILLUMINATOR` text, and `WATER RESIST 50M`.
+  - **Style 11: Casio DB-360 Databank Telememo 30**: Iconic multi-line LCD screen with `TELEMEMO 30` header, memory capacity usage bar, contact info preview, and dual time.
+  - **Style 12: Cyberpunk 2077 Night City Chrono**: High-tech Cyberpunk HUD watchface with glowing neon yellow/cyan angular frame, CPU telemetry progress bar, and glitching neon time digits.
+
+---
+
 ## [2.2.0] - 2026-07-28 (TFT Page 10: OLED Studio Hub & Direct Hardware Switching)
 
 ### ✨ Added & Enhanced

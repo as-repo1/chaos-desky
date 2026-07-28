@@ -91,6 +91,7 @@ void executeButtonAction(int action) {
     switch (action) {
         case ACT_CYCLE_OLED:
             configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 6;
+            oledMgr.oledMode = configMgr.config.oledMode;
             configMgr.saveConfig();
             Serial.printf("🔘 Macro Action: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
             break;
@@ -123,12 +124,13 @@ void executeButtonAction(int action) {
             
         case ACT_JUMP_WATCH:
             configMgr.config.oledMode = 1; // Big Clock Mode
+            oledMgr.oledMode = 1;
             configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
             configMgr.saveConfig();
             if (tftMgr.currentPage != 6) {
                 tftMgr.setPage(6); // Jump straight to Watchface Studio (Page 7, index 6)
             } else {
-                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 13;
                 tftMgr.forceRedraw();
             }
             Serial.println("🔘 Macro Action: Jumped & Cycled Watchface Studio!");
@@ -143,6 +145,7 @@ void executeButtonAction(int action) {
             
         case ACT_WIFI_INFO:
             configMgr.config.oledMode = 5; // Mode 5: Dedicated WiFi Credentials & IP Broadcast
+            oledMgr.oledMode = 5;
             tftMgr.setPage(3);             // Page 4: System QR Code & IP Dashboard
             notificationMgr.trigger("WiFi Broadcast", "Broadcasting Credentials", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
             Serial.println("🔘 Macro Action: Broadcasting WiFi & QR Code across both screens!");
@@ -150,6 +153,7 @@ void executeButtonAction(int action) {
             
         case ACT_SCREENSAVER:
             configMgr.config.oledMode = 4; // OLED animated screensavers (Matrix, DVD, Tunnel, DNA, Batman, Tux)
+            oledMgr.oledMode = 4;
             tftMgr.setPage(8);             // Hardware stats page
             Serial.println("🔘 Macro Action: Launched OLED Animations & Hardware Stats!");
             break;
@@ -278,7 +282,7 @@ void executePageRightButtonAction(int page, SwitchAction action) {
 
             case 6: // Watchface Studio Page (Index 6)
                 Serial.println("➡️ Right Button [Watchface]: Cycling Watchface Style");
-                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 10;
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 13;
                 notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 tftMgr.forceRedraw();
                 break;
@@ -297,6 +301,10 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 Serial.println("➡️ Right Button [OLED Hub]: Cycling OLED Display Mode");
                 executeButtonAction(ACT_CYCLE_OLED);
                 tftMgr.forceRedraw();
+                {
+                    const char* modeNames[] = {"Telemetry HUD", "Dynamic Clock", "Sparklines", "Marquee Ticker", "Screensavers", "WiFi Specs"};
+                    notificationMgr.trigger("OLED Mode", modeNames[configMgr.config.oledMode], NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                }
                 break;
 
             default:
