@@ -36,7 +36,7 @@ class TftDisplayManager {
 public:
     int currentPage = 0;
     TFTTheme activeTheme = THEME_CYBERPUNK;
-    uint16_t enabledPagesMask = 0x01FF; // Bitmask for pages 0..8 (default: all 9 enabled)
+    uint16_t enabledPagesMask = 0x03FF; // Bitmask for pages 0..9 (default: all 10 enabled)
     int currentRotation = TFT_ROTATION;
     String customBannerText = "ChaosDesky Standalone Station";
     
@@ -232,7 +232,9 @@ public:
                            PomodoroTimer& pomo, 
                            const NotificationManager& notifMgr,
                            const String& ipStr, 
-                           const String& timeStr) {
+                           const String& timeStr,
+                           int oledMode = 0,
+                           int oledClockStyle = 0) {
         
         if (notifMgr.isTftActive()) {
             renderNotificationOverlay(notifMgr.currentNotif, notifMgr.getProgress());
@@ -260,6 +262,7 @@ public:
             case 6: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
             case 7: renderNetworkMonitorPage(ipStr, fullRedraw); break;
             case 8: renderSystemHardwarePage(fullRedraw); break;
+            case 9: renderOledControlPage(fullRedraw, oledMode, oledClockStyle); break;
         }
     }
 
@@ -697,6 +700,58 @@ private:
         tft.printf("UPTIME:    %lu s", millis() / 1000);
         tft.setCursor(10, 124);
         tft.print("BOARD: ESP32-D0WD");
+    }
+
+    // --- Page 9 (Index 9, P10): OLED Display Studio & External Controller ---
+    void renderOledControlPage(bool fullRedraw, int oledMode, int oledClockStyle) {
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 14, 120, 134, 6, COLOR_PRIMARY);
+            tft.fillRoundRect(8, 18, 112, 18, 4, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG);
+            tft.setTextSize(1);
+            tft.setCursor(16, 23);
+            tft.print("OLED STUDIO HUB");
+
+            tft.setTextColor(COLOR_ACCENT, COLOR_BG);
+            tft.setCursor(12, 44);
+            tft.print("[ACTIVE OLED MODE]");
+
+            tft.setTextColor(COLOR_WARN, COLOR_BG);
+            tft.setCursor(10, 102);
+            tft.print("[RIGHT SWITCH ACTION]");
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(10, 115);
+            tft.print("Single: Cycle Mode");
+            tft.setCursor(10, 128);
+            tft.print("Double: Cycle Clock");
+            tft.setCursor(10, 139);
+            tft.print("Long  : Screensavers");
+        }
+
+        // Always redraw dynamic active mode and clock style info
+        tft.fillRect(10, 58, 108, 38, COLOR_BG);
+        tft.drawRect(10, 58, 108, 38, COLOR_TEXT);
+
+        tft.setTextColor(ST77XX_WHITE, COLOR_BG);
+        tft.setTextSize(1);
+        tft.setCursor(16, 64);
+        switch (oledMode) {
+            case 0: tft.print("0: Telemetry HUD"); break;
+            case 1: tft.print("1: Dynamic Clock"); break;
+            case 2: tft.print("2: Live Sparklines"); break;
+            case 3: tft.print("3: Marquee Ticker"); break;
+            case 4: tft.print("4: Screensavers"); break;
+            case 5: tft.print("5: WiFi Info"); break;
+            default: tft.print("Unknown Mode"); break;
+        }
+
+        tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+        tft.setCursor(16, 80);
+        if (oledMode == 1) {
+            tft.printf("Clock Face: #%d", oledClockStyle + 1);
+        } else {
+            tft.print("Status: BROADCASTING");
+        }
     }
 
     void drawWeatherIcon(int x, int y, const String& iconCode) {

@@ -16,7 +16,7 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 0;  // 0 = pause (Manual Navigation Only)
-    uint16_t enabledPagesMask = 0x01FF; // All 9 pages enabled by default (bitmask 0b111111111)
+    uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
 
     // To-Do List State Persistence
     String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
@@ -102,7 +102,10 @@ public:
         config.tftTheme        = doc["tftTheme"] | 0;
         config.tftRotation     = doc["tftRotation"] | 2;
         config.carouselSpeedSec= doc["carouselSpeedSec"] | 0;
-        config.enabledPagesMask= doc["enabledPagesMask"] | 0x01FF;
+        config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
+        if ((config.enabledPagesMask & 0x03FF) <= 0x01FF) {
+            config.enabledPagesMask |= (1 << 9); // Auto-enable OLED Studio Page on migration
+        }
         if (doc.containsKey("tT")) {
             for (int i = 0; i < 4; i++) {
                 config.todoTitles[i] = doc["tT"][i].as<String>();

@@ -293,6 +293,12 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 executeButtonAction(ACT_CYCLE_THEMES);
                 break;
 
+            case 9: // OLED Display Hub Page (Index 9)
+                Serial.println("➡️ Right Button [OLED Hub]: Cycling OLED Display Mode");
+                executeButtonAction(ACT_CYCLE_OLED);
+                tftMgr.forceRedraw();
+                break;
+
             default:
                 break;
         }
@@ -313,6 +319,14 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
                 tftMgr.forceRedraw();
                 notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                break;
+
+            case 9: // OLED Display Hub: Cycle Clock Style
+                Serial.println("➡️ Right Button Double-Click [OLED Hub]: Cycling OLED Clock Style");
+                configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
+                configMgr.saveConfig();
+                tftMgr.forceRedraw();
+                notificationMgr.trigger("OLED Studio", "Clock Style Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
                 break;
 
             default:
@@ -419,6 +433,6 @@ void loop() {
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
         oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi, configMgr.config.oledClockStyle);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, notificationMgr, localIpStr, timeStr);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, notificationMgr, localIpStr, timeStr, configMgr.config.oledMode, configMgr.config.oledClockStyle);
     }
 }

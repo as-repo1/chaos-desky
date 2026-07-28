@@ -4,6 +4,17 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [2.2.0] - 2026-07-28 (TFT Page 10: OLED Studio Hub & Direct Hardware Switching)
+
+### ✨ Added & Enhanced
+- **📺 Dedicated TFT OLED Controller (Page 10, Index 9)**: Added a brand new interactive TFT dashboard screen titled **"OLED Studio Hub"** displaying real-time OLED broadcast mode status and active clock face style.
+- **🔘 Dedicated Right Switch OLED Actions**:
+  - **Single Click on Page 10**: Directly cycles through all 6 OLED display modes (Telemetry HUD -> Clock -> Sparklines -> Marquee Ticker -> Screensaver -> WiFi Spec).
+  - **Double Click on Page 10**: Cycles through the 8 OLED Clock Face styles when the dynamic clock is active.
+- **🔄 Auto-Migration & Web Portal Sync**: Automatically upgraded `enabledPagesMask` to 10 bits (`0x03FF`) with intelligent migration logic so existing users immediately gain Page 10 without clearing EEPROM. Updated Web UI with P10 instant jump and filter toggles.
+
+---
+
 ## [2.1.0] - 2026-07-28 (Comprehensive Bug Purge & Interactive To-Do Sync)
 
 ### ✨ Added & Enhanced
