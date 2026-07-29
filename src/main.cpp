@@ -90,7 +90,7 @@ DualSwitchComboDetector comboDetector;
 void executeButtonAction(int action) {
     switch (action) {
         case ACT_CYCLE_OLED:
-            configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 6;
+            configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 7;
             oledMgr.oledMode = configMgr.config.oledMode;
             configMgr.saveConfig();
             Serial.printf("🔘 Macro Action: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
@@ -140,7 +140,7 @@ void executeButtonAction(int action) {
             configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
             configMgr.saveConfig();
             tftMgr.forceRedraw();
-            notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
             break;
             
         case ACT_WIFI_INFO:
@@ -152,10 +152,16 @@ void executeButtonAction(int action) {
             break;
             
         case ACT_SCREENSAVER:
-            configMgr.config.oledMode = 4; // OLED animated screensavers (Matrix, DVD, Tunnel, DNA, Batman, Tux)
-            oledMgr.oledMode = 4;
-            tftMgr.setPage(8);             // Hardware stats page
-            Serial.println("🔘 Macro Action: Launched OLED Animations & Hardware Stats!");
+            if (configMgr.config.oledMode == 4) {
+                screensaverEngine.oledSaverMode = (screensaverEngine.oledSaverMode + 1) % 6;
+                Serial.println("🔘 Macro Action: Cycled OLED Screensaver style");
+                notificationMgr.trigger("Screensaver", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
+            } else {
+                configMgr.config.oledMode = 4; // OLED animated screensavers
+                oledMgr.oledMode = 4;
+                Serial.println("🔘 Macro Action: Launched OLED Screensaver");
+                notificationMgr.trigger("Screensaver", "Activated", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
+            }
             break;
             
         case ACT_RESET_POMO:
@@ -225,8 +231,8 @@ void setup() {
                             configMgr.config.openWeatherCity, 
                             configMgr.config.openWeatherCountry);
 
-    // Add initial barometric pressure sample
-    sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
+    // Add initial historical sample
+    sensorMgr.addHistorySample(sensorMgr.data.pressureHpa, sensorMgr.data.tempC, sensorMgr.data.humidity);
 
     Serial.println("🎉 System Initialization Complete!");
 }
@@ -243,10 +249,10 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 tftMgr.forceRedraw();
                 break;
 
-            case 1: // Barometer / Pressure Graph Page
-                Serial.println("➡️ Right Button [Barometer]: Logging pressure sample...");
-                sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
-                notificationMgr.trigger("Barometer", "Pressure Logged to Sparkline", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+            case 1: // Barometer / Sensor Graph Page
+                Serial.println("➡️ Right Button [Graphs]: Cycling Graph Type...");
+                tftMgr.activeGraphType = (tftMgr.activeGraphType + 1) % 3;
+                notificationMgr.trigger("Graph", "Switched Data View", NOTIF_INFO, NOTIF_TARGET_OLED, 1);
                 tftMgr.forceRedraw();
                 break;
 
@@ -274,16 +280,17 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 break;
 
             case 5: // Indoor Climate Page
-                Serial.println("➡️ Right Button [Climate]: Re-reading sensors");
-                sensorMgr.readSensors();
-                notificationMgr.trigger("Sensors", "Telemetry Refreshed!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                Serial.println("➡️ Right Button [Climate]: Cycling Climate Theme");
+                tftMgr.activeClimateTheme = (tftMgr.activeClimateTheme + 1) % 5;
+                sensorMgr.readSensors(); // Keep the sensor read too just in case
+                notificationMgr.trigger("Climate", "Theme Cycled", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 tftMgr.forceRedraw();
                 break;
 
             case 6: // Watchface Studio Page (Index 6)
                 Serial.println("➡️ Right Button [Watchface]: Cycling Watchface Style");
                 watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 13;
-                notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 tftMgr.forceRedraw();
                 break;
 
@@ -302,8 +309,8 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 executeButtonAction(ACT_CYCLE_OLED);
                 tftMgr.forceRedraw();
                 {
-                    const char* modeNames[] = {"Telemetry HUD", "Dynamic Clock", "Sparklines", "Marquee Ticker", "Screensavers", "WiFi Specs"};
-                    notificationMgr.trigger("OLED Mode", modeNames[configMgr.config.oledMode], NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                    const char* modeNames[] = {"Telemetry HUD", "Dynamic Clock", "Sparklines", "Marquee Ticker", "Screensavers", "WiFi Specs", "Indoor Climate"};
+                    notificationMgr.trigger("OLED Mode", modeNames[configMgr.config.oledMode], NOTIF_INFO, NOTIF_TARGET_TFT, 2);
                 }
                 break;
 
@@ -326,7 +333,7 @@ void executePageRightButtonAction(int page, SwitchAction action) {
             case 6: // Watchface: Switch to Casio F-91W (Index 6)
                 watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
                 tftMgr.forceRedraw();
-                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 break;
 
             case 9: // OLED Display Hub: Cycle Clock Style
@@ -334,7 +341,7 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
                 configMgr.saveConfig();
                 tftMgr.forceRedraw();
-                notificationMgr.trigger("OLED Studio", "Clock Style Cycled!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 2);
+                notificationMgr.trigger("OLED Studio", "Clock Style Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
                 break;
 
             default:
@@ -410,8 +417,8 @@ void loop() {
 
     // 3. Periodic Pressure Sampling for Trend Sparkline (Every 15 mins)
     if (currentMs - lastPressureSampleMs >= PRESSURE_SAMPLE_MS) {
-        lastPressureSampleMs = currentMs;
-        sensorMgr.addPressureSample(sensorMgr.data.pressureHpa);
+        // Log sensor sample to sparkline arrays
+        sensorMgr.addHistorySample(sensorMgr.data.pressureHpa, sensorMgr.data.tempC, sensorMgr.data.humidity);
     }
 
     // 4. Periodic Weather API Fetch (Every 10 mins, if enabled)

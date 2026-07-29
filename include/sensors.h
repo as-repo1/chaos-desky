@@ -6,6 +6,8 @@
 #include <Adafruit_BMP085.h>
 #include "config.h"
 
+#define SENSOR_HISTORY_SIZE 24
+
 struct SensorData {
     float tempC = 0.0f;
     float tempF = 0.0f;
@@ -29,12 +31,16 @@ struct SensorData {
 class SensorManager {
 public:
     SensorData data;
-    float pressureHistory[PRESSURE_HISTORY_SIZE];
+    float pressureHistory[SENSOR_HISTORY_SIZE];
+    float tempHistory[SENSOR_HISTORY_SIZE];
+    float humidityHistory[SENSOR_HISTORY_SIZE];
     int historyCount = 0;
 
     SensorManager() {
-        for (int i = 0; i < PRESSURE_HISTORY_SIZE; i++) {
+        for (int i = 0; i < SENSOR_HISTORY_SIZE; i++) {
             pressureHistory[i] = 1013.25f;
+            tempHistory[i] = 20.0f;
+            humidityHistory[i] = 50.0f;
         }
     }
 
@@ -95,15 +101,22 @@ public:
         }
     }
 
-    void addPressureSample(float pressHpa) {
-        if (historyCount < PRESSURE_HISTORY_SIZE) {
-            pressureHistory[historyCount++] = pressHpa;
+    void addHistorySample(float pressHpa, float tempC, float hum) {
+        if (historyCount < SENSOR_HISTORY_SIZE) {
+            pressureHistory[historyCount] = pressHpa;
+            tempHistory[historyCount] = tempC;
+            humidityHistory[historyCount] = hum;
+            historyCount++;
         } else {
             // Shift array left
-            for (int i = 0; i < PRESSURE_HISTORY_SIZE - 1; i++) {
+            for (int i = 0; i < SENSOR_HISTORY_SIZE - 1; i++) {
                 pressureHistory[i] = pressureHistory[i + 1];
+                tempHistory[i] = tempHistory[i + 1];
+                humidityHistory[i] = humidityHistory[i + 1];
             }
-            pressureHistory[PRESSURE_HISTORY_SIZE - 1] = pressHpa;
+            pressureHistory[SENSOR_HISTORY_SIZE - 1] = pressHpa;
+            tempHistory[SENSOR_HISTORY_SIZE - 1] = tempC;
+            humidityHistory[SENSOR_HISTORY_SIZE - 1] = hum;
         }
     }
 

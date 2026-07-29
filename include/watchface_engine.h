@@ -655,32 +655,42 @@ private:
             // Fill with deep contrast background
             gfx.fillRect(0, 16, 128, 144, colorBg);
 
-            // Cushion curved Gold/Stainless steel Pulsar case frame
-            gfx.drawRoundRect(6, 24, 116, 124, 24, colorPrimary);
-            gfx.drawRoundRect(8, 26, 112, 120, 22, colorPrimary);
+            // Cushion curved Gold/Stainless steel Pulsar case frame (filled for metal look)
+            gfx.fillRoundRect(4, 20, 120, 132, 28, colorPrimary);
+            gfx.drawRoundRect(4, 20, 120, 132, 28, colorAccent);
+            gfx.drawRoundRect(6, 22, 116, 128, 26, colorText);
             
+            // Side Command Button (Signature of Pulsar)
+            gfx.fillRoundRect(122, 70, 6, 24, 3, colorAccent);
+
             // Deep red tinted glass filter viewing screen
-            gfx.drawRoundRect(16, 52, 96, 56, 10, colorAccent);
-            gfx.drawRoundRect(17, 53, 94, 54, 9, colorAccent);
+            gfx.fillRoundRect(14, 50, 100, 52, 12, colorBg);
+            gfx.drawRoundRect(14, 50, 100, 52, 12, colorAccent);
+            gfx.drawRoundRect(15, 51, 98, 50, 11, colorAccent);
 
             // Vintage branding above and below glass window
-            gfx.setTextColor(colorText, colorBg);
+            gfx.setTextColor(colorBg, colorPrimary);
+            gfx.setTextSize(2);
+            gfx.setCursor(30, 32);
+            gfx.print("Pulsar");
+            
+            gfx.setTextColor(colorAccent, colorPrimary);
             gfx.setTextSize(1);
-            gfx.setCursor(44, 36);
-            gfx.print("PULSAR");
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(26, 116);
+            gfx.setCursor(26, 110);
             gfx.print("TIME COMPUTER");
             
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(28, 130);
+            gfx.setTextColor(colorText, colorPrimary);
+            gfx.setCursor(22, 130);
             gfx.printf("SOLID STATE %.0fC", tempC);
         }
 
         // Ruby Red glowing LED digital characters centered inside tinted glass!
-        gfx.setTextColor(colorAccent, colorBg);
+        // We force a deep ruby red for authenticity, or fallback to accent
+        uint16_t ledColor = ((255 & 0xF8) << 8) | ((20 & 0xFC) << 3) | (40 >> 3);
+
+        gfx.setTextColor(ledColor, colorBg);
         gfx.setTextSize(3);
-        gfx.setCursor(22, 68);
+        gfx.setCursor(18, 66);
         if (s % 2 == 0) {
             gfx.printf("%02d:%02d", h, m);
         } else {
@@ -688,7 +698,7 @@ private:
         }
 
         gfx.setTextSize(2);
-        gfx.setCursor(94, 74);
+        gfx.setCursor(104, 74); // Adjusted for spacing
         gfx.printf("%02d", s);
     }
 

@@ -53,7 +53,7 @@ public:
     void draw(SensorManager& sm, const NotificationManager& notifMgr, const String& ipStr, const String& timeStr, int rssi, int clockStyle = 0) {
         bool needsRefresh = false;
         // Only refresh I2C display if animation is playing, mode changed, clock style changed, or second/temp ticked!
-        if (notifMgr.isOledActive() || oledMode == 3 || oledMode == 5 || timeStr != lastTimeStr || oledMode != lastRenderedMode || clockStyle != lastClockStyle || abs(sm.data.tempC - lastTemp) > 0.1f) {
+        if (notifMgr.isOledActive() || oledMode == 3 || oledMode == 4 || oledMode == 5 || timeStr != lastTimeStr || oledMode != lastRenderedMode || clockStyle != lastClockStyle || abs(sm.data.tempC - lastTemp) > 0.1f) {
             needsRefresh = true;
         }
 
@@ -78,6 +78,7 @@ public:
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: screensaverEngine.renderOledScreensaver(oled); break;
                 case 5: drawMode5_WifiInfo(ipStr, AP_SSID, AP_PASS); break;
+                case 6: drawMode6_Climate(sm.data); break;
                 default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
             }
         }
@@ -123,6 +124,41 @@ private:
         if (fillW > 0) {
             oled.fillRoundRect(2, 58, fillW, 4, 2, SSD1306_WHITE);
         }
+    }
+
+    // --- OLED Mode 6: Indoor Climate Minimalist UI ---
+    void drawMode6_Climate(const SensorData& s) {
+        // High contrast minimalist layout
+        oled.setTextSize(2);
+        
+        // Temperature
+        oled.setCursor(0, 10);
+        oled.printf("%.1f C", s.tempC);
+        
+        // Humidity
+        oled.setCursor(0, 36);
+        oled.printf("%.0f %%", s.humidity);
+        
+        // Small labels & secondary data on right side
+        oled.setTextSize(1);
+        
+        // Horizontal divider
+        oled.drawFastHLine(0, 31, 60, SSD1306_WHITE);
+        
+        // Vertical divider
+        oled.drawFastVLine(78, 0, 64, SSD1306_WHITE);
+        
+        oled.setCursor(84, 8);
+        oled.print("TEMP");
+        
+        oled.setCursor(84, 34);
+        oled.print("HUMID");
+        
+        // Add Pressure at bottom right
+        oled.setCursor(84, 52);
+        oled.print("hPa");
+        oled.setCursor(84, 42);
+        oled.printf("%.0f", s.pressureHpa);
     }
 
     // Mode 0: Telemetry HUD
