@@ -64,7 +64,7 @@
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
 #define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only!)
-#define TOTAL_TFT_PAGES       10    // 10 Total TFT Carousel Pages (Page 10 = OLED Control Studio)
+#define TOTAL_TFT_PAGES       13    // 13 Total TFT Carousel Pages (Page 9 = OLED Control, 10,11,12 = Climate)
 #define NUM_OLED_MODES        6     // 6 OLED Display Modes Supported
 #define TOTAL_THEMES          11    // 11 Themes Supported
 

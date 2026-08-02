@@ -4,326 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChaosDesky - ESP32 Command Hub</title>
-    <style>
-        :root {
-            --bg-color: #090d16;
-            --card-bg: rgba(15, 23, 42, 0.85);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --text-color: #f1f5f9;
-            --subtext-color: #94a3b8;
-            --primary-color: #38bdf8;
-            --accent-color: #f43f5e;
-            --success-color: #34d399;
-            --button-bg: #1e293b;
-            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: var(--font-family);
-            margin: 0;
-            padding: 16px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
-        }
-
-        .logo h1 {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin: 0;
-        }
-
-        .logo span {
-            color: var(--primary-color);
-        }
-
-        .badge {
-            font-size: 0.75rem;
-            color: var(--subtext-color);
-            text-transform: uppercase;
-        }
-
-        .status-pill {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-        }
-
-        .status-pill .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--success-color);
-            box-shadow: 0 0 8px var(--success-color);
-        }
-
-        .grid {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            cursor: pointer;
-            user-select: none;
-            background: rgba(255, 255, 255, 0.02);
-            transition: background 0.2s ease;
-        }
-
-        .card-header:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .card-header h2 {
-            margin: 0;
-            font-size: 1.1rem;
-            color: var(--primary-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-header .arrow {
-            font-size: 0.9rem;
-            color: var(--subtext-color);
-            transition: transform 0.3s ease;
-        }
-
-        .card.open .arrow {
-            transform: rotate(180deg);
-        }
-
-        .card-body {
-            display: none;
-            padding: 0 20px 20px 20px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .card.open .card-body {
-            display: block;
-        }
-
-        .card-desc {
-            font-size: 0.85rem;
-            color: var(--subtext-color);
-            margin: 12px 0 16px 0;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 12px;
-            margin-top: 14px;
-        }
-
-        .metric {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .metric .label {
-            font-size: 0.75rem;
-            color: var(--subtext-color);
-        }
-
-        .metric .val {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin-top: 4px;
-        }
-
-        .metric .sub-val {
-            font-size: 0.7rem;
-            color: var(--subtext-color);
-            margin-top: 4px;
-        }
-
-        .form-group {
-            margin-top: 14px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--subtext-color);
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        input[type="text"], input[type="file"], select {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.4);
-            color: var(--text-color);
-            font-size: 0.9rem;
-            box-sizing: border-box;
-        }
-
-        input[type="range"] {
-            width: 100%;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-        }
-
-        .btn {
-            padding: 10px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--button-bg);
-            color: var(--text-color);
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .btn:hover {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(56, 189, 248, 0.22);
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(0.97);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-        }
-
-        .btn-primary {
-            background: var(--primary-color);
-            color: #000;
-            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
-        }
-
-        .btn-primary:hover {
-            color: #000;
-            opacity: 0.95;
-            box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
-        }
-
-        .btn-red {
-            background: var(--accent-color);
-            color: #fff;
-            border: none;
-            box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
-        }
-
-        .btn-red:hover {
-            color: #fff;
-            opacity: 0.95;
-            box-shadow: 0 6px 20px rgba(244, 63, 94, 0.5);
-        }
-
-        .full-width {
-            width: 100%;
-        }
-
-        .control-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .control-col {
-            flex: 1;
-        }
-
-        .checkbox-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary-color);
-            color: #000;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 700;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-        }
-
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .preview-box {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        canvas {
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            background: #000;
-        }
-
-        .divider {
-            border: 0;
-            border-top: 1px solid var(--border-color);
-            margin: 16px 0;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
@@ -344,7 +25,7 @@
         <!-- Collapsible Accordion Grid -->
         <main class="grid">
 
-            <!-- Card 1: Telemetry & Weather (Open by default) -->
+            <!-- Card 1: Live Telemetry & Weather -->
             <section class="card open" id="card-telemetry">
                 <div class="card-header" onclick="toggleCard('card-telemetry')">
                     <h2>📊 Live Telemetry & Outdoor Weather</h2>
@@ -368,9 +49,19 @@
                             <span class="sub-val" id="alt-val">Alt: -- m</span>
                         </div>
                         <div class="metric">
+                            <span class="label">Heat Index</span>
+                            <span class="val" id="hi-val">-- °C</span>
+                            <span class="sub-val" id="dew-val">Dew: -- °C</span>
+                        </div>
+                        <div class="metric">
                             <span class="label">Outdoor Temp</span>
                             <span class="val" id="out-temp-val">-- °C</span>
                             <span class="sub-val" id="city-val">City: --</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Conditions</span>
+                            <span class="val" id="cond-val">--</span>
+                            <span class="sub-val" id="wind-val">Wind: -- m/s</span>
                         </div>
                     </div>
                 </div>
@@ -383,21 +74,23 @@
                     <span class="arrow">▼</span>
                 </div>
                 <div class="card-body">
-                    <p class="card-desc">Select custom watch face styles and 11 color themes for TFT Page 8!</p>
+                    <p class="card-desc">Select custom watch face styles and 11 color themes for TFT!</p>
                     <div class="btn-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                         <button onclick="setWatchface(0)" class="btn">🕒 Swiss Analog</button>
                         <button onclick="setWatchface(1)" class="btn">⏱️ Cyber Chrono</button>
                         <button onclick="setWatchface(2)" class="btn">☀️ Modern Digital</button>
                         <button onclick="setWatchface(3)" class="btn">🔴 Neon Nixie</button>
-                        <button onclick="setWatchface(4)" class="btn btn-primary" style="background: linear-gradient(135deg, #0056b3, #001f3f); border-left: 4px solid #38bdf8; font-weight: bold;">⌚ Casio F-91W</button>
-                        <button onclick="setWatchface(5)" class="btn" style="background: linear-gradient(135deg, #32383e, #1a1c20); border-left: 4px solid #f97316; font-weight: bold;">🛡️ Casio G-Shock</button>
-                        <button onclick="setWatchface(6)" class="btn" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #10b981; font-weight: bold;">🧮 Casio CA-53W</button>
-                        <button onclick="setWatchface(7)" class="btn" style="background: linear-gradient(135deg, #334155, #1e293b); border-left: 4px solid #ec4899; font-weight: bold;">🗺️ Casio Royale</button>
-                        <button onclick="setWatchface(8)" class="btn">🌊 Seiko Diver</button>
-                        <button onclick="setWatchface(9)" class="btn" style="color: #ef4444; border-color: #ef4444;">🔴 Pulsar LED 1972</button>
-                        <button onclick="setWatchface(10)" class="btn" style="background: linear-gradient(135deg, #0284c7, #0f172a); border-left: 4px solid #06b6d4; font-weight: bold;">🪙 Casio A168 EL</button>
-                        <button onclick="setWatchface(11)" class="btn" style="background: linear-gradient(135deg, #374151, #1f2937); border-left: 4px solid #a855f7; font-weight: bold;">📞 Casio DataBank</button>
+                        <button onclick="setWatchface(4)" class="btn" style="background: linear-gradient(135deg, #1f2937, #111827); border-left: 4px solid #f3f4f6; font-weight: bold;">🚉 Retro Flip Clock</button>
+                        <button onclick="setWatchface(5)" class="btn" style="background: linear-gradient(135deg, #064e3b, #022c22); border-left: 4px solid #10b981; font-weight: bold;">🟢 Binary Matrix HUD</button>
+                        <button onclick="setWatchface(6)" class="btn" style="background: linear-gradient(135deg, #171717, #000000); border-left: 4px solid #22c55e; font-weight: bold;">💻 CRT Terminal</button>
+                        <button onclick="setWatchface(7)" class="btn" style="background: linear-gradient(135deg, #3b0764, #172554); border-left: 4px solid #8b5cf6; font-weight: bold;">🪐 Orbital Rings</button>
+                        <button onclick="setWatchface(8)" class="btn" style="background: linear-gradient(135deg, #111827, #000000); border-left: 4px solid #f8fafc; font-weight: bold;">✈️ Aviation Altimeter</button>
+                        <button onclick="setWatchface(9)" class="btn" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); color: #0f172a; border-left: 4px solid #0f172a; font-weight: bold;">📰 Minimalist E-Ink</button>
+                        <button onclick="setWatchface(10)" class="btn" style="background: linear-gradient(135deg, #78350f, #451a03); border-left: 4px solid #d97706; font-weight: bold;">⚙️ Steampunk Gauge</button>
+                        <button onclick="setWatchface(11)" class="btn" style="background: linear-gradient(135deg, #450a0a, #000000); border-left: 4px solid #ef4444; font-weight: bold;">🚨 Classic 7-Segment</button>
                         <button onclick="setWatchface(12)" class="btn" style="background: linear-gradient(135deg, #854d0e, #451a03); border-left: 4px solid #eab308; font-weight: bold; color: #fef08a;">🌃 Cyberpunk 2077</button>
+                        <button onclick="setWatchface(13)" class="btn" style="background: linear-gradient(135deg, #0c4a6e, #164e63); border-left: 4px solid #06b6d4; font-weight: bold;">🌊 Ocean Wave</button>
+                        <button onclick="setWatchface(14)" class="btn" style="background: linear-gradient(135deg, #4c1d95, #1e1b4b); border-left: 4px solid #a78bfa; font-weight: bold;">🔮 Aurora Borealis</button>
                     </div>
                     <hr class="divider">
                     <div class="control-row">
@@ -422,10 +115,30 @@
                             <select id="rotation-dropdown" onchange="setTftRotation(this.value)">
                                 <option value="0">0° (Portrait)</option>
                                 <option value="1">90° (Landscape)</option>
-                                <option value="2" selected>180° (Inverted Portrait - Default)</option>
+                                <option value="2" selected>180° (Inverted Portrait)</option>
                                 <option value="3">270° (Inverted Landscape)</option>
                             </select>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card: Climate Theme Selector -->
+            <section class="card" id="card-climate">
+                <div class="card-header" onclick="toggleCard('card-climate')">
+                    <h2>🌡️ Indoor Climate Theme Selector</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Choose between 7 unique climate dashboard layouts for Page 6!</p>
+                    <div class="btn-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button onclick="setClimateTheme(0)" class="btn" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 4px solid #f97316;">🔵 Neon Rings</button>
+                        <button onclick="setClimateTheme(1)" class="btn" style="background: linear-gradient(135deg, #052e16, #000); border-left: 4px solid #22c55e; color: #22c55e;">💻 Pip-Boy Terminal</button>
+                        <button onclick="setClimateTheme(2)" class="btn" style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); color: #1e293b; border-left: 4px solid #3b82f6;">🎴 Material Cards</button>
+                        <button onclick="setClimateTheme(3)" class="btn" style="background: linear-gradient(135deg, #0c4a6e, #042f2e); border-left: 4px solid #06b6d4;">🛡️ Tactical Radar</button>
+                        <button onclick="setClimateTheme(4)" class="btn" style="background: linear-gradient(135deg, #a3b18a, #6b705c); color: #1b1b1b; border-left: 4px solid #344e41;">📟 Retro LCD</button>
+                        <button onclick="setClimateTheme(5)" class="btn" style="background: linear-gradient(135deg, #0f172a, #000); border-left: 4px solid #ef4444;">🏎️ Car Dashboard</button>
+                        <button onclick="setClimateTheme(6)" class="btn" style="background: linear-gradient(135deg, #701a75, #155e75); border-left: 4px solid #ec4899;">🫧 Floating Bubbles</button>
                     </div>
                 </div>
             </section>
@@ -483,7 +196,7 @@
                             <option value="0">TFT Color Screen Only</option>
                             <option value="1">OLED Clock & Ticker Only</option>
                         </select>
-                        <small style="color:#94a3b8; display:block; margin-top:6px;">Choose whether system alerts, theme changes, and timers show on OLED, TFT, or both screens.</small>
+                        <small style="color:#94a3b8; display:block; margin-top:6px;">Choose whether system alerts show on OLED, TFT, or both screens.</small>
                     </div>
                     
                     <hr class="divider">
@@ -579,17 +292,20 @@
                 </div>
                 <div class="card-body">
                     <label class="form-label">Instant Page Jump:</label>
-                    <div class="btn-group">
+                    <div class="btn-group" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px;">
                         <button onclick="setTftPage(0)" class="btn">P1: Weather</button>
                         <button onclick="setTftPage(1)" class="btn">P2: Baro</button>
                         <button onclick="setTftPage(2)" class="btn">P3: Pomo</button>
-                        <button onclick="setTftPage(3)" class="btn">P4: System QR</button>
+                        <button onclick="setTftPage(3)" class="btn">P4: QR Code</button>
                         <button onclick="setTftPage(4)" class="btn">P5: To-Do</button>
                         <button onclick="setTftPage(5)" class="btn">P6: Climate</button>
-                        <button onclick="setTftPage(6)" class="btn">P7: Watchface</button>
+                        <button onclick="setTftPage(6)" class="btn">P7: Watch</button>
                         <button onclick="setTftPage(7)" class="btn">P8: Network</button>
                         <button onclick="setTftPage(8)" class="btn">P9: Hardware</button>
                         <button onclick="setTftPage(9)" class="btn">P10: OLED Hub</button>
+                        <button onclick="setTftPage(10)" class="btn" style="border-left: 3px solid #f97316;">P11: Temp Graph</button>
+                        <button onclick="setTftPage(11)" class="btn" style="border-left: 3px solid #06b6d4;">P12: Hum Graph</button>
+                        <button onclick="setTftPage(12)" class="btn" style="border-left: 3px solid #a855f7;">P13: Comfort</button>
                     </div>
                     
                     <hr class="divider">
@@ -598,13 +314,16 @@
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-0" checked onchange="savePageMask()"> P1: Weather</label>
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-1" checked onchange="savePageMask()"> P2: Baro</label>
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-2" checked onchange="savePageMask()"> P3: Pomodoro</label>
-                        <label class="checkbox-item"><input type="checkbox" id="chk-page-3" checked onchange="savePageMask()"> P4: System QR</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-3" checked onchange="savePageMask()"> P4: QR Code</label>
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-4" checked onchange="savePageMask()"> P5: To-Do List</label>
-                        <label class="checkbox-item"><input type="checkbox" id="chk-page-5" checked onchange="savePageMask()"> P6: Indoor Climate</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-5" checked onchange="savePageMask()"> P6: Climate</label>
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-6" checked onchange="savePageMask()"> P7: Watchface</label>
                         <label class="checkbox-item"><input type="checkbox" id="chk-page-7" checked onchange="savePageMask()"> P8: Network</label>
-                        <label class="checkbox-item"><input type="checkbox" id="chk-page-8" checked onchange="savePageMask()"> P9: Hardware Stats</label>
-                        <label class="checkbox-item"><input type="checkbox" id="chk-page-9" checked onchange="savePageMask()"> P10: OLED Studio Hub</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-8" checked onchange="savePageMask()"> P9: Hardware</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-9" checked onchange="savePageMask()"> P10: OLED Hub</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-10" checked onchange="savePageMask()"> P11: Temp Graph</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-11" checked onchange="savePageMask()"> P12: Hum Graph</label>
+                        <label class="checkbox-item"><input type="checkbox" id="chk-page-12" checked onchange="savePageMask()"> P13: Comfort</label>
                     </div>
 
                     <hr class="divider">
@@ -637,8 +356,33 @@
                 </div>
             </section>
 
-            <!-- Card 9: Dedicated Hardware Buttons & BLE Wi-Fi Provisioning -->
-            <section class="card open" id="card-mech-ble">
+            <!-- Card: Pomodoro Timer Remote -->
+            <section class="card" id="card-pomodoro">
+                <div class="card-header" onclick="toggleCard('card-pomodoro')">
+                    <h2>🍅 Pomodoro Timer Remote Control</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <div style="text-align:center; margin: 12px 0;">
+                        <div style="font-size:2.5rem; font-weight:800; color:var(--primary-color);" id="pomo-timer">00:00</div>
+                        <div style="font-size:0.85rem; color:var(--subtext-color); margin-top:4px;" id="pomo-state">IDLE</div>
+                        <div style="width:100%; height:6px; border-radius:3px; background:rgba(255,255,255,0.1); margin-top:10px; overflow:hidden;">
+                            <div id="pomo-progress" style="height:100%; width:0; background:var(--primary-color); border-radius:3px; transition:width 0.3s ease;"></div>
+                        </div>
+                        <div style="font-size:0.8rem; color:var(--subtext-color); margin-top:6px;" id="pomo-sessions">Completed Sessions: 0</div>
+                    </div>
+                    <div class="btn-group" style="justify-content:center;">
+                        <button onclick="pomoAction('start')" class="btn btn-primary">▶ Start</button>
+                        <button onclick="pomoAction('pause')" class="btn">⏸ Pause</button>
+                        <button onclick="pomoAction('resume')" class="btn">⏯ Resume</button>
+                        <button onclick="pomoAction('break')" class="btn" style="border-color:#34d399; color:#34d399;">☕ Break</button>
+                        <button onclick="pomoAction('reset')" class="btn btn-red">⟲ Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card: Dedicated Hardware Buttons & BLE Wi-Fi Provisioning -->
+            <section class="card" id="card-mech-ble">
                 <div class="card-header" onclick="toggleCard('card-mech-ble')">
                     <h2>🕹️ Dedicated Buttons & 📡 BLE Wi-Fi Provisioning Hub</h2>
                     <span class="arrow">▼</span>
@@ -653,7 +397,7 @@
                                 <span>⬅️ Left Switch (Pin D25) : Page Cycle</span>
                             </h3>
                             <ul style="font-size:0.85rem; color:#cbd5e1; padding-left: 18px; margin:0;">
-                                <li style="margin-bottom:8px;"><strong>Single Click:</strong> Cycle forward through active TFT screens (P1 -> P9).</li>
+                                <li style="margin-bottom:8px;"><strong>Single Click:</strong> Cycle forward through 13 TFT screens (P1 -> P13).</li>
                                 <li style="margin-bottom:8px;"><strong>Double Click:</strong> Toggle OLED display mode (HUD, Clocks, Air Quality, Animations, WiFi info).</li>
                                 <li><strong>Long Hold (>700ms):</strong> Toggle auto-carousel on/off.</li>
                             </ul>
@@ -666,7 +410,8 @@
                             </h3>
                             <ul style="font-size:0.85rem; color:#cbd5e1; padding-left: 18px; margin:0;">
                                 <li style="margin-bottom:8px;"><strong>Pomodoro Page (P3):</strong> Click toggles Start/Pause; Double Click resets timer!</li>
-                                <li style="margin-bottom:8px;"><strong>Watchface Page (P7):</strong> Click cycles through all 10 custom watchface styles!</li>
+                                <li style="margin-bottom:8px;"><strong>Climate Page (P6):</strong> Click cycles through 7 unique climate themes!</li>
+                                <li style="margin-bottom:8px;"><strong>Watchface Page (P7):</strong> Click cycles through all 15 custom watchface styles!</li>
                                 <li><strong>Other Pages:</strong> Click cycles OLED animation themes or TFT color palettes!</li>
                             </ul>
                         </div>
@@ -674,16 +419,16 @@
 
                     <div style="background: rgba(0,0,0,0.35); padding: 12px 16px; border-radius: 8px; border-left: 4px solid #34d399;">
                         <h3 style="margin-top:0; font-size:1rem; color:#34d399;">📡 BLE Nordic Wi-Fi Credential Provisioning</h3>
-                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Connect using any BLE Terminal app (service 6e400001-b5a3-f393-e0a9-e50e24dcca9e) to configure Wi-Fi wirelessly without recompiling:</p>
+                        <p style="font-size:0.85rem; color:#cbd5e1; margin-bottom:8px;">Connect using any BLE Terminal app (service 6e400001-b5a3-f393-e0a9-e50e24dcca9e) to configure Wi-Fi wirelessly:</p>
                         <ul style="font-size:0.85rem; color:#94a3b8; padding-left: 18px; margin:0;">
-                            <li>Send <code>WIFI:YourSSID:YourPassword</code> over BLE to save credentials directly to persistent flash memory and restart!</li>
+                            <li>Send <code>WIFI:YourSSID:YourPassword</code> over BLE to save credentials and restart!</li>
                             <li>Send <code>STATUS</code> to verify network connection state and obtain IP address.</li>
                         </ul>
                     </div>
                 </div>
             </section>
 
-            <!-- Card 10: Resource & Performance Optimization Hub -->
+            <!-- Card: Resource & Performance Optimization Hub -->
             <section class="card" id="card-optimize">
                 <div class="card-header" onclick="toggleCard('card-optimize')">
                     <h2>⚡ Resource & Performance Optimization Hub</h2>
@@ -695,7 +440,7 @@
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <div>
                                 <strong style="color:#34d399; font-size:0.95rem;">📡 BLE Wi-Fi Provisioning Service</strong>
-                                <div style="font-size:0.75rem; color:#94a3b8;">Disabling frees ~50KB Heap RAM and cuts RF transmission power once provisioned.</div>
+                                <div style="font-size:0.75rem; color:#94a3b8;">Disabling frees ~50KB Heap RAM and cuts RF transmission power.</div>
                             </div>
                             <input type="checkbox" id="opt-ble-cb" checked style="width:20px; height:20px; cursor:pointer;">
                         </div>
@@ -719,6 +464,10 @@
             </section>
 
         </main>
+
+        <footer style="text-align:center; padding:20px 0 10px 0; color:var(--subtext-color); font-size:0.75rem; border-top:1px solid var(--border-color); margin-top:20px;">
+            ChaosDesky v2.0 · ESP32 Dual-Display Command Station · Built with ❤️
+        </footer>
     </div>
 
     <!-- External app logic -->

@@ -160,6 +160,18 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
+        // REST API: POST /api/tft/climatetheme?theme=0..6
+        server.on("/api/tft/climatetheme", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            if (request->hasParam("theme")) {
+                int t = request->getParam("theme")->value().toInt();
+                if (t >= 0 && t <= 6) { // 7 Themes Total
+                    tftManager->activeClimateTheme = t;
+                    tftManager->setPage(5); // Jump to climate page (Index 5)
+                }
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
         // REST API: POST /api/tft/rotation?rot=0..3
         server.on("/api/tft/rotation", HTTP_POST, [this](AsyncWebServerRequest* request) {
             if (request->hasParam("rot")) {

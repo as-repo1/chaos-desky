@@ -4,9 +4,6 @@ const THEME_CLASSES = [
     'theme-nothing-ui', 'theme-one-ui', 'theme-material-you'
 ];
 
-let rawTftBuffer = null;
-let rawOledBuffer = null;
-
 // Toast helper
 function showToast(message) {
     const toast = document.getElementById('toast');
@@ -83,8 +80,8 @@ async function pomoAction(action) {
 
 // Save Custom Pomodoro Work/Break Durations
 async function savePomodoroConfig() {
-    const w = document.getElementById('pomo-work-slider')?.value || document.getElementById('work-mins-input')?.value || 25;
-    const b = document.getElementById('pomo-break-slider')?.value || document.getElementById('break-mins-input')?.value || 5;
+    const w = document.getElementById('pomo-work-slider')?.value || 25;
+    const b = document.getElementById('pomo-break-slider')?.value || 5;
     const formData = new URLSearchParams();
     formData.append('work', w);
     formData.append('break', b);
@@ -96,10 +93,10 @@ async function savePomodoroConfig() {
     showToast(`Pomodoro Timer updated: ${w}m Work / ${b}m Rest`);
 }
 
-// Save 10-Page Enabled Carousel Bitmask
+// Save 13-Page Enabled Carousel Bitmask
 async function savePageMask() {
     let mask = 0;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 13; i++) {
         const chk = document.getElementById(`chk-page-${i}`);
         if (chk && chk.checked) {
             mask |= (1 << i);
@@ -119,6 +116,20 @@ async function setTftTheme(themeIndex) {
     showToast("Theme Palette Updated!");
 }
 
+// Switch Climate Theme (7 Themes)
+async function setClimateTheme(themeIndex) {
+    themeIndex = parseInt(themeIndex);
+    await fetch(`/api/tft/climatetheme?theme=${themeIndex}`, { method: 'POST' });
+    showToast("Climate Theme Updated!");
+}
+
+// Switch TFT Page (13 Pages)
+async function setTftPage(pageIndex) {
+    pageIndex = parseInt(pageIndex);
+    await fetch(`/api/tft/page?page=${pageIndex}`, { method: 'POST' });
+    showToast(`Jumped to Page ${pageIndex + 1}!`);
+}
+
 // Set TFT Screen Rotation
 async function setTftRotation(rot) {
     await fetch(`/api/tft/rotation?rot=${rot}`, { method: 'POST' });
@@ -136,8 +147,15 @@ async function setOledClockStyle(style) {
     showToast("OLED Clock Face Updated!");
 }
 
-function setWatchface(style) {
-    fetch('/api/tft/watchface', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `style=${style}` });
+// Watch Face Customizer Switcher
+async function setWatchface(style) {
+    const formData = new URLSearchParams();
+    formData.append('style', style);
+    await fetch('/api/tft/watchface', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+    });
     showToast("Watch Face Updated!");
 }
 
@@ -193,63 +211,6 @@ async function sendNotificationPopup() {
     showToast("Live Notification Pushed to Display!");
 }
 
-
-
-// Save Configuration
-async function saveConfig(e) {
-    e.preventDefault();
-    const city = document.getElementById('city-input').value;
-    const apiKey = document.getElementById('apikey-input').value;
-    const carouselSec = document.getElementById('carousel-dropdown').value;
-
-    const formData = new URLSearchParams();
-    if (city) formData.append('city', city);
-    if (apiKey) formData.append('apiKey', apiKey);
-    if (carouselSec) formData.append('carouselSec', carouselSec);
-
-    await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-    });
-
-    showToast("Location & API Settings Saved!");
-    updateWeather();
-}
-
-// Tab Navigation Switcher
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
-
-    const targetTab = document.getElementById(tabId);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-
-    event.currentTarget.classList.add('active');
-}
-
-// Watch Face Customizer Switcher
-async function setWatchface(style) {
-    await fetch('/api/tft/watchface', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `style=${style}`
-    });
-    showToast("Watch Face Updated!");
-}
-
-// Auto-refresh timers
-setInterval(updateSensors, 2000);
-setInterval(updateWeather, 10000);
-setInterval(updatePomodoro, 1000);
-
-// Initial Load
-updateSensors();
-updateWeather();
-updatePomodoro();
-
 async function loadNotifTargetPref() {
     try {
         const res = await fetch('/api/notify/target');
@@ -267,7 +228,13 @@ async function loadNotifTargetPref() {
 async function saveNotifTargetPref() {
     const target = document.getElementById('global-notif-target').value;
     try {
-        const res = await fetch(`/api/notify/target?target=${target}`, { method: 'POST' });
+        const formData = new URLSearchParams();
+        formData.append('target', target);
+        const res = await fetch(`/api/notify/target`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
         if (res.ok) {
             showToast("⚙️ System Alert Target Preference Saved!");
         }
@@ -276,7 +243,6 @@ async function saveNotifTargetPref() {
     }
 }
 
-loadNotifTargetPref();
 
 // Weather location setup
 async function saveWeatherConfig() {
@@ -346,6 +312,14 @@ async function saveOptimizations() {
     showToast("⚡ Resource Optimization Profile Saved!");
 }
 
-// Load To-Do list on boot
-loadTodoTasks();
+// Auto-refresh timers
+setInterval(updateSensors, 2000);
+setInterval(updateWeather, 10000);
+setInterval(updatePomodoro, 1000);
 
+// Initial Load
+updateSensors();
+updateWeather();
+updatePomodoro();
+loadNotifTargetPref();
+loadTodoTasks();

@@ -120,7 +120,7 @@ public:
         }
     }
 
-    float getPastPressure() {
+    float getPastPressure() const {
         if (historyCount == 0) return data.pressureHpa;
         return pressureHistory[0];
     }

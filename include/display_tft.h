@@ -42,7 +42,7 @@ public:
     
     // Climate Page State
     int activeClimateTheme = 0;
-    int activeGraphType = 0; // 0=Pressure, 1=Temp, 2=Humidity
+    int graphType = 0; // 0=Pressure, 1=Temp, 2=Humidity
 
     // Interactive To-Do List State (Context-Aware Controls)
     int todoSelectedIdx = 0; // Currently focused task index (0 to 3)
@@ -232,11 +232,11 @@ public:
     }
 
     void renderCurrentPage(const OutdoorWeatherData& weather, 
-                           SensorManager& sensors, 
-                           PomodoroTimer& pomo, 
+                           const SensorManager& sensors, 
+                           const PomodoroTimer& pomo, 
                            const NotificationManager& notifMgr,
+                           int h, int m, int s,
                            const String& ipStr, 
-                           const String& timeStr,
                            int oledMode = 0,
                            int oledClockStyle = 0) {
         
@@ -250,7 +250,7 @@ public:
 
         if (fullRedraw) {
             tft.fillScreen(COLOR_BG);
-            drawPageHeader(timeStr);
+            drawPageHeader(h, m);
             drawPageDots();
             lastRenderedPage = currentPage;
             pageNeedsFullRedraw = false;
@@ -258,15 +258,18 @@ public:
 
         switch (currentPage) {
             case 0: renderOutdoorWeatherPage(weather, fullRedraw); break;
-            case 1: renderPressureGraphPage(sensors, fullRedraw); break;
-            case 2: renderPomodoroPage(pomo, timeStr, fullRedraw); break;
+            case 1: renderHistoryGraphPage(sensors, 0, fullRedraw); break; // Pressure
+            case 2: renderPomodoroPage(pomo, h, m, fullRedraw); break;
             case 3: renderSystemQrPage(ipStr, fullRedraw); break;
             case 4: renderCustomUserPage(fullRedraw); break;
             case 5: renderIndoorClimatePage(sensors.data, fullRedraw); break;
-            case 6: renderBigClockPage(timeStr, weather, sensors, fullRedraw); break;
+            case 6: renderBigClockPage(h, m, s, weather, sensors, pomo, fullRedraw); break;
             case 7: renderNetworkMonitorPage(ipStr, fullRedraw); break;
             case 8: renderSystemHardwarePage(fullRedraw); break;
             case 9: renderOledControlPage(fullRedraw, oledMode, oledClockStyle); break;
+            case 10: renderHistoryGraphPage(sensors, 1, fullRedraw); break; // Temp
+            case 11: renderHistoryGraphPage(sensors, 2, fullRedraw); break; // Hum
+            case 12: renderComfortIndexPage(sensors.data, fullRedraw); break; // Comfort Index
         }
     }
 
@@ -346,12 +349,12 @@ private:
         tft.print("DISMISSING NOTIF...");
     }
 
-    void drawPageHeader(const String& timeStr) {
+    void drawPageHeader(int h, int m) {
         tft.fillRect(0, 0, 128, 14, COLOR_BG);
         tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
         tft.setTextSize(1);
         tft.setCursor(4, 2);
-        tft.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        tft.printf("%02d:%02d", h, m);
 
         // Center Title
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
@@ -430,7 +433,7 @@ private:
     }
 
     // --- Page 1: Pressure/Temp/Humidity Graph ---
-    void renderPressureGraphPage(SensorManager& sm, bool fullRedraw) {
+    void renderHistoryGraphPage(const SensorManager& sm, int graphType, bool fullRedraw) {
         String forecast = ZambrettiForecaster::calculateForecast(sm.data.pressureHpa, sm.getPastPressure());
         float trendVal = sm.data.pressureHpa - sm.getPastPressure();
 
@@ -444,9 +447,9 @@ private:
         tft.setTextSize(1);
         tft.setCursor(8, 22);
         
-        if (activeGraphType == 0) {
+        if (graphType == 0) {
             tft.printf("%-18s", forecast.c_str());
-        } else if (activeGraphType == 1) {
+        } else if (graphType == 1) {
             tft.printf("%-18s", "Temperature Trend");
         } else {
             tft.printf("%-18s", "Humidity Trend");
@@ -456,10 +459,10 @@ private:
         tft.setTextColor(COLOR_TEXT, COLOR_BG);
         tft.setCursor(8, 44);
         
-        if (activeGraphType == 0) {
+        if (graphType == 0) {
             tft.printf("P: %6.1fhPa", sm.data.pressureHpa);
             GfxIconRenderer::drawTrendArrow(tft, 110, 42, trendVal, trendVal > 0.5f ? COLOR_GOOD : trendVal < -0.5f ? COLOR_ALERT : COLOR_PRIMARY);
-        } else if (activeGraphType == 1) {
+        } else if (graphType == 1) {
             tft.printf("T: %6.1fC", sm.data.tempC);
         } else {
             tft.printf("H: %6.1f%%", sm.data.humidity);
@@ -467,10 +470,10 @@ private:
 
         // Graph Plot
         uint16_t graphColor = COLOR_GOOD;
-        if (activeGraphType == 0) {
+        if (graphType == 0) {
             if (trendVal > 1.5f) graphColor = COLOR_PRIMARY;
             else if (trendVal < -1.5f) graphColor = COLOR_ALERT;
-        } else if (activeGraphType == 1) {
+        } else if (graphType == 1) {
             graphColor = COLOR_ALERT; // Red/warm for temp
         } else {
             graphColor = COLOR_PRIMARY; // Cyan/blue for humidity
@@ -479,7 +482,7 @@ private:
         if (fullRedraw && sm.historyCount > 1) {
             float minVal = 9999.0f, maxVal = -9999.0f;
             for (int i = 0; i < sm.historyCount; i++) {
-                float v = (activeGraphType == 0) ? sm.pressureHistory[i] : (activeGraphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
+                float v = (graphType == 0) ? sm.pressureHistory[i] : (graphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
                 if (v < minVal) minVal = v;
                 if (v > maxVal) maxVal = v;
             }
@@ -487,8 +490,8 @@ private:
 
             int step = 110 / (sm.historyCount - 1);
             for (int i = 0; i < sm.historyCount - 1; i++) {
-                float v1 = (activeGraphType == 0) ? sm.pressureHistory[i] : (activeGraphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
-                float v2 = (activeGraphType == 0) ? sm.pressureHistory[i+1] : (activeGraphType == 1 ? sm.tempHistory[i+1] : sm.humidityHistory[i+1]);
+                float v1 = (graphType == 0) ? sm.pressureHistory[i] : (graphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
+                float v2 = (graphType == 0) ? sm.pressureHistory[i+1] : (graphType == 1 ? sm.tempHistory[i+1] : sm.humidityHistory[i+1]);
                 
                 int x1 = 8 + (i * step);
                 int y1 = 112 - (int)(((v1 - minVal) / (maxVal - minVal)) * 52.0f);
@@ -517,7 +520,7 @@ private:
     }
 
     // --- Page 2: Pomodoro Hub ---
-    void renderPomodoroPage(PomodoroTimer& pomo, const String& timeStr, bool fullRedraw) {
+    void renderPomodoroPage(const PomodoroTimer& pomo, int h, int m, bool fullRedraw) {
         uint16_t stateColor = COLOR_PRIMARY;
         if (pomo.state == POMO_WORK) stateColor = COLOR_ALERT;
         else if (pomo.state == POMO_BREAK) stateColor = COLOR_GOOD;
@@ -631,160 +634,291 @@ private:
 
     // --- Page 5: Detailed Indoor Climate Analysis ---
     void renderIndoorClimatePage(const SensorData& s, bool fullRedraw) {
-        // Theme Definitions
-        uint16_t climatePrimary = COLOR_PRIMARY;
-        uint16_t climateAccent = COLOR_ACCENT;
-        uint16_t climateAlert = COLOR_ALERT;
-        
         if (activeClimateTheme == 0) {
-            // Theme 0: Dynamic Thermal
-            if (s.tempC < 15.0) { // Cold: Blues/Cyans
-                climatePrimary = ST7735_CYAN;
-                climateAccent = ST7735_BLUE;
-                climateAlert = ST7735_WHITE;
-            } else if (s.tempC < 20.0) { // Cool: Greens/Cyans
-                climatePrimary = ST7735_GREEN;
-                climateAccent = ST7735_CYAN;
-                climateAlert = ST7735_BLUE;
-            } else if (s.tempC > 30.0) { // Hot: Reds/Oranges
-                climatePrimary = ST7735_RED;
-                climateAccent = ST7735_ORANGE;
-                climateAlert = ST7735_YELLOW;
-            } else if (s.tempC > 25.0) { // Warm: Oranges/Yellows
-                climatePrimary = ST7735_ORANGE;
-                climateAccent = ST7735_YELLOW;
-                climateAlert = ST7735_RED;
+            // Theme 0: Neon Rings (Circular UI)
+            if (fullRedraw) {
+                tft.fillScreen(COLOR_BG);
+                // Outer arcs (static background arcs)
+                for(int r = 38; r <= 42; r++) {
+                    tft.drawCircle(64, 46, r, 0x18E3); // Dark Gray
+                }
+                for(int r = 26; r <= 30; r++) {
+                    tft.drawCircle(64, 46, r, 0x18E3); // Dark Gray
+                }
+                
+                tft.setTextColor(COLOR_TEXT, COLOR_BG);
+                tft.setTextSize(1);
+                tft.setCursor(6, 102); tft.print("PRS:");
+                tft.setCursor(6, 114); tft.print("DEW:");
+                tft.setCursor(68, 102); tft.print("ALT:");
+                tft.setCursor(68, 114); tft.print("H.I:");
             }
+            
+            // Draw active arcs (fake it with a thick filled arc or just colored circles for now)
+            uint16_t tempColor = (s.tempC > 30) ? ST7735_RED : (s.tempC < 15 ? ST7735_CYAN : ST7735_ORANGE);
+            uint16_t humColor = ST7735_CYAN;
+            
+            // Outer Temp Ring (dynamic) - simplified as drawing a coloured circle over the gray one if threshold met
+            // We'll just draw some tick marks around the circle to represent value
+            int tempTicks = map(s.tempC, 0, 50, 0, 36);
+            for(int i = 0; i < 36; i++) {
+                float angle = i * 10 * (M_PI / 180.0f) - M_PI / 2.0f;
+                uint16_t c = (i < tempTicks) ? tempColor : 0x18E3;
+                tft.drawLine(64 + cos(angle)*38, 46 + sin(angle)*38, 64 + cos(angle)*42, 46 + sin(angle)*42, c);
+            }
+            
+            int humTicks = map(s.humidity, 0, 100, 0, 36);
+            for(int i = 0; i < 36; i++) {
+                float angle = i * 10 * (M_PI / 180.0f) - M_PI / 2.0f;
+                uint16_t c = (i < humTicks) ? humColor : 0x18E3;
+                tft.drawLine(64 + cos(angle)*26, 46 + sin(angle)*26, 64 + cos(angle)*30, 46 + sin(angle)*30, c);
+            }
+
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setTextSize(2);
+            tft.setCursor(40, 38);
+            tft.printf("%.0f", s.tempC);
+            
+            tft.setTextSize(1);
+            tft.setTextColor(COLOR_PRIMARY, COLOR_BG);
+            tft.setCursor(30, 102); tft.printf("%4.0f", s.pressureHpa);
+            tft.setCursor(30, 114); tft.printf("%4.1f", s.dewPointC);
+            tft.setCursor(92, 102); tft.printf("%4.0f", s.altitudeM);
+            tft.setCursor(92, 114); tft.printf("%4.1f", s.heatIndexC);
+
         } else if (activeClimateTheme == 1) {
-            // Theme 1: Cyberpunk
-            climatePrimary = ST7735_MAGENTA;
-            climateAccent = ST7735_CYAN;
-            climateAlert = ST7735_WHITE;
+            // Theme 1: Pip-Boy (Retro Terminal)
+            uint16_t pipGreen = 0x07E0; // Bright Green
+            if (fullRedraw) {
+                tft.fillScreen(ST77XX_BLACK);
+                tft.drawRect(2, 16, 124, 128, pipGreen);
+                tft.drawRect(4, 18, 120, 124, pipGreen);
+                
+                tft.setTextColor(pipGreen, ST77XX_BLACK);
+                tft.setTextSize(1);
+                tft.setCursor(8, 22); tft.print("ROBCO INDUSTRIES");
+                tft.drawLine(8, 32, 120, 32, pipGreen);
+                
+                tft.setCursor(8, 40); tft.print("> SENSORS ACTIVE");
+            }
+            
+            tft.setTextColor(pipGreen, ST77XX_BLACK);
+            tft.setTextSize(1);
+            tft.setCursor(8, 56); tft.printf("[TMP] %5.1f C", s.tempC);
+            tft.setCursor(8, 70); tft.printf("[HUM] %5.1f %%", s.humidity);
+            tft.setCursor(8, 84); tft.printf("[PRS] %5.0f HPA", s.pressureHpa);
+            tft.setCursor(8, 98); tft.printf("[ALT] %5.0f M", s.altitudeM);
+            tft.setCursor(8, 112); tft.printf("[DEW] %5.1f C", s.dewPointC);
+            tft.setCursor(8, 126); tft.printf("[HTX] %5.1f C", s.heatIndexC);
+            
+            // Blinking cursor
+            if ((millis() / 500) % 2 == 0) {
+                tft.fillRect(94, 126, 6, 8, pipGreen);
+            } else {
+                tft.fillRect(94, 126, 6, 8, ST77XX_BLACK);
+            }
+
         } else if (activeClimateTheme == 2) {
-            // Theme 2: Desert
-            climatePrimary = ST7735_ORANGE;
-            climateAccent = ST7735_YELLOW;
-            climateAlert = ST7735_RED;
+            // Theme 2: Material Cards
+            if (fullRedraw) {
+                tft.fillScreen(0xEF7D); // Light Gray Background
+                
+                // Temp Card
+                tft.fillRoundRect(4, 18, 120, 46, 6, ST77XX_WHITE);
+                // Humidity Card
+                tft.fillRoundRect(4, 68, 120, 34, 6, ST77XX_WHITE);
+                // Grid Cards
+                tft.fillRoundRect(4, 106, 58, 36, 6, ST77XX_WHITE);
+                tft.fillRoundRect(66, 106, 58, 36, 6, ST77XX_WHITE);
+                
+                tft.setTextColor(0x8410); // Dark Gray Text
+                tft.setTextSize(1);
+                tft.setCursor(10, 22); tft.print("Temperature");
+                tft.setCursor(10, 72); tft.print("Humidity");
+                
+                tft.setCursor(10, 110); tft.print("Pressure");
+                tft.setCursor(72, 110); tft.print("Heat Idx");
+            }
+            
+            tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
+            tft.setTextSize(3);
+            tft.setCursor(24, 34); tft.printf("%.1f", s.tempC);
+            
+            // Hum bar
+            tft.drawRect(10, 86, 108, 10, 0xCE59); // Gray outline
+            tft.fillRect(11, 87, 106, 8, ST77XX_WHITE); // Clear
+            int humW = (s.humidity / 100.0f) * 106;
+            tft.fillRect(11, 87, humW, 8, 0x03E0); // Blue fill
+            tft.setTextSize(1);
+            tft.setCursor(96, 72); tft.printf("%.0f%%", s.humidity);
+            
+            tft.setTextSize(1);
+            tft.setTextColor(ST77XX_BLACK, ST77XX_WHITE);
+            tft.setCursor(10, 124); tft.printf("%.0f", s.pressureHpa);
+            tft.setCursor(72, 124); tft.printf("%.1f", s.heatIndexC);
+
         } else if (activeClimateTheme == 3) {
-            // Theme 3: Forest
-            climatePrimary = ST7735_GREEN;
-            climateAccent = tft.color565(173, 255, 47); // GreenYellow
-            climateAlert = ST7735_YELLOW;
+            // Theme 3: Tactical Radar
+            if (fullRedraw) {
+                tft.fillScreen(0x0028); // Very dark blue/green
+                tft.drawRect(2, 16, 124, 128, 0x07FF);
+                
+                // Draw radar grid
+                for(int i=16; i<=144; i+=16) tft.drawLine(2, i, 126, i, 0x01AA);
+                for(int i=2; i<=126; i+=16) tft.drawLine(i, 16, i, 144, 0x01AA);
+                
+                // Center crosshairs
+                tft.drawLine(64, 16, 64, 144, 0x07FF);
+                tft.drawLine(2, 80, 126, 80, 0x07FF);
+                tft.drawCircle(64, 80, 40, 0x03E0);
+            }
+            
+            // Simulated sweeping radar line
+            static float angle = 0;
+            angle += 0.2f;
+            if(angle > M_PI*2) angle = 0;
+            
+            // Erase old line (approximate)
+            float oldAngle = angle - 0.2f;
+            tft.drawLine(64, 80, 64 + cos(oldAngle)*60, 80 + sin(oldAngle)*60, 0x0028);
+            // Redraw grid over old line
+            tft.drawCircle(64, 80, 40, 0x03E0);
+            tft.drawLine(64, 16, 64, 144, 0x07FF);
+            tft.drawLine(2, 80, 126, 80, 0x07FF);
+            
+            // Draw new line
+            tft.drawLine(64, 80, 64 + cos(angle)*60, 80 + sin(angle)*60, 0x07FF);
+
+            // Floating data points
+            tft.setTextColor(ST77XX_WHITE, 0x0028);
+            tft.setTextSize(1);
+            
+            // Top Left - Temp
+            tft.fillCircle(24, 40, 3, ST77XX_RED);
+            tft.setCursor(30, 36); tft.printf("T:%.1f", s.tempC);
+            
+            // Top Right - Hum
+            tft.fillCircle(104, 40, 3, ST77XX_CYAN);
+            tft.setCursor(68, 36); tft.printf("H:%.0f%%", s.humidity);
+            
+            // Bottom Left - Dew
+            tft.fillCircle(30, 116, 3, ST77XX_YELLOW);
+            tft.setCursor(36, 112); tft.printf("D:%.1f", s.dewPointC);
+            
+            // Bottom Right - Press
+            tft.fillCircle(100, 120, 3, ST77XX_GREEN);
+            tft.setCursor(62, 120); tft.printf("P:%.0f", s.pressureHpa);
+
         } else if (activeClimateTheme == 4) {
-            // Theme 4: Neon Ice
-            climatePrimary = ST7735_CYAN;
-            climateAccent = tft.color565(0, 191, 255); // DeepSkyBlue
-            climateAlert = ST7735_WHITE;
-        }
-
-        if (activeClimateTheme == 0) {
-            // Theme 0: Dynamic Thermal (Standard Dual-Card layout)
+            // Theme 4: Retro LCD
             if (fullRedraw) {
-                tft.drawRoundRect(4, 16, 120, 42, 6, climatePrimary);
-                tft.drawRoundRect(4, 62, 120, 82, 6, climateAccent);
+                tft.fillScreen(0xCE79); // Grayish-green LCD background
+                tft.drawRect(2, 16, 124, 128, 0x4208); // Dark outline
+                tft.drawRect(4, 18, 120, 124, 0x4208);
+                
+                tft.setTextColor(0x4208); // Dark LCD pixel color
+                tft.setTextSize(1);
+                tft.setCursor(8, 24); tft.print("TEMP");
+                tft.setCursor(8, 76); tft.print("HUMIDITY");
+                tft.drawLine(4, 70, 124, 70, 0x4208);
+                
+                tft.setCursor(8, 124); tft.print("PRS");
+                tft.setCursor(64, 124); tft.print("ALT");
             }
-
-            // Hero Temp & Humidity Header Card
-            GfxIconRenderer::drawThermometer(tft, 8, 22, COLOR_TEXT, climateAlert);
-            tft.setTextSize(2);
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(20, 24);
-            tft.printf("%.1fC", s.tempC);
-
-            GfxIconRenderer::drawDroplet(tft, 76, 22, climatePrimary);
-            tft.setCursor(88, 24);
-            tft.printf("%.0f%%", s.humidity);
-
-            // 2-Column Sensor Grid Card
-            tft.setTextSize(1);
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-
-            tft.setCursor(10, 68);
-            tft.printf("PRESS: %.1fhPa", s.pressureHpa);
-            tft.setCursor(10, 82);
-            tft.printf("ALT:   %.0fm", s.altitudeM);
-
-            tft.setCursor(10, 98);
-            tft.printf("HEAT IND: %.1fC", s.heatIndexC);
-            tft.setCursor(10, 112);
-            tft.printf("DEW PT:   %.1fC", s.dewPointC);
-            tft.setCursor(10, 126);
-            tft.printf("MIN/MAX : %.0f/%.0fC", s.minTempC, s.maxTempC);
             
-        } else if (activeClimateTheme == 1) {
-            // Theme 1: Cyberpunk (Sharp corners, dense tech layout)
+            // Draw "88.8" faint background for realism
+            tft.setTextColor(0xBEF7);
+            tft.setTextSize(4);
+            tft.setCursor(20, 38); tft.print("88.8");
+            tft.setCursor(20, 90); tft.print("88.8");
+            
+            // Draw actual values
+            tft.setTextColor(0x4208, 0xCE79);
+            tft.setTextSize(4);
+            tft.setCursor(20, 38); tft.printf("%.1f", s.tempC);
+            tft.setCursor(20, 90); tft.printf("%.0f", s.humidity);
+            
+            tft.setTextSize(1);
+            tft.setCursor(32, 124); tft.printf("%.0f", s.pressureHpa);
+            tft.setCursor(88, 124); tft.printf("%.0f", s.altitudeM);
+
+        } else if (activeClimateTheme == 5) {
+            // Theme 5: Car Dashboard
             if (fullRedraw) {
-                tft.drawRect(2, 16, 124, 128, climateAccent);
-                tft.drawLine(2, 44, 126, 44, climatePrimary);
-                tft.drawLine(64, 44, 64, 144, climatePrimary);
+                tft.fillScreen(ST77XX_BLACK);
+                
+                // Draw 2 large arcs for gauges
+                for(int r = 24; r <= 26; r++) {
+                    tft.drawCircle(32, 60, r, ST77XX_WHITE);
+                    tft.drawCircle(96, 60, r, ST77XX_WHITE);
+                }
+                
+                tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+                tft.setTextSize(1);
+                tft.setCursor(22, 92); tft.print("TMP");
+                tft.setCursor(86, 92); tft.print("HUM");
+                
+                tft.drawRect(4, 110, 120, 34, 0x18E3);
+                tft.setCursor(8, 114); tft.print("DEW:");
+                tft.setCursor(68, 114); tft.print("HTX:");
             }
-            tft.setTextSize(1);
-            tft.setTextColor(climatePrimary, COLOR_BG);
-            tft.setCursor(6, 20); tft.print("TEMP_SYS");
-            tft.setCursor(68, 20); tft.print("HUM_SYS");
             
-            tft.setTextSize(2);
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(6, 30); tft.printf("%.1f", s.tempC);
-            tft.setCursor(68, 30); tft.printf("%.0f", s.humidity);
-
-            tft.setTextSize(1);
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(6, 52); tft.print("PRS:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.0f", s.pressureHpa);
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(6, 72); tft.print("ALT:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.0f", s.altitudeM);
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(6, 92); tft.print("H_I:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.1f", s.heatIndexC);
-
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(68, 52); tft.print("DEW:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.1f", s.dewPointC);
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(68, 72); tft.print("MIN:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.0f", s.minTempC);
-            tft.setTextColor(climateAccent, COLOR_BG);
-            tft.setCursor(68, 92); tft.print("MAX:"); tft.setTextColor(COLOR_TEXT, COLOR_BG); tft.printf("%.0f", s.maxTempC);
+            // Needle math
+            float t_angle = map(s.tempC, 0, 50, 135, 405) * (M_PI / 180.0f);
+            float h_angle = map(s.humidity, 0, 100, 135, 405) * (M_PI / 180.0f);
             
-        } else {
-            // Themes 2, 3, 4: Bubbles / Dashboard layout
+            // Draw needles (clear old by re-drawing black circle inside, then draw new)
+            tft.fillCircle(32, 60, 22, ST77XX_BLACK);
+            tft.fillCircle(96, 60, 22, ST77XX_BLACK);
+            
+            tft.drawLine(32, 60, 32 + cos(t_angle)*20, 60 + sin(t_angle)*20, ST77XX_RED);
+            tft.drawLine(96, 60, 96 + cos(h_angle)*20, 60 + sin(h_angle)*20, ST77XX_CYAN);
+            
+            tft.setTextColor(ST77XX_WHITE, ST77XX_BLACK);
+            tft.setTextSize(1);
+            tft.setCursor(22, 68); tft.printf("%.1f", s.tempC);
+            tft.setCursor(86, 68); tft.printf("%.0f", s.humidity);
+            
+            tft.setCursor(34, 114); tft.printf("%.1f", s.dewPointC);
+            tft.setCursor(94, 114); tft.printf("%.1f", s.heatIndexC);
+
+        } else if (activeClimateTheme == 6) {
+            // Theme 6: Floating Bubbles (Modernized)
             if (fullRedraw) {
-                tft.fillCircle(32, 46, 28, climatePrimary);
-                tft.fillCircle(96, 46, 28, climateAccent);
-                tft.drawRoundRect(4, 80, 120, 64, 8, climatePrimary);
+                tft.fillScreen(COLOR_BG);
+                // Draw 4 distinct bubbles
+                tft.fillRoundRect(8, 20, 52, 52, 26, ST77XX_MAGENTA);
+                tft.fillRoundRect(68, 20, 52, 52, 26, ST77XX_CYAN);
+                tft.fillRoundRect(8, 80, 52, 52, 26, ST77XX_ORANGE);
+                tft.fillRoundRect(68, 80, 52, 52, 26, ST77XX_GREEN);
             }
+            
+            tft.setTextColor(ST77XX_WHITE);
             tft.setTextSize(1);
-            tft.setTextColor(COLOR_BG, climatePrimary);
-            tft.setCursor(20, 26); tft.print("TMP");
-            tft.setTextSize(2);
-            tft.setCursor(10, 40); tft.printf("%.1f", s.tempC);
-
-            tft.setTextSize(1);
-            tft.setTextColor(COLOR_BG, climateAccent);
-            tft.setCursor(84, 26); tft.print("HUM");
-            tft.setTextSize(2);
-            tft.setCursor(80, 40); tft.printf("%.0f", s.humidity);
-
-            tft.setTextSize(1);
-            tft.setTextColor(COLOR_TEXT, COLOR_BG);
-            tft.setCursor(10, 88);
-            tft.printf("PRESS: %.1fhPa", s.pressureHpa);
-            tft.setCursor(10, 102);
-            tft.printf("DEW PT: %.1fC", s.dewPointC);
-            tft.setCursor(10, 116);
-            tft.printf("HEAT I: %.1fC", s.heatIndexC);
-            tft.setCursor(10, 130);
-            tft.printf("ALT: %.0fm", s.altitudeM);
+            
+            // Bubble 1: Temp
+            tft.setCursor(22, 34); tft.print("TMP");
+            tft.setCursor(20, 46); tft.printf("%.1f", s.tempC);
+            
+            // Bubble 2: Hum
+            tft.setCursor(82, 34); tft.print("HUM");
+            tft.setCursor(82, 46); tft.printf("%.0f", s.humidity);
+            
+            // Bubble 3: Press
+            tft.setCursor(22, 94); tft.print("PRS");
+            tft.setCursor(18, 106); tft.printf("%.0f", s.pressureHpa);
+            
+            // Bubble 4: Alt
+            tft.setCursor(82, 94); tft.print("ALT");
+            tft.setCursor(80, 106); tft.printf("%.0f", s.altitudeM);
         }
     }
 
     // --- Page 6: Custom Watch Face Dial ---
-    void renderBigClockPage(const String& timeStr, const OutdoorWeatherData& weather, SensorManager& sensors, bool fullRedraw) {
-        int h = 0, m = 0, s = 0;
-        if (timeStr.length() >= 8) {
-            h = timeStr.substring(0, 2).toInt();
-            m = timeStr.substring(3, 5).toInt();
-            s = timeStr.substring(6, 8).toInt();
-        }
+    void renderBigClockPage(int h, int m, int s, const OutdoorWeatherData& weather, const SensorManager& sensors, const PomodoroTimer& pomo, bool fullRedraw) {
+        
 
-        watchFaceEngine.render(tft, h, m, s, weather, sensors.data.tempC, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG, fullRedraw);
+        watchFaceEngine.render(tft, h, m, s, weather, sensors, pomo, COLOR_PRIMARY, COLOR_ACCENT, COLOR_TEXT, COLOR_BG, fullRedraw);
     }
 
     // --- Page 7: Network & Wi-Fi Monitor ---
@@ -909,6 +1043,82 @@ private:
             tft.fillCircle(x + 8, y + 6, 7, ST77XX_WHITE);
         }
     }
+
+    // --- Page 12: Comfort Index & Air Quality ---
+    void renderComfortIndexPage(const SensorData& sd, bool fullRedraw) {
+        if (fullRedraw) {
+            tft.fillRoundRect(4, 16, 120, 20, 4, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_BG, COLOR_PRIMARY);
+            tft.setTextSize(1);
+            tft.setCursor(8, 22);
+            tft.print("Comfort Index");
+
+            // Heat Index Section
+            tft.drawRoundRect(4, 40, 120, 48, 6, COLOR_PRIMARY);
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(8, 46);
+            tft.print("Feels Like:");
+            tft.setTextSize(2);
+            tft.setCursor(8, 62);
+            
+            uint16_t heatColor = COLOR_GOOD;
+            if (sd.heatIndexC > 30.0f) heatColor = COLOR_ALERT;
+            else if (sd.heatIndexC > 26.0f) heatColor = COLOR_WARN;
+            else if (sd.heatIndexC < 15.0f) heatColor = 0x07FF; // Cyan
+            
+            tft.setTextColor(heatColor, COLOR_BG);
+            tft.printf("%.1fC", sd.heatIndexC);
+
+            // Dew Point Section
+            tft.drawRoundRect(4, 92, 120, 48, 6, COLOR_PRIMARY);
+            tft.setTextSize(1);
+            tft.setTextColor(COLOR_TEXT, COLOR_BG);
+            tft.setCursor(8, 98);
+            tft.print("Dew Point:");
+            tft.setTextSize(2);
+            tft.setCursor(8, 114);
+            
+            uint16_t dewColor = COLOR_GOOD;
+            if (sd.dewPointC > 20.0f) dewColor = COLOR_ALERT; // Muggy
+            else if (sd.dewPointC < 10.0f) dewColor = 0x07FF; // Dry
+            
+            tft.setTextColor(dewColor, COLOR_BG);
+            tft.printf("%.1fC", sd.dewPointC);
+            
+            // Emoji indicators
+            tft.setTextSize(1);
+            if (sd.heatIndexC > 30.0f) {
+                GfxIconRenderer::drawSun(tft, 100, 60, COLOR_ALERT, COLOR_WARN);
+            } else if (sd.heatIndexC < 15.0f) {
+                // Draw snowflake-ish
+                tft.drawLine(100, 56, 100, 64, 0x07FF);
+                tft.drawLine(96, 60, 104, 60, 0x07FF);
+                tft.drawLine(97, 57, 103, 63, 0x07FF);
+                tft.drawLine(97, 63, 103, 57, 0x07FF);
+            } else {
+                // Smiley
+                tft.drawCircle(100, 60, 6, COLOR_GOOD);
+                tft.drawPixel(98, 58, COLOR_GOOD);
+                tft.drawPixel(102, 58, COLOR_GOOD);
+                tft.drawLine(98, 62, 102, 62, COLOR_GOOD);
+            }
+            
+            if (sd.dewPointC > 20.0f) {
+                // Water drop
+                tft.fillTriangle(100, 108, 96, 116, 104, 116, 0x07FF);
+                tft.fillCircle(100, 116, 4, 0x07FF);
+            } else if (sd.dewPointC < 10.0f) {
+                tft.setCursor(96, 112);
+                tft.setTextColor(COLOR_TEXT);
+                tft.print("DRY");
+            } else {
+                tft.setCursor(96, 112);
+                tft.setTextColor(COLOR_GOOD);
+                tft.print("OK");
+            }
+        }
+    }
+
 };
 
 #endif // DISPLAY_TFT_H

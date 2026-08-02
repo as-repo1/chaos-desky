@@ -5,26 +5,30 @@
 #include <Adafruit_GFX.h>
 #include <math.h>
 #include "weather_api.h"
+#include "sensors.h"
+#include "pomodoro.h"
 
 enum WatchFaceStyle {
     WATCHFACE_SWISS_ANALOG = 0,
     WATCHFACE_CYBER_CHRONO = 1,
     WATCHFACE_MODERN_DIGITAL = 2,
     WATCHFACE_NEON_NIXIE = 3,
-    WATCHFACE_CASIO_F91W = 4,
-    WATCHFACE_CASIO_GSHOCK = 5,
-    WATCHFACE_CASIO_CALCULATOR = 6,
-    WATCHFACE_CASIO_ROYALE = 7,
-    WATCHFACE_SEIKO_DIVER = 8,
-    WATCHFACE_PULSAR_LED = 9,
-    WATCHFACE_CASIO_A168 = 10,
-    WATCHFACE_CASIO_DATABANK = 11,
-    WATCHFACE_CYBERPUNK_2077 = 12
+    WATCHFACE_RETRO_FLIP = 4,
+    WATCHFACE_BINARY_MATRIX = 5,
+    WATCHFACE_CRT_TERMINAL = 6,
+    WATCHFACE_ORBITAL_RINGS = 7,
+    WATCHFACE_AVIATION_ALTIMETER = 8,
+    WATCHFACE_MINIMALIST_EINK = 9,
+    WATCHFACE_STEAMPUNK_GAUGE = 10,
+    WATCHFACE_SEGMENT_LED = 11,
+    WATCHFACE_CYBERPUNK_2077 = 12,
+    WATCHFACE_CHRONOGRAPH = 13,
+    WATCHFACE_BAUHAUS = 14
 };
 
 class WatchFaceEngine {
 public:
-    int activeStyle = WATCHFACE_CASIO_F91W; // Default to iconic Casio F-91W!
+    int activeStyle = WATCHFACE_RETRO_FLIP; // Default to iconic Casio F-91W!
     int lastH = -1;
     int lastM = -1;
     int lastS = -1;
@@ -33,7 +37,7 @@ public:
     void render(Adafruit_GFX& gfx, 
                 int hours, int mins, int secs, 
                 const OutdoorWeatherData& weather,
-                float tempC,
+                const SensorManager& sensors, const PomodoroTimer& pomo,
                 uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg,
                 bool fullRedraw = false) {
         
@@ -51,46 +55,52 @@ public:
 
         switch (activeStyle) {
             case WATCHFACE_SWISS_ANALOG:
-                renderSwissAnalog(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderSwissAnalog(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             case WATCHFACE_CYBER_CHRONO:
-                renderCyberChrono(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderCyberChrono(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             case WATCHFACE_MODERN_DIGITAL:
-                renderModernDigital(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderModernDigital(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             case WATCHFACE_NEON_NIXIE:
-                renderNeonNixie(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderNeonNixie(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_F91W:
-                renderCasioF91W(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_RETRO_FLIP:
+                renderRetroFlip(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_GSHOCK:
-                renderCasioGShock(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_BINARY_MATRIX:
+                renderBinaryMatrix(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_CALCULATOR:
-                renderCasioCalculator(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_CRT_TERMINAL:
+                renderCRTTerminal(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_ROYALE:
-                renderCasioRoyale(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_ORBITAL_RINGS:
+                renderOrbitalRings(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_SEIKO_DIVER:
-                renderSeikoDiver(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_AVIATION_ALTIMETER:
+                renderAviationAltimeter(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_PULSAR_LED:
-                renderPulsarLED(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_MINIMALIST_EINK:
+                renderMinimalistEink(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_A168:
-                renderCasioA168(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_STEAMPUNK_GAUGE:
+                renderSteampunkGauge(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_CASIO_DATABANK:
-                renderCasioDataBank(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_SEGMENT_LED:
+                renderSegmentLED(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             case WATCHFACE_CYBERPUNK_2077:
-                renderCyberpunk2077(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderCyberpunk2077(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_CHRONOGRAPH:
+                renderChronograph(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                break;
+            case WATCHFACE_BAUHAUS:
+                renderBauhaus(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             default:
-                renderCasioF91W(gfx, hours, mins, secs, weather, tempC, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+                renderRetroFlip(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
         }
 
@@ -102,139 +112,114 @@ public:
 private:
     // --- Style 0: Classic Swiss Luxury Analog Dial (Zero-Flicker Overdraw) ---
     void renderSwissAnalog(Adafruit_GFX& gfx, int h, int m, int s, 
-                           const OutdoorWeatherData& w, float tempC,
+                           const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                            uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
-        int cx = 64;
-        int cy = 72;
-        int r = 44;
+        int cx = 64, cy = 72, r = 44;
 
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
-            // Double Outer Bezel
+            // Sleek Outer Bezel
             gfx.drawCircle(cx, cy, r + 2, colorPrimary);
-            gfx.drawCircle(cx, cy, r, colorPrimary);
-
-            // 60 Minute Ticks & 12 Hour Ticks
+            
+            // Minimalist ticks
             for (int i = 0; i < 60; i++) {
                 float angle = i * (2.0f * M_PI / 60.0f);
                 if (i % 5 == 0) {
-                    int x1 = cx + (int)(cos(angle) * (r - 7));
-                    int y1 = cy + (int)(sin(angle) * (r - 7));
-                    int x2 = cx + (int)(cos(angle) * (r - 2));
-                    int y2 = cy + (int)(sin(angle) * (r - 2));
-                    gfx.drawLine(x1, y1, x2, y2, colorAccent);
+                    gfx.drawLine(cx + (int)(cos(angle) * (r - 6)), cy + (int)(sin(angle) * (r - 6)),
+                                 cx + (int)(cos(angle) * (r - 2)), cy + (int)(sin(angle) * (r - 2)), colorAccent);
                 } else {
-                    int x = cx + (int)(cos(angle) * (r - 3));
-                    int y = cy + (int)(sin(angle) * (r - 3));
-                    gfx.drawPixel(x, y, colorPrimary);
+                    gfx.drawPixel(cx + (int)(cos(angle) * (r - 3)), cy + (int)(sin(angle) * (r - 3)), colorPrimary);
                 }
             }
 
-            // Cardinal Hour Labels (12, 3, 6, 9)
+            // Trend & Pomo Indicators
             gfx.setTextSize(1);
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(cx - 5, cy - r + 9); gfx.print("12");
-            gfx.setCursor(cx + r - 12, cy - 3); gfx.print("3");
-            gfx.setCursor(cx - 3, cy + r - 14); gfx.print("6");
-            gfx.setCursor(cx - r + 6, cy - 3); gfx.print("9");
+            gfx.setTextColor(colorAccent, colorBg);
+            gfx.setCursor(14, 124);
+            if ((pomo.state != POMO_IDLE)) gfx.printf("POMO: %s", (pomo.state == POMO_WORK) ? "FOCUS" : "BREAK");
+            else gfx.print("POMO: IDLE");
 
-            // Weather Complication Badge below dial
-            gfx.drawRoundRect(14, 124, 100, 18, 4, colorAccent);
             gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(22, 129);
-            gfx.printf("%.1fC | %s", w.valid ? w.tempC : tempC, w.cityName.substring(0, 8).c_str());
+            gfx.setCursor(14, 138);
+            gfx.printf("PRS: %d hPa", (int)sensors.data.pressureHpa);
         }
 
-        // Erase Old Hands if valid previous state
-        if (lastS >= 0) {
-            float oldS = lastS * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-            gfx.drawLine(cx, cy, cx + (int)(cos(oldS) * (r - 6)), cy + (int)(sin(oldS) * (r - 6)), colorBg);
-            float oldM = (lastM + lastS / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-            gfx.drawLine(cx, cy, cx + (int)(cos(oldM) * (r - 10)), cy + (int)(sin(oldM) * (r - 10)), colorBg);
-            float oldH = ((lastH % 12) + lastM / 60.0f) * (2.0f * M_PI / 12.0f) - (M_PI / 2.0f);
-            int ohx = cx + (int)(cos(oldH) * (r - 18));
-            int ohy = cy + (int)(sin(oldH) * (r - 18));
-            gfx.drawLine(cx, cy, ohx, ohy, colorBg);
-            gfx.drawLine(cx + 1, cy, ohx + 1, ohy, colorBg);
-            gfx.drawLine(cx - 1, cy, ohx - 1, ohy, colorBg);
+        // Fast Clear old hands (Inner circle)
+        gfx.fillCircle(cx, cy, r - 7, colorBg);
+        
+        // Pomo Ring Micro-animation (if active, draw a small arc)
+        if ((pomo.state != POMO_IDLE) && pomo.durationSec > 0) {
+            float progress = 1.0f - ((float)pomo.remainingSec / pomo.durationSec);
+            int pAngle = (int)(progress * 360);
+            for(int a=0; a<pAngle; a+=5) {
+                float rad = (a - 90) * M_PI / 180.0f;
+                gfx.drawPixel(cx + (int)(cos(rad)*15), cy + (int)(sin(rad)*15), colorAccent);
+            }
         }
 
-        // Hour Hand (Thick)
+        // Draw Hands
         float angleH = ((h % 12) + m / 60.0f) * (2.0f * M_PI / 12.0f) - (M_PI / 2.0f);
-        int hx = cx + (int)(cos(angleH) * (r - 18));
-        int hy = cy + (int)(sin(angleH) * (r - 18));
-        gfx.drawLine(cx, cy, hx, hy, colorPrimary);
-        gfx.drawLine(cx + 1, cy, hx + 1, hy, colorPrimary);
-        gfx.drawLine(cx - 1, cy, hx - 1, hy, colorPrimary);
-
-        // Minute Hand
+        gfx.drawLine(cx, cy, cx + (int)(cos(angleH) * 20), cy + (int)(sin(angleH) * 20), colorPrimary);
+        
         float angleM = (m + s / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-        int mx = cx + (int)(cos(angleM) * (r - 10));
-        int my = cy + (int)(sin(angleM) * (r - 10));
-        gfx.drawLine(cx, cy, mx, my, colorText);
-
-        // Sweeping Second Hand
+        gfx.drawLine(cx, cy, cx + (int)(cos(angleM) * 32), cy + (int)(sin(angleM) * 32), colorText);
+        
         float angleS = s * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-        int sx = cx + (int)(cos(angleS) * (r - 6));
-        int sy = cy + (int)(sin(angleS) * (r - 6));
-        gfx.drawLine(cx, cy, sx, sy, colorAccent);
-
-        // Center Pin
-        gfx.fillCircle(cx, cy, 3, colorAccent);
+        gfx.drawLine(cx, cy, cx + (int)(cos(angleS) * 38), cy + (int)(sin(angleS) * 38), colorAccent);
+        
+        gfx.fillCircle(cx, cy, 2, colorPrimary);
     }
 
     // --- Style 1: Cyberpunk Dual Chronograph ---
     void renderCyberChrono(Adafruit_GFX& gfx, int h, int m, int s,
-                           const OutdoorWeatherData& w, float tempC,
+                           const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                            uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
-        int cx = 64;
-        int cy = 84;
-        int r = 32;
+        int cx = 64, cy = 84, r = 32;
 
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
             gfx.drawCircle(cx, cy, r, colorPrimary);
-            gfx.drawCircle(cx, cy, r - 1, colorPrimary);
             gfx.drawRoundRect(4, 126, 120, 24, 4, colorPrimary);
             gfx.setTextSize(1);
             gfx.setTextColor(colorText, colorBg);
             gfx.setCursor(10, 130);
-            gfx.printf("INDOOR:  %.1fC", tempC);
+            gfx.printf("IN: %.1f OUT: %.1f", sensors.data.tempC, w.tempC);
             gfx.setCursor(10, 140);
-            gfx.printf("OUTDOOR: %.1fC", w.tempC);
+            gfx.printf("POMO: %s", (pomo.state != POMO_IDLE) ? ((pomo.state == POMO_WORK) ? "FOCUS" : "BREAK") : "IDLE");
         }
 
-        // Digital Time Header with Blinking Colon (Using background color overdraw!)
+        // Digital Time Header with Blinking Colon
         gfx.setTextSize(2);
         gfx.setTextColor(colorAccent, colorBg);
         gfx.setCursor(16, 24);
-        if (s % 2 == 0) {
-            gfx.printf("%02d:%02d:%02d", h, m, s);
-        } else {
-            gfx.printf("%02d %02d %02d", h, m, s);
+        if (s % 2 == 0) gfx.printf("%02d:%02d:%02d", h, m, s);
+        else gfx.printf("%02d %02d %02d", h, m, s);
+
+        // Erase sub-dial interior
+        gfx.fillCircle(cx, cy, r - 2, colorBg);
+
+        // Active Pomodoro Circular Ring
+        if ((pomo.state != POMO_IDLE) && pomo.durationSec > 0) {
+            float progress = 1.0f - ((float)pomo.remainingSec / pomo.durationSec);
+            int pAngle = (int)(progress * 360);
+            for(int a=0; a<pAngle; a+=2) {
+                float rad = (a - 90) * M_PI / 180.0f;
+                gfx.drawPixel(cx + (int)(cos(rad)*28), cy + (int)(sin(rad)*28), colorPrimary);
+            }
         }
 
-        // Erase sub-dial old hands
-        if (lastS >= 0) {
-            float oldS = lastS * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-            gfx.drawLine(cx, cy, cx + (int)(cos(oldS) * (r - 4)), cy + (int)(sin(oldS) * (r - 4)), colorBg);
-            float oldM = (lastM + lastS / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-            gfx.drawLine(cx, cy, cx + (int)(cos(oldM) * (r - 6)), cy + (int)(sin(oldM) * (r - 6)), colorBg);
-        }
-
+        // Analog Hands
         float angleM = (m + s / 60.0f) * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-        gfx.drawLine(cx, cy, cx + (int)(cos(angleM) * (r - 6)), cy + (int)(sin(angleM) * (r - 6)), colorText);
+        gfx.drawLine(cx, cy, cx + (int)(cos(angleM) * 22), cy + (int)(sin(angleM) * 22), colorText);
 
         float angleS = s * (2.0f * M_PI / 60.0f) - (M_PI / 2.0f);
-        gfx.drawLine(cx, cy, cx + (int)(cos(angleS) * (r - 4)), cy + (int)(sin(angleS) * (r - 4)), colorAccent);
+        gfx.drawLine(cx, cy, cx + (int)(cos(angleS) * 28), cy + (int)(sin(angleS) * 28), colorAccent);
         gfx.fillCircle(cx, cy, 2, colorAccent);
     }
 
     // --- Style 2: Modern Minimalist Digital (Fixed UI & Zero Overlap) ---
     void renderModernDigital(Adafruit_GFX& gfx, int h, int m, int s,
-                             const OutdoorWeatherData& w, float tempC,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
         if (fullRedraw) {
@@ -257,7 +242,7 @@ private:
             gfx.setCursor(10, 102);
             gfx.printf("CITY : %-10s", w.cityName.substring(0, 10).c_str());
             gfx.setCursor(10, 118);
-            gfx.printf("TEMP : %.1fC / %.1fC", tempC, w.tempC);
+            gfx.printf("TEMP : %.1fC / %.1fC", sensors.data.tempC, w.tempC);
             gfx.setCursor(10, 134);
             gfx.printf("WIND : %.1fm/s %s", w.windSpeedMs, w.condition.substring(0, 4).c_str());
         }
@@ -277,7 +262,7 @@ private:
 
     // --- Style 3: Retro Neon Nixie Tube (Fixed Geometry & Glass Glow) ---
     void renderNeonNixie(Adafruit_GFX& gfx, int h, int m, int s,
-                         const OutdoorWeatherData& w, float tempC,
+                         const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
         if (fullRedraw) {
@@ -309,7 +294,7 @@ private:
             gfx.print("IN-14 NIXIE CORE");
             gfx.setTextColor(colorText, colorBg);
             gfx.setCursor(10, 108);
-            gfx.printf("AMB TEMP : %.1f C", tempC);
+            gfx.printf("AMB TEMP : %.1f C", sensors.data.tempC);
             gfx.setCursor(10, 122);
             gfx.printf("OUT TEMP : %.1f C", w.tempC);
             gfx.setCursor(10, 136);
@@ -333,487 +318,303 @@ private:
     // =========================================================
     // ⌚ NEW: Style 4: Iconic Casio F-91W Digital Chronograph
     // =========================================================
-    void renderCasioF91W(Adafruit_GFX& gfx, int h, int m, int s,
-                         const OutdoorWeatherData& w, float tempC,
-                         uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
+    void renderRetroFlip(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
-            
-            // Outer Resin Watch Frame
-            gfx.drawRoundRect(4, 20, 120, 134, 8, colorPrimary);
-            gfx.drawRoundRect(5, 21, 118, 132, 7, colorPrimary);
-            
-            // Top Iconic Casio Blue/Accent Strip
-            gfx.fillRect(8, 26, 112, 14, colorPrimary);
-            gfx.setTextColor(colorBg, colorPrimary);
-            gfx.setTextSize(1);
-            gfx.setCursor(12, 29);
-            gfx.print("CASIO");
-            gfx.setCursor(82, 29);
-            gfx.print("F-91W");
-            
-            // Red/Accent Chronograph Subtext
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(16, 44);
-            gfx.print("ALARM  CHRONOGRAPH");
-            
-            // LCD Window Box (Deep recessed frame)
-            gfx.drawRect(10, 58, 108, 60, colorAccent);
-            gfx.drawRect(11, 59, 106, 58, colorPrimary);
-            
-            // Top LCD Indicators
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(16, 64);
-            gfx.print("24H   ALM SIG   DEV");
-
-            // Water Resist emblem at bottom of face
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(22, 124);
-            gfx.print("WATER  RESIST");
-            gfx.drawFastHLine(22, 134, 84, colorPrimary);
-            
-            // Telemetry badge under LCD
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(24, 142);
-            gfx.printf("TEMP: %.1f C", tempC);
+            // Draw flip cards
+            gfx.fillRoundRect(10, 40, 48, 60, 4, 0x3186); // Dark grey
+            gfx.fillRoundRect(70, 40, 48, 60, 4, 0x3186);
+            // Center split line
+            gfx.drawLine(8, 70, 120, 70, colorBg);
         }
-
-        // Overdraw Big LCD Digits
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(18, 80);
-        if (s % 2 == 0) {
-            gfx.printf("%02d:%02d", h, m);
-        } else {
-            gfx.printf("%02d %02d", h, m);
-        }
-
-        // Small Trailing Seconds
-        gfx.setTextSize(2);
+        
+        gfx.setTextColor(0xFFFF, 0x3186); // White text on dark grey
+        gfx.setTextSize(4);
+        gfx.setCursor(14, 55);
+        gfx.printf("%02d", h);
+        gfx.setCursor(74, 55);
+        gfx.printf("%02d", m);
+        
+        // Seconds ticking below
         gfx.setTextColor(colorAccent, colorBg);
-        gfx.setCursor(92, 86);
-        gfx.printf("%02d", s);
+        gfx.setTextSize(1);
+        gfx.setCursor(55, 110);
+        gfx.printf(":%02d", s);
     }
 
     // =========================================================
     // 🛡️ NEW: Style 5: Casio G-Shock Databank Tactical HUD
     // =========================================================
-    void renderCasioGShock(Adafruit_GFX& gfx, int h, int m, int s,
-                           const OutdoorWeatherData& w, float tempC,
-                           uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
+    void renderBinaryMatrix(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         if (fullRedraw) {
-            gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Chamfered / Octagonal G-Shock Frame
-            gfx.drawRect(6, 22, 116, 130, colorPrimary);
-            gfx.drawLine(6, 22, 16, 16, colorAccent);
-            gfx.drawLine(112, 16, 122, 22, colorAccent);
-            
-            // Bold Headers
-            gfx.setTextColor(colorAccent, colorBg);
+            gfx.fillRect(0, 16, 128, 144, 0x0000); // Black background
+            gfx.setTextColor(0x07E0); // Bright green
             gfx.setTextSize(1);
-            gfx.setCursor(38, 25);
-            gfx.print("G-SHOCK");
-            gfx.setCursor(32, 138);
-            gfx.print("PROTECTION");
-            
-            // 3 Tactical Telemetry Dials Across Top
-            gfx.drawRect(10, 38, 34, 28, colorPrimary);
-            gfx.drawRect(47, 38, 34, 28, colorPrimary);
-            gfx.drawRect(84, 38, 34, 28, colorPrimary);
-
-            gfx.setCursor(14, 42); gfx.print("TMP");
-            gfx.setCursor(14, 54); gfx.printf("%.0fC", tempC);
-
-            gfx.setCursor(52, 42); gfx.print("OUT");
-            gfx.setCursor(52, 54); gfx.printf("%.0fC", w.valid ? w.tempC : 0.0f);
-
-            gfx.setCursor(88, 42); gfx.print("WND");
-            gfx.setCursor(88, 54); gfx.printf("%.0fm", w.windSpeedMs);
-
-            // Main Tactical Display Frame
-            gfx.drawRoundRect(10, 72, 108, 60, 4, colorAccent);
-            gfx.setCursor(16, 77);
-            gfx.print("DATABANK   CHRONO");
-            
-            gfx.drawFastHLine(14, 87, 100, colorPrimary);
+            gfx.setCursor(10, 20);
+            gfx.print("H M S");
+            gfx.drawLine(10, 30, 118, 30, 0x07E0);
         }
-
-        // Main Tactical Time
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(16, 95);
-        gfx.printf("%02d:%02d", h, m);
-
-        // Sub Seconds Pulse
-        gfx.setTextSize(1);
-        gfx.setTextColor(colorAccent, colorBg);
-        gfx.setCursor(94, 98);
-        gfx.print("SEC");
-        gfx.setTextSize(2);
-        gfx.setCursor(94, 108);
-        gfx.printf("%02d", s);
+        
+        uint16_t c_on = 0x07E0;
+        uint16_t c_off = 0x0180; // Dark green
+        
+        int vals[3] = {h, m, s};
+        int x_offsets[3] = {16, 56, 96};
+        
+        for (int c = 0; c < 3; c++) {
+            for (int r = 0; r < 6; r++) {
+                int bit = (vals[c] >> (5 - r)) & 1;
+                uint16_t color = bit ? c_on : c_off;
+                gfx.fillCircle(x_offsets[c], 45 + r * 15, 5, color);
+            }
+        }
     }
 
     // =========================================================
     // 🧮 NEW: Style 6: Casio CA-53W Calculator Databank Watch
     // =========================================================
-    void renderCasioCalculator(Adafruit_GFX& gfx, int h, int m, int s,
-                               const OutdoorWeatherData& w, float tempC,
-                               uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
+    void renderCRTTerminal(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         if (fullRedraw) {
-            gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Outer rectangular Calculator case
-            gfx.drawRoundRect(4, 18, 120, 140, 4, colorPrimary);
-            
-            // Recessed LCD Top Screen
-            gfx.drawRect(8, 22, 112, 44, colorAccent);
-            gfx.drawRect(9, 23, 110, 42, colorPrimary);
-
-            // LCD indicators
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setTextSize(1);
-            gfx.setCursor(10, 24);
-            gfx.print("ALM SIG  DATABANK");
-
-            // Brand Divider text
-            gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setCursor(10, 68);
-            gfx.print("CASIO  WR RESIST");
-
-            // Miniature 4x4 Calculator Keypad Graphics!
-            int startY = 78;
-            const char* keys[4][4] = {
-                {"7", "8", "9", "/"},
-                {"4", "5", "6", "*"},
-                {"1", "2", "3", "-"},
-                {"0", ".", "=", "+"}
-            };
-            
-            for (int r = 0; r < 4; r++) {
-                for (int c = 0; c < 4; c++) {
-                    int bx = 8 + c * 28;
-                    int by = startY + r * 18;
-                    gfx.drawRoundRect(bx, by, 26, 16, 2, colorPrimary);
-                    if (c == 3 || (r == 3 && c == 2)) {
-                        gfx.setTextColor(colorAccent, colorBg);
-                    } else {
-                        gfx.setTextColor(colorText, colorBg);
-                    }
-                    gfx.setCursor(bx + 9, by + 4);
-                    gfx.print(keys[r][c]);
-                }
+            gfx.fillRect(0, 16, 128, 144, 0x0000);
+            for (int i=16; i<160; i+=4) {
+                gfx.drawFastHLine(0, i, 128, 0x0180); // scanlines
             }
         }
-
-        // Overdraw time inside top LCD window
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(10, 36);
-        gfx.printf("%02d:%02d", h, m);
-
-        gfx.setTextColor(colorAccent, colorBg);
+        gfx.setTextColor(0x07E0, 0x0000);
+        gfx.setTextSize(1);
+        gfx.setCursor(10, 40);
+        gfx.print("user@desky:~$ time");
+        
         gfx.setTextSize(2);
-        gfx.setCursor(100, 42);
-        gfx.printf("%02d", s);
+        gfx.setCursor(10, 60);
+        gfx.printf("%02d:%02d:%02d", h, m, s);
+        
+        gfx.setTextSize(1);
+        gfx.setCursor(10, 90);
+        if (s % 2 == 0) gfx.print("_"); else gfx.print(" ");
     }
 
     // =========================================================
     // 🗺️ NEW: Style 7: Casio Royale (AE-1200 World Time Radar)
     // =========================================================
-    void renderCasioRoyale(Adafruit_GFX& gfx, int h, int m, int s,
-                           const OutdoorWeatherData& w, float tempC,
-                           uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        
+    void renderOrbitalRings(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        int cx = 64, cy = 88;
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Outer Casio Royale Chassis
-            gfx.drawRoundRect(4, 18, 120, 140, 6, colorPrimary);
-            
-            // Top Left: World Time Radar Round Globe Window
-            gfx.drawCircle(28, 44, 18, colorPrimary);
-            gfx.drawCircle(28, 44, 17, colorAccent);
-            gfx.drawFastHLine(10, 44, 36, colorPrimary);
-            gfx.drawFastVLine(28, 26, 36, colorPrimary);
-
-            // Top Right: Status indicators and World Time Zone Box
-            gfx.drawRect(52, 24, 68, 42, colorPrimary);
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setTextSize(1);
-            gfx.setCursor(56, 28);
-            gfx.print("WORLD TIME");
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(56, 38);
-            gfx.print("NYC LON TYO");
-            gfx.setCursor(56, 48);
-            gfx.printf("TMP:%.0fC", tempC);
-
-            // Bottom Panoramic Main Display Frame
-            gfx.drawRoundRect(4, 70, 120, 64, 4, colorAccent);
-            gfx.drawRoundRect(5, 71, 118, 62, 3, colorPrimary);
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(10, 74);
-            gfx.print("5 ALARMS  10Y BAT");
-            
-            // Footer branding
-            gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setCursor(8, 142);
-            gfx.print("ILLUMINATOR - WR");
+            gfx.drawCircle(cx, cy, 40, 0x2104);
+            gfx.drawCircle(cx, cy, 30, 0x2104);
+            gfx.drawCircle(cx, cy, 20, 0x2104);
         }
-
-        // Radar scan pulse (dynamic radar beam in the circle!)
-        float angleR = s * (2.0f * M_PI / 15.0f);
-        int rx = 28 + (int)(cos(angleR) * 13);
-        int ry = 44 + (int)(sin(angleR) * 13);
-        gfx.fillCircle(28, 44, 2, colorAccent);
-        gfx.fillCircle(rx, ry, 2, colorText);
-
-        // Big Main LCD Time
+        
+        // Simple orbital pointers
+        // Erase old
+        if (lastS >= 0) {
+            float os = lastS * M_PI / 30.0 - M_PI / 2.0;
+            gfx.fillCircle(cx + cos(os)*40, cy + sin(os)*40, 3, 0x2104);
+            float om = lastM * M_PI / 30.0 - M_PI / 2.0;
+            gfx.fillCircle(cx + cos(om)*30, cy + sin(om)*30, 4, 0x2104);
+            float oh = (lastH%12) * M_PI / 6.0 - M_PI / 2.0;
+            gfx.fillCircle(cx + cos(oh)*20, cy + sin(oh)*20, 5, 0x2104);
+        }
+        
+        float ah = (h%12) * M_PI / 6.0 - M_PI / 2.0;
+        gfx.fillCircle(cx + cos(ah)*20, cy + sin(ah)*20, 5, colorAccent);
+        
+        float am = m * M_PI / 30.0 - M_PI / 2.0;
+        gfx.fillCircle(cx + cos(am)*30, cy + sin(am)*30, 4, colorPrimary);
+        
+        float a_s = s * M_PI / 30.0 - M_PI / 2.0;
+        gfx.fillCircle(cx + cos(a_s)*40, cy + sin(a_s)*40, 3, colorText);
+        
+        gfx.setTextSize(1);
         gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(10, 88);
-        if (s % 2 == 0) {
-            gfx.printf("%02d:%02d", h, m);
-        } else {
-            gfx.printf("%02d %02d", h, m);
-        }
-
-        gfx.setTextColor(colorAccent, colorBg);
-        gfx.setTextSize(2);
-        gfx.setCursor(100, 94);
-        gfx.printf("%02d", s);
+        gfx.setCursor(cx-18, cy-4);
+        gfx.printf("%02d:%02d", h, m);
     }
 
     // =========================================================
-    // 🌊 NEW: Style 8: Seiko Diver (Luminescent Prospex Marine)
+    // ✈️ NEW: Style 8: Aviation Altimeter
     // =========================================================
-    void renderSeikoDiver(Adafruit_GFX& gfx, int h, int m, int s,
-                          const OutdoorWeatherData& w, float tempC,
+    void renderAviationAltimeter(Adafruit_GFX& gfx, int h, int m, int s,
+                          const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                           uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
+        int cx = 64, cy = 88;
         if (fullRedraw) {
-            gfx.fillRect(0, 16, 128, 144, colorBg);
+            gfx.fillRect(0, 16, 128, 144, 0x0000); // Pitch black
             
-            // Dive rotating Bezel frame
-            gfx.drawCircle(64, 70, 44, colorPrimary);
-            gfx.drawCircle(64, 70, 42, colorAccent);
+            // Outer casing
+            gfx.fillCircle(cx, cy, 60, 0x18E3); // Dark grey
+            gfx.fillCircle(cx, cy, 56, 0x0000); // Black dial
             
-            // Bezel ticks (0, 15, 30, 45 marine markings)
-            for (int i = 0; i < 12; i++) {
-                float a = i * (2.0f * M_PI / 12.0f);
-                int tx1 = 64 + (int)(cos(a) * 36);
-                int ty1 = 70 + (int)(sin(a) * 36);
-                int tx2 = 64 + (int)(cos(a) * 40);
-                int ty2 = 70 + (int)(sin(a) * 40);
-                gfx.drawLine(tx1, ty1, tx2, ty2, colorAccent);
+            // Altimeter ticks
+            for (int i = 0; i < 60; i++) {
+                float a = i * (2.0f * M_PI / 60.0f) - M_PI / 2.0f;
+                int len = (i % 5 == 0) ? 8 : 4;
+                int tx1 = cx + (int)(cos(a) * (54 - len));
+                int ty1 = cy + (int)(sin(a) * (54 - len));
+                int tx2 = cx + (int)(cos(a) * 54);
+                int ty2 = cy + (int)(sin(a) * 54);
+                uint16_t c = (i % 5 == 0) ? 0xFFFF : 0x7BEF;
+                gfx.drawLine(tx1, ty1, tx2, ty2, c);
             }
-            // Triangle marking at 12 o'clock (top)
-            gfx.fillTriangle(64, 26, 58, 34, 70, 34, colorPrimary);
-
-            // Seiko Marine badge
-            gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setTextSize(1);
-            gfx.setCursor(49, 38);
-            gfx.print("SEIKO");
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(22, 94);
-            gfx.print("DIVER'S 200m");
             
-            // Telemetry sub-box
-            gfx.drawRoundRect(6, 130, 116, 22, 4, colorPrimary);
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(12, 137);
-            gfx.printf("TEMP:%.1fC DEPTH:0m", tempC);
+            gfx.setTextColor(0xFFFF);
+            gfx.setTextSize(1);
+            gfx.setCursor(40, 50);
+            gfx.print("ALTITUDE");
         }
+        
+        // Redraw inner dial to clear old hands
+        gfx.fillCircle(cx, cy, 45, 0x0000);
+        
+        // Redraw inner texts that got cleared
+        gfx.setTextColor(0xFFFF);
+        gfx.setTextSize(1);
+        gfx.setCursor(40, 50);
+        gfx.print("ALTITUDE");
 
-        // Bold Luminescent Digital Chronometer Display in center
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(10, 58);
-        gfx.printf("%02d:%02d", h, m);
-
-        // Seconds indicator on right
-        gfx.setTextColor(colorAccent, colorBg);
-        gfx.setTextSize(2);
-        gfx.setCursor(100, 64);
-        gfx.printf("%02d", s);
+        gfx.fillRect(cx - 15, cy + 15, 30, 12, 0x18E3);
+        gfx.setCursor(cx - 12, cy + 17);
+        gfx.printf("%04d", (int)sensors.data.pressureHpa);
+        
+        // Hour hand
+        float hAngle = (h % 12 + m / 60.0f) * (2.0f * M_PI / 12.0f) - M_PI / 2.0f;
+        gfx.drawLine(cx, cy, cx + (int)(cos(hAngle) * 25), cy + (int)(sin(hAngle) * 25), 0xFFFF);
+        gfx.drawLine(cx+1, cy, cx+1 + (int)(cos(hAngle) * 25), cy + (int)(sin(hAngle) * 25), 0xFFFF);
+        
+        // Minute hand
+        float mAngle = (m + s / 60.0f) * (2.0f * M_PI / 60.0f) - M_PI / 2.0f;
+        gfx.drawLine(cx, cy, cx + (int)(cos(mAngle) * 38), cy + (int)(sin(mAngle) * 38), 0xFFFF);
+        
+        // Second hand
+        float sAngle = s * (2.0f * M_PI / 60.0f) - M_PI / 2.0f;
+        gfx.drawLine(cx, cy, cx + (int)(cos(sAngle) * 42), cy + (int)(sin(sAngle) * 42), 0xF800); // Red
+        gfx.fillCircle(cx, cy, 3, 0xFFFF);
     }
 
     // =========================================================
-    // 🔴 NEW: Style 9: 1972 Hamilton Pulsar (Vintage Ruby LED)
+    // 📰 NEW: Style 9: Minimalist E-Ink (High Contrast)
     // =========================================================
-    void renderPulsarLED(Adafruit_GFX& gfx, int h, int m, int s,
-                         const OutdoorWeatherData& w, float tempC,
+    void renderMinimalistEink(Adafruit_GFX& gfx, int h, int m, int s,
+                         const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
+        uint16_t bg = 0xFFFF; // White
+        uint16_t fg = 0x0000; // Black
+        
         if (fullRedraw) {
-            // Fill with deep contrast background
-            gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Cushion curved Gold/Stainless steel Pulsar case frame (filled for metal look)
-            gfx.fillRoundRect(4, 20, 120, 132, 28, colorPrimary);
-            gfx.drawRoundRect(4, 20, 120, 132, 28, colorAccent);
-            gfx.drawRoundRect(6, 22, 116, 128, 26, colorText);
+            gfx.fillRect(0, 16, 128, 144, bg);
             
-            // Side Command Button (Signature of Pulsar)
-            gfx.fillRoundRect(122, 70, 6, 24, 3, colorAccent);
-
-            // Deep red tinted glass filter viewing screen
-            gfx.fillRoundRect(14, 50, 100, 52, 12, colorBg);
-            gfx.drawRoundRect(14, 50, 100, 52, 12, colorAccent);
-            gfx.drawRoundRect(15, 51, 98, 50, 11, colorAccent);
-
-            // Vintage branding above and below glass window
-            gfx.setTextColor(colorBg, colorPrimary);
-            gfx.setTextSize(2);
-            gfx.setCursor(30, 32);
-            gfx.print("Pulsar");
-            
-            gfx.setTextColor(colorAccent, colorPrimary);
+            // Top dividing line
+            gfx.drawLine(10, 30, 118, 30, fg);
+            gfx.setTextColor(fg, bg);
             gfx.setTextSize(1);
-            gfx.setCursor(26, 110);
-            gfx.print("TIME COMPUTER");
+            gfx.setCursor(10, 20);
+            gfx.print("DESKY");
             
-            gfx.setTextColor(colorText, colorPrimary);
-            gfx.setCursor(22, 130);
-            gfx.printf("SOLID STATE %.0fC", tempC);
+            // Bottom dividing line
+            gfx.drawLine(10, 130, 118, 130, fg);
         }
-
-        // Ruby Red glowing LED digital characters centered inside tinted glass!
-        // We force a deep ruby red for authenticity, or fallback to accent
-        uint16_t ledColor = ((255 & 0xF8) << 8) | ((20 & 0xFC) << 3) | (40 >> 3);
-
-        gfx.setTextColor(ledColor, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(18, 66);
-        if (s % 2 == 0) {
-            gfx.printf("%02d:%02d", h, m);
+        
+        gfx.setTextColor(fg, bg);
+        
+        // Pomodoro status
+        gfx.setCursor(10, 136);
+        gfx.fillRect(10, 136, 108, 10, bg); // Clear old text
+        if ((pomo.state != POMO_IDLE)) {
+            if ((pomo.state == POMO_WORK)) gfx.printf("FOCUS: %02d:%02d", pomo.remainingSec / 60, pomo.remainingSec % 60);
+            else gfx.printf("BREAK: %02d:%02d", pomo.remainingSec / 60, pomo.remainingSec % 60);
         } else {
-            gfx.printf("%02d %02d", h, m);
+            gfx.print("IDLE");
         }
-
+        
+        // Time
+        gfx.setTextSize(3);
+        gfx.setCursor(10, 50);
+        gfx.printf("%02d:%02d", h, m);
+        
         gfx.setTextSize(2);
-        gfx.setCursor(104, 74); // Adjusted for spacing
+        gfx.setCursor(100, 56);
+        gfx.fillRect(100, 56, 24, 16, bg);
         gfx.printf("%02d", s);
+        
+        // Weather
+        gfx.setTextSize(1);
+        gfx.setCursor(10, 100);
+        gfx.fillRect(10, 100, 100, 20, bg);
+        gfx.printf("OUT: %.1fC", w.tempC);
+        gfx.setCursor(10, 112);
+        gfx.printf("IN: %.1fC", sensors.data.tempC);
     }
 
     // =========================================================
     // 🪙 Style 10: Casio A168 Vintage ElectroLuminescence (Gold/Silver Edition)
     // =========================================================
-    void renderCasioA168(Adafruit_GFX& gfx, int h, int m, int s,
-                         const OutdoorWeatherData& w, float tempC,
-                         uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+    void renderSteampunkGauge(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        int cx = 64, cy = 88;
+        uint16_t copper = 0xFD20; // Orange/Brownish
         if (fullRedraw) {
-            gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Double Metallic outer bezel frame
-            gfx.drawRoundRect(4, 18, 120, 140, 8, colorPrimary);
-            gfx.drawRoundRect(5, 19, 118, 138, 7, colorAccent);
-
-            // Iconic ElectroLuminescence Header Banner
-            gfx.fillRect(8, 24, 112, 16, colorPrimary);
-            gfx.setTextColor(colorBg, colorPrimary);
-            gfx.setTextSize(1);
-            gfx.setCursor(12, 28);
-            gfx.print("CASIO");
-            gfx.setCursor(84, 28);
-            gfx.print("A168W");
-
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(10, 43);
-            gfx.print("ELECTRO LUMINESCENCE");
-
-            // Recessed Teal Cyan EL Backlit LCD Panel Frame
-            gfx.drawRect(10, 56, 108, 64, colorAccent);
-            gfx.drawRect(11, 57, 106, 62, colorPrimary);
-
-            // LCD indicators line
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(14, 62);
-            gfx.print("SU MO TU WE TH FR SA");
-
-            // Footer markings
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(16, 124);
-            gfx.print("WATER  WR  RESIST");
-            gfx.drawFastHLine(14, 134, 100, colorPrimary);
-
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(18, 142);
-            gfx.printf("AMB TEMP: %.1fC", tempC);
+            gfx.fillRect(0, 16, 128, 144, 0x18C3); // Dark slate
+            gfx.fillCircle(cx, cy, 45, 0x0000);
+            gfx.drawCircle(cx, cy, 45, copper);
+            gfx.drawCircle(cx, cy, 44, copper);
+            for(int i=0; i<360; i+=15) {
+                float rad = i * M_PI / 180.0;
+                gfx.drawLine(cx + cos(rad)*40, cy + sin(rad)*40, cx + cos(rad)*44, cy + sin(rad)*44, copper);
+            }
         }
-
-        // Full Cyan EL Glow box for time
-        gfx.fillRect(14, 74, 100, 42, 0x03E0); // Deep Cyan EL LCD Panel
-        gfx.setTextColor(ST77XX_BLACK, 0x03E0);
-        gfx.setTextSize(3);
-        gfx.setCursor(18, 84);
-        if (s % 2 == 0) {
-            gfx.printf("%02d:%02d", h, m);
-        } else {
-            gfx.printf("%02d %02d", h, m);
+        
+        // Erase
+        if (lastS >= 0) {
+            float os = lastS * M_PI / 30.0 - M_PI / 2.0;
+            gfx.drawLine(cx, cy, cx + cos(os)*38, cy + sin(os)*38, 0x0000);
+            float om = lastM * M_PI / 30.0 - M_PI / 2.0;
+            gfx.drawLine(cx, cy, cx + cos(om)*30, cy + sin(om)*30, 0x0000);
+            float oh = (lastH%12) * M_PI / 6.0 - M_PI / 2.0;
+            gfx.drawLine(cx, cy, cx + cos(oh)*20, cy + sin(oh)*20, 0x0000);
         }
-
-        gfx.setTextSize(2);
-        gfx.setCursor(92, 90);
-        gfx.printf("%02d", s);
+        
+        float ah = (h%12) * M_PI / 6.0 - M_PI / 2.0;
+        gfx.drawLine(cx, cy, cx + cos(ah)*20, cy + sin(ah)*20, 0xFFFF);
+        float am = m * M_PI / 30.0 - M_PI / 2.0;
+        gfx.drawLine(cx, cy, cx + cos(am)*30, cy + sin(am)*30, 0xCE79);
+        float a_s = s * M_PI / 30.0 - M_PI / 2.0;
+        gfx.drawLine(cx, cy, cx + cos(a_s)*38, cy + sin(a_s)*38, copper);
+        gfx.fillCircle(cx, cy, 4, copper);
     }
 
     // =========================================================
     // 📞 Style 11: Casio DB-360 Databank Telememo 30
     // =========================================================
-    void renderCasioDataBank(Adafruit_GFX& gfx, int h, int m, int s,
-                             const OutdoorWeatherData& w, float tempC,
+    void renderSegmentLED(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         if (fullRedraw) {
-            gfx.fillRect(0, 16, 128, 144, colorBg);
-
-            // Databank rectangular chassis
-            gfx.drawRoundRect(4, 18, 120, 140, 5, colorPrimary);
-
-            // Header Banner
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setTextSize(1);
-            gfx.setCursor(10, 24);
-            gfx.print("CASIO  TELEMEMO 30");
-
-            // Dot Matrix Sub-Window Frame
-            gfx.drawRect(8, 36, 112, 42, colorPrimary);
-            gfx.drawRect(9, 37, 110, 40, colorAccent);
-
-            gfx.setTextColor(colorText, colorBg);
-            gfx.setCursor(12, 42);
-            gfx.print("NAME: CHAOS-DESKY");
-            gfx.setCursor(12, 52);
-            gfx.print("TEL : +888-ESP32");
-            gfx.setCursor(12, 62);
-            gfx.printf("MEM : [||||||..] %02d/30", (s % 30) + 1);
-
-            // Lower Screen Frame
-            gfx.drawRect(8, 82, 112, 56, colorAccent);
-            gfx.setTextColor(colorPrimary, colorBg);
-            gfx.setCursor(10, 86);
-            gfx.print("AUTO SCHEDULE / ALM");
-
-            gfx.setTextColor(colorAccent, colorBg);
-            gfx.setCursor(10, 142);
-            gfx.print("DATA BANK  WR 50M");
+            gfx.fillRect(0, 16, 128, 144, 0x0000);
         }
-
-        // Overdraw time inside bottom screen window
-        gfx.setTextColor(colorText, colorBg);
-        gfx.setTextSize(3);
-        gfx.setCursor(12, 102);
-        gfx.printf("%02d:%02d", h, m);
-
-        gfx.setTextColor(colorAccent, colorBg);
+        
+        gfx.setTextColor(0xF800, 0x0000); // Pure Red
+        gfx.setTextSize(4);
+        gfx.setCursor(8, 50);
+        gfx.printf("%02d", h);
+        
+        if (s % 2 == 0) gfx.print(":"); else gfx.print(" ");
+        gfx.setCursor(68, 50);
+        gfx.printf("%02d", m);
+        
         gfx.setTextSize(2);
-        gfx.setCursor(96, 108);
+        gfx.setCursor(55, 100);
         gfx.printf("%02d", s);
     }
 
@@ -821,7 +622,7 @@ private:
     // 🌃 Style 12: Cyberpunk 2077 Night City HUD Chronograph
     // =========================================================
     void renderCyberpunk2077(Adafruit_GFX& gfx, int h, int m, int s,
-                             const OutdoorWeatherData& w, float tempC,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, ST77XX_BLACK);
@@ -859,7 +660,7 @@ private:
             // Footer
             gfx.setTextColor(ST77XX_YELLOW, ST77XX_BLACK);
             gfx.setCursor(10, 128);
-            gfx.printf("TEMP: %.1fC | OUT: %.1fC", tempC, w.valid ? w.tempC : 0.0f);
+            gfx.printf("TEMP: %.1fC | OUT: %.1fC", sensors.data.tempC, w.valid ? w.tempC : 0.0f);
             gfx.setCursor(10, 142);
             gfx.print("SYSTEM STATUS: ONLINE");
         }
@@ -878,6 +679,157 @@ private:
         gfx.setTextSize(2);
         gfx.setCursor(94, 88);
         gfx.printf("%02d", s);
+    }
+
+
+    // =========================================================
+    // ⏱️ Style 13: Classic Chronograph
+    // =========================================================
+    void renderChronograph(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        int cx = 120, cy = 120;
+        int r = 110;
+        uint16_t TFT_SILVER = 0xC618;
+        uint16_t TFT_DARKGREY = 0x7BEF;
+        uint16_t TFT_LIGHTGREY = 0xD69A;
+        
+        if (fullRedraw) {
+            gfx.fillScreen(0x0000); // Black
+            
+            // Outer dial
+            gfx.drawCircle(cx, cy, r, TFT_SILVER);
+            gfx.drawCircle(cx, cy, r - 2, TFT_DARKGREY);
+
+            // Tick marks
+            for (int i = 0; i < 60; i++) {
+                float angle = i * 6.0f * (M_PI / 180.0f);
+                int len = (i % 5 == 0) ? 10 : 4;
+                uint16_t color = (i % 5 == 0) ? 0xFFFF : TFT_LIGHTGREY;
+                gfx.drawLine(cx + cos(angle) * (r - len), cy + sin(angle) * (r - len),
+                             cx + cos(angle) * r, cy + sin(angle) * r, color);
+            }
+
+            // Sub-dials
+            int sdR = 20;
+            // Sub-dial 1 (Left - Temp)
+            gfx.drawCircle(cx - 40, cy, sdR, TFT_DARKGREY);
+            gfx.setTextColor(TFT_LIGHTGREY);
+            gfx.setTextSize(1);
+            gfx.setCursor(cx - 52, cy + sdR + 2); gfx.print("TEMP");
+
+            // Sub-dial 2 (Right - Humidity)
+            gfx.drawCircle(cx + 40, cy, sdR, TFT_DARKGREY);
+            gfx.setCursor(cx + 32, cy + sdR + 2); gfx.print("HUM");
+        }
+        
+        int sdR = 20;
+        // Erase old hands
+        if (lastS >= 0) {
+            // Main second hand
+            float osAngle = lastS * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            gfx.drawLine(cx - cos(osAngle) * 15, cy - sin(osAngle) * 15, cx + cos(osAngle) * 90, cy + sin(osAngle) * 90, 0x0000);
+            
+            // Minute hand
+            float omAngle = (lastM + lastS / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            gfx.drawLine(cx, cy, cx + cos(omAngle) * 80, cy + sin(omAngle) * 80, 0x0000);
+            gfx.drawLine(cx + 1, cy, cx + 1 + cos(omAngle) * 80, cy + sin(omAngle) * 80, 0x0000);
+            
+            // Hour hand
+            float ohAngle = (lastH % 12 + lastM / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            gfx.drawLine(cx, cy, cx + cos(ohAngle) * 50, cy + sin(ohAngle) * 50, 0x0000);
+            gfx.drawLine(cx + 1, cy, cx + 1 + cos(ohAngle) * 50, cy + sin(ohAngle) * 50, 0x0000);
+            
+            // Temp hand (static mostly, but we redraw it anyway)
+            float otempAngle = map(sensors.data.tempC, 0, 50, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
+            gfx.drawLine(cx - 40, cy, cx - 40 + cos(otempAngle) * (sdR - 4), cy + sin(otempAngle) * (sdR - 4), 0x0000);
+            
+            // Hum hand
+            float ohumAngle = map(sensors.data.humidity, 0, 100, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
+            gfx.drawLine(cx + 40, cy, cx + 40 + cos(ohumAngle) * (sdR - 4), cy + sin(ohumAngle) * (sdR - 4), 0x0000);
+        }
+
+        // Draw new hands
+        float tempAngle = map(sensors.data.tempC, 0, 50, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
+        gfx.drawLine(cx - 40, cy, cx - 40 + cos(tempAngle) * (sdR - 4), cy + sin(tempAngle) * (sdR - 4), 0xF800); // Red
+        
+        float humAngle = map(sensors.data.humidity, 0, 100, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
+        gfx.drawLine(cx + 40, cy, cx + 40 + cos(humAngle) * (sdR - 4), cy + sin(humAngle) * (sdR - 4), 0x07FF); // Cyan
+        
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float mAngle = (m + s / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float sAngle = s * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+
+        // Draw hour hand
+        gfx.drawLine(cx, cy, cx + cos(hAngle) * 50, cy + sin(hAngle) * 50, 0xFFFF);
+        gfx.drawLine(cx + 1, cy, cx + 1 + cos(hAngle) * 50, cy + sin(hAngle) * 50, 0xFFFF);
+        
+        // Draw minute hand
+        gfx.drawLine(cx, cy, cx + cos(mAngle) * 80, cy + sin(mAngle) * 80, 0xFFFF);
+        gfx.drawLine(cx + 1, cy, cx + 1 + cos(mAngle) * 80, cy + sin(mAngle) * 80, 0xFFFF);
+
+        // Draw second hand
+        gfx.drawLine(cx - cos(sAngle) * 15, cy - sin(sAngle) * 15, cx + cos(sAngle) * 90, cy + sin(sAngle) * 90, 0xF800);
+        gfx.fillCircle(cx, cy, 4, 0xF800);
+    }
+
+    // =========================================================
+    // 📐 Style 14: Bauhaus Minimal
+    // =========================================================
+    void renderBauhaus(Adafruit_GFX& gfx, int h, int m, int s,
+                             const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
+                             uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
+        int cx = 120, cy = 120;
+        int r = 110;
+        
+        if (fullRedraw) {
+            gfx.fillScreen(0x18E3); // Very dark gray/blue
+            // Just minimal markers for 12, 3, 6, 9
+            gfx.fillRect(cx - 2, cy - r, 4, 15, 0xF800); // Red at 12
+            gfx.fillRect(cx + r - 15, cy - 2, 15, 4, 0xFFFF); // White
+            gfx.fillRect(cx - 2, cy + r - 15, 4, 15, 0xFFFF);
+            gfx.fillRect(cx - r, cy - 2, 15, 4, 0xFFFF);
+        }
+
+        // Erase old
+        if (lastS >= 0) {
+            float ohAngle = (lastH % 12 + lastM / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            float omAngle = (lastM + lastS / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            float osAngle = lastS * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            
+            float hx = cos(ohAngle), hy = sin(ohAngle);
+            for(int w = -3; w <= 3; w++) {
+                gfx.drawLine(cx + hy * w, cy - hx * w, cx + hx * 60 + hy * w, cy + hy * 60 - hx * w, 0x18E3);
+            }
+            float mx = cos(omAngle), my = sin(omAngle);
+            for(int w = -1; w <= 1; w++) {
+                gfx.drawLine(cx + my * w, cy - mx * w, cx + mx * 95 + my * w, cy + my * 95 - mx * w, 0x18E3);
+            }
+            gfx.drawLine(cx, cy, cx + cos(osAngle) * 105, cy + sin(osAngle) * 105, 0x18E3);
+        }
+
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float mAngle = (m + s / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float sAngle = s * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+
+        // Hour hand (thick, blocky)
+        float hx = cos(hAngle), hy = sin(hAngle);
+        for(int w = -3; w <= 3; w++) {
+            gfx.drawLine(cx + hy * w, cy - hx * w, cx + hx * 60 + hy * w, cy + hy * 60 - hx * w, 0xFFFF);
+        }
+
+        // Minute hand (thinner, longer)
+        float mx = cos(mAngle), my = sin(mAngle);
+        for(int w = -1; w <= 1; w++) {
+            gfx.drawLine(cx + my * w, cy - mx * w, cx + mx * 95 + my * w, cy + my * 95 - mx * w, 0xFFFF);
+        }
+
+        // Second hand (red, very thin)
+        gfx.drawLine(cx, cy, cx + cos(sAngle) * 105, cy + sin(sAngle) * 105, 0xF800);
+        
+        // Center cap
+        gfx.fillCircle(cx, cy, 6, 0xFFFF);
+        gfx.fillCircle(cx, cy, 2, 0x0000);
     }
 };
 

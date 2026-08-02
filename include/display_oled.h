@@ -50,10 +50,10 @@ public:
         oled.invertDisplay(invert);
     }
 
-    void draw(SensorManager& sm, const NotificationManager& notifMgr, const String& ipStr, const String& timeStr, int rssi, int clockStyle = 0) {
+    void draw(SensorManager& sm, const NotificationManager& notifMgr, const String& ipStr, int h, int m, int s_val, int rssi, int clockStyle = 0) {
         bool needsRefresh = false;
         // Only refresh I2C display if animation is playing, mode changed, clock style changed, or second/temp ticked!
-        if (notifMgr.isOledActive() || oledMode == 3 || oledMode == 4 || oledMode == 5 || timeStr != lastTimeStr || oledMode != lastRenderedMode || clockStyle != lastClockStyle || abs(sm.data.tempC - lastTemp) > 0.1f) {
+        if (notifMgr.isOledActive() || oledMode == 3 || oledMode == 4 || oledMode == 5 || (h != lastH || m != lastM || s_val != lastS) || oledMode != lastRenderedMode || clockStyle != lastClockStyle || abs(sm.data.tempC - lastTemp) > 0.1f) {
             needsRefresh = true;
         }
 
@@ -61,7 +61,7 @@ public:
             return; // 🛡️ ZERO FLICKER: Eliminate redundant screen wiping & I2C writes
         }
 
-        lastTimeStr = timeStr;
+        lastH = h; lastM = m; lastS = s_val;
         lastRenderedMode = oledMode;
         lastClockStyle = clockStyle;
         lastTemp = sm.data.tempC;
@@ -72,14 +72,14 @@ public:
             drawNotificationOverlay(notifMgr.currentNotif, notifMgr.getProgress());
         } else {
             switch (oledMode) {
-                case 0: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
-                case 1: drawMode1_BigClock(timeStr, ipStr, sm.data, clockStyle); break;
+                case 0: drawMode0_HUD(sm.data, ipStr, h, m, s_val, rssi); break;
+                case 1: drawMode1_BigClock(h, m, s_val, ipStr, sm.data, clockStyle); break;
                 case 2: drawMode2_Sparklines(sm); break;
                 case 3: drawMode3_Marquee(customText); break;
                 case 4: screensaverEngine.renderOledScreensaver(oled); break;
                 case 5: drawMode5_WifiInfo(ipStr, AP_SSID, AP_PASS); break;
                 case 6: drawMode6_Climate(sm.data); break;
-                default: drawMode0_HUD(sm.data, ipStr, timeStr, rssi); break;
+                default: drawMode0_HUD(sm.data, ipStr, h, m, s_val, rssi); break;
             }
         }
 
@@ -88,7 +88,7 @@ public:
 
 private:
     Adafruit_SSD1306 oled;
-    String lastTimeStr = "";
+    int lastH = -1, lastM = -1, lastS = -1;
     int lastRenderedMode = -1;
     int lastClockStyle = -1;
     float lastTemp = -999.0f;
@@ -162,13 +162,13 @@ private:
     }
 
     // Mode 0: Telemetry HUD
-    void drawMode0_HUD(const SensorData& s, const String& ipStr, const String& timeStr, int rssi) {
+    void drawMode0_HUD(const SensorData& s, const String& ipStr, int h, int m, int s_val, int rssi) {
         // Top Status Bar
         oled.drawFastHLine(0, 12, 128, SSD1306_WHITE);
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
         oled.setCursor(2, 2);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        oled.printf("%02d:%02d", h, m);
 
         oled.setCursor(44, 2);
         oled.print(WiFi.status() == WL_CONNECTED ? "ONLINE" : "OFFLINE");
@@ -198,22 +198,28 @@ private:
     }
 
     // Mode 1: Multi-Face OLED Clock Engine
-    void drawMode1_BigClock(const String& timeStr, const String& ipStr, const SensorData& s, int clockStyle = 0) {
+    void drawMode1_BigClock(int h, int m, int s_val, const String& ipStr, const SensorData& s, int clockStyle = 0) {
         switch (clockStyle) {
-            case 0: drawOledClock_DigitalHUD(timeStr, ipStr, s); break;
-            case 1: drawOledClock_AnalogMinimal(timeStr, s); break;
-            case 2: drawOledClock_CyberMatrix(timeStr, s); break;
-            case 3: drawOledClock_RetroFlip(timeStr, s); break;
-            case 4: drawOledClock_VerticalStack(timeStr, s); break;
-            case 5: drawOledClock_BinaryGauges(timeStr, s); break;
-            case 6: drawOledClock_CyberpunkBox(timeStr, s); break;
-            case 7: drawOledClock_RadialHorizon(timeStr, s); break;
-            default: drawOledClock_DigitalHUD(timeStr, ipStr, s); break;
+            case 0: drawOledClock_DigitalHUD(h, m, s_val, ipStr, s); break;
+            case 1: drawOledClock_AnalogMinimal(h, m, s_val, s); break;
+            case 2: drawOledClock_CyberMatrix(h, m, s_val, s); break;
+            case 3: drawOledClock_RetroFlip(h, m, s_val, s); break;
+            case 4: drawOledClock_VerticalStack(h, m, s_val, s); break;
+            case 5: drawOledClock_BinaryGauges(h, m, s_val, s); break;
+            case 6: drawOledClock_CyberpunkBox(h, m, s_val, s); break;
+            case 7: drawOledClock_RadialHorizon(h, m, s_val, s); break;
+            case 8: drawOledClock_Orbit(h, m, s_val, s); break;
+            case 9: drawOledClock_Word(h, m, s_val, s); break;
+            case 10: drawOledClock_DotMatrix(h, m, s_val, s); break;
+            case 11: drawOledClock_BarGraph(h, m, s_val, s); break;
+            case 12: drawOledClock_RadarSweep(h, m, s_val, s); break;
+            case 13: drawOledClock_VintagePocket(h, m, s_val, s); break;
+            default: drawOledClock_DigitalHUD(h, m, s_val, ipStr, s); break;
         }
     }
 
     // --- OLED Clock Style 0: Digital HUD Clock ---
-    void drawOledClock_DigitalHUD(const String& timeStr, const String& ipStr, const SensorData& s) {
+    void drawOledClock_DigitalHUD(int h, int m, int s_val, const String& ipStr, const SensorData& s) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(1);
         oled.setCursor(2, 2);
@@ -224,11 +230,11 @@ private:
 
         oled.setTextSize(3);
         oled.setCursor(8, 18);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        oled.printf("%02d:%02d", h, m);
 
         oled.setTextSize(1);
         oled.setCursor(100, 32);
-        oled.print(timeStr.length() >= 8 ? timeStr.substring(6, 8) : "00");
+        oled.printf("%02d", s_val);
 
         oled.drawFastHLine(0, 48, 128, SSD1306_WHITE);
         oled.setCursor(4, 53);
@@ -236,7 +242,7 @@ private:
     }
 
     // --- OLED Clock Style 1: Analog Minimalist Clock ---
-    void drawOledClock_AnalogMinimal(const String& timeStr, const SensorData& s) {
+    void drawOledClock_AnalogMinimal(int h, int m, int s_val, const SensorData& s) {
         int cx = 32, cy = 32, r = 26;
         oled.drawCircle(cx, cy, r, SSD1306_WHITE);
         oled.fillCircle(cx, cy, 2, SSD1306_WHITE);
@@ -247,12 +253,7 @@ private:
         oled.drawFastHLine(8, 32, 4, SSD1306_WHITE);
         oled.drawFastHLine(52, 32, 4, SSD1306_WHITE);
 
-        int h = 0, m = 0, sec = 0;
-        if (timeStr.length() >= 8) {
-            h = timeStr.substring(0, 2).toInt();
-            m = timeStr.substring(3, 5).toInt();
-            sec = timeStr.substring(6, 8).toInt();
-        }
+        int sec = s_val;
 
         // Hour Hand
         float angleH = ((h % 12) + m / 60.0f) * (2.0f * M_PI / 12.0f) - (M_PI / 2.0f);
@@ -286,7 +287,7 @@ private:
     }
 
     // --- OLED Clock Style 2: Cyber Matrix Clock ---
-    void drawOledClock_CyberMatrix(const String& timeStr, const SensorData& s) {
+    void drawOledClock_CyberMatrix(int h, int m, int s_val, const SensorData& s) {
         // High-tech corner brackets
         oled.drawFastHLine(0, 0, 12, SSD1306_WHITE);
         oled.drawFastVLine(0, 0, 12, SSD1306_WHITE);
@@ -304,19 +305,19 @@ private:
 
         oled.setTextSize(3);
         oled.setCursor(14, 20);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        oled.printf("%02d:%02d", h, m);
 
         oled.drawRect(102, 22, 20, 18, SSD1306_WHITE);
         oled.setTextSize(1);
         oled.setCursor(106, 26);
-        oled.print(timeStr.length() >= 8 ? timeStr.substring(6, 8) : "00");
+        oled.printf("%02d", s_val);
 
         oled.setCursor(12, 48);
         oled.printf("TMP:%.1fC  HUM:%.0f%%", s.tempC, s.humidity);
     }
 
     // --- OLED Clock Style 3: Retro Airport Flip Clock ---
-    void drawOledClock_RetroFlip(const String& timeStr, const SensorData& s) {
+    void drawOledClock_RetroFlip(int h, int m, int s_val, const SensorData& s) {
         // Hours Card
         oled.drawRoundRect(4, 4, 56, 44, 5, SSD1306_WHITE);
         oled.drawFastHLine(4, 26, 56, SSD1306_WHITE);
@@ -328,13 +329,13 @@ private:
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(3);
         oled.setCursor(14, 15);
-        oled.print(timeStr.length() >= 2 ? timeStr.substring(0, 2) : "00");
+        oled.printf("%02d", h);
 
         oled.setCursor(78, 15);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(3, 5) : "00");
+        oled.printf("%02d", m);
 
         // Blink Dots
-        int sec = timeStr.length() >= 8 ? timeStr.substring(6, 8).toInt() : 0;
+        int sec = s_val;
         if (sec % 2 == 0) {
             oled.fillCircle(64, 18, 2, SSD1306_WHITE);
             oled.fillCircle(64, 34, 2, SSD1306_WHITE);
@@ -348,18 +349,18 @@ private:
     }
 
     // --- OLED Clock Style 4: Vertical Stack Clock ---
-    void drawOledClock_VerticalStack(const String& timeStr, const SensorData& s) {
+    void drawOledClock_VerticalStack(int h, int m, int s_val, const SensorData& s) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(3);
         oled.setCursor(10, 4);
-        oled.print(timeStr.length() >= 2 ? timeStr.substring(0, 2) : "00");
+        oled.printf("%02d", h);
 
         oled.setCursor(10, 34);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(3, 5) : "00");
+        oled.printf("%02d", m);
 
         oled.drawFastVLine(62, 0, 64, SSD1306_WHITE);
 
-        int sec = timeStr.length() >= 8 ? timeStr.substring(6, 8).toInt() : 0;
+        int sec = s_val;
         oled.setTextSize(1);
         oled.setCursor(68, 4);
         oled.print("DESKY");
@@ -376,23 +377,18 @@ private:
     }
 
     // --- OLED Clock Style 5: Binary Segment Bar Clock ---
-    void drawOledClock_BinaryGauges(const String& timeStr, const SensorData& s) {
+    void drawOledClock_BinaryGauges(int h, int m, int s_val, const SensorData& s) {
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(2);
         oled.setCursor(16, 2);
-        oled.print(timeStr.length() >= 8 ? timeStr : "00:00:00");
+        oled.printf("%02d:%02d:%02d", h, m, s_val);
 
         oled.drawFastHLine(0, 22, 128, SSD1306_WHITE);
 
-        int h = 0, m = 0, sec = 0;
-        if (timeStr.length() >= 8) {
-            h = timeStr.substring(0, 2).toInt();
-            m = timeStr.substring(3, 5).toInt();
-            sec = timeStr.substring(6, 8).toInt();
-        }
+        int sec = s_val;
 
         // 6 Binary / Segment Bar Gauges for H1, H2, M1, M2, S1, S2
-        int digits[6] = { h / 10, h % 10, m / 10, m % 10, sec / 10, sec % 10 };
+        const int digits[6] = { h / 10, h % 10, m / 10, m % 10, sec / 10, sec % 10 };
         for (int i = 0; i < 6; i++) {
             int x = 6 + i * 20;
             oled.drawRect(x, 26, 16, 36, SSD1306_WHITE);
@@ -404,7 +400,7 @@ private:
     }
 
     // --- OLED Clock Style 6: Cyberpunk Boxed Frame Clock ---
-    void drawOledClock_CyberpunkBox(const String& timeStr, const SensorData& s) {
+    void drawOledClock_CyberpunkBox(int h, int m, int s_val, const SensorData& s) {
         oled.drawRect(0, 0, 128, 64, SSD1306_WHITE);
         oled.drawRect(2, 2, 124, 60, SSD1306_WHITE);
         oled.fillRect(8, 0, 48, 5, SSD1306_WHITE);
@@ -416,9 +412,9 @@ private:
         oled.setTextColor(SSD1306_WHITE);
         oled.setTextSize(3);
         oled.setCursor(14, 16);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        oled.printf("%02d:%02d", h, m);
         
-        int sec = timeStr.length() >= 8 ? timeStr.substring(6, 8).toInt() : 0;
+        int sec = s_val;
         oled.setTextSize(1);
         oled.setCursor(102, 18);
         oled.printf("%02d", sec);
@@ -429,7 +425,7 @@ private:
     }
 
     // --- OLED Clock Style 7: Radial Horizon Arc Clock ---
-    void drawOledClock_RadialHorizon(const String& timeStr, const SensorData& s) {
+    void drawOledClock_RadialHorizon(int h, int m, int s_val, const SensorData& s) {
         // Horizon curve emulation at bottom
         oled.drawCircle(64, 88, 60, SSD1306_WHITE);
         oled.drawCircle(64, 88, 62, SSD1306_WHITE);
@@ -441,7 +437,7 @@ private:
         
         oled.setTextSize(3);
         oled.setCursor(20, 20);
-        oled.print(timeStr.length() >= 5 ? timeStr.substring(0, 5) : "00:00");
+        oled.printf("%02d:%02d", h, m);
         
         oled.setTextSize(1);
         oled.setCursor(14, 50);
@@ -536,6 +532,136 @@ private:
         oled.drawRect(0, 53, 128, 11, SSD1306_WHITE);
         oled.setCursor(14, 55);
         oled.print("SCAN TFT FOR QR URL");
+    }
+
+    // --- OLED Clock Style 8: Orbit ---
+    void drawOledClock_Orbit(int h, int m, int s_val, const SensorData& s) {
+        int cx = 64, cy = 32;
+        oled.drawCircle(cx, cy, 30, SSD1306_WHITE);
+        oled.drawCircle(cx, cy, 20, SSD1306_WHITE);
+        oled.drawCircle(cx, cy, 10, SSD1306_WHITE);
+
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (PI / 180.0f) - HALF_PI;
+        float mAngle = m * 6.0f * (PI / 180.0f) - HALF_PI;
+        float sAngle = s_val * 6.0f * (PI / 180.0f) - HALF_PI;
+
+        oled.fillCircle(cx + cos(hAngle) * 10, cy + sin(hAngle) * 10, 3, SSD1306_WHITE);
+        oled.fillCircle(cx + cos(mAngle) * 20, cy + sin(mAngle) * 20, 3, SSD1306_WHITE);
+        oled.fillCircle(cx + cos(sAngle) * 30, cy + sin(sAngle) * 30, 2, SSD1306_WHITE);
+        oled.setTextSize(1);
+        oled.setCursor(0, 0); oled.printf("%02d:%02d", h, m);
+    }
+
+    // --- OLED Clock Style 9: Typographic Word ---
+    void drawOledClock_Word(int h, int m, int s_val, const SensorData& s) {
+        const char* ones[] = {"ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE", "THIRTEEN", "FOURTEEN", "FIFTEEN", "SIXTEEN", "SEVENTEEN", "EIGHTEEN", "NINETEEN"};
+        const char* tens[] = {"", "", "TWENTY", "THIRTY", "FORTY", "FIFTY"};
+
+        String hStr = (h % 12 == 0) ? "TWELVE" : (h % 12 <= 19 ? ones[h % 12] : "??");
+        String mStr = "O'CLOCK";
+        if (m > 0) {
+            if (m < 20) mStr = ones[m];
+            else if (m % 10 == 0) mStr = tens[m / 10];
+            else mStr = String(tens[m / 10]) + " " + ones[m % 10];
+        }
+
+        oled.setTextSize(2);
+        oled.setTextColor(SSD1306_WHITE);
+        oled.setCursor(4, 8);
+        oled.print(hStr);
+        oled.setCursor(4, 32);
+        oled.print(mStr);
+        oled.setTextSize(1);
+        oled.setCursor(4, 54);
+        oled.printf("%s %02d SEC", (h >= 12) ? "PM" : "AM", s_val);
+    }
+
+    // --- OLED Clock Style 10: Dot Matrix ---
+    void drawOledClock_DotMatrix(int h, int m, int s_val, const SensorData& s) {
+        int vals[3] = {h, m, s_val};
+        for (int row = 0; row < 3; row++) {
+            for (int bit = 5; bit >= 0; bit--) {
+                int x = 20 + (5 - bit) * 16;
+                int y = 8 + row * 18;
+                if (vals[row] & (1 << bit)) {
+                    oled.fillRect(x, y, 10, 10, SSD1306_WHITE);
+                } else {
+                    oled.drawRect(x, y, 10, 10, SSD1306_WHITE);
+                }
+            }
+        }
+        oled.setTextSize(1);
+        oled.setCursor(2, 10); oled.print("H");
+        oled.setCursor(2, 28); oled.print("M");
+        oled.setCursor(2, 46); oled.print("S");
+    }
+
+    // --- OLED Clock Style 11: Bar Graph ---
+    void drawOledClock_BarGraph(int h, int m, int s_val, const SensorData& s) {
+        oled.drawRect(16, 4, 100, 12, SSD1306_WHITE);
+        oled.drawRect(16, 26, 100, 12, SSD1306_WHITE);
+        oled.drawRect(16, 48, 100, 12, SSD1306_WHITE);
+
+        int hFill = (h * 96) / 24;
+        int mFill = (m * 96) / 60;
+        int sFill = (s_val * 96) / 60;
+
+        oled.fillRect(18, 6, hFill, 8, SSD1306_WHITE);
+        oled.fillRect(18, 28, mFill, 8, SSD1306_WHITE);
+        oled.fillRect(18, 50, sFill, 8, SSD1306_WHITE);
+
+        oled.setTextSize(1);
+        oled.setCursor(4, 6); oled.print("H");
+        oled.setCursor(4, 28); oled.print("M");
+        oled.setCursor(4, 50); oled.print("S");
+    }
+
+    // --- OLED Clock Style 12: Radar Sweep ---
+    void drawOledClock_RadarSweep(int h, int m, int s_val, const SensorData& s) {
+        int cx = 64, cy = 32, r = 30;
+        oled.drawCircle(cx, cy, r, SSD1306_WHITE);
+        oled.drawCircle(cx, cy, r - 10, SSD1306_WHITE);
+        oled.drawCircle(cx, cy, r - 20, SSD1306_WHITE);
+
+        // Draw crosshairs
+        oled.drawFastHLine(cx - r, cy, r * 2, SSD1306_WHITE);
+        oled.drawFastVLine(cx, cy - r, r * 2, SSD1306_WHITE);
+
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (PI / 180.0f) - HALF_PI;
+        float mAngle = m * 6.0f * (PI / 180.0f) - HALF_PI;
+        float sAngle = s_val * 6.0f * (PI / 180.0f) - HALF_PI;
+
+        // Draw hours and minutes as blips
+        oled.fillCircle(cx + cos(hAngle) * (r - 15), cy + sin(hAngle) * (r - 15), 3, SSD1306_WHITE);
+        oled.fillCircle(cx + cos(mAngle) * (r - 5), cy + sin(mAngle) * (r - 5), 2, SSD1306_WHITE);
+
+        // Draw sweeping radar line for seconds
+        oled.drawLine(cx, cy, cx + cos(sAngle) * r, cy + sin(sAngle) * r, SSD1306_WHITE);
+    }
+
+    // --- OLED Clock Style 13: Vintage Pocket Watch ---
+    void drawOledClock_VintagePocket(int h, int m, int s_val, const SensorData& s) {
+        int cx = 64, cy = 32, r = 30;
+        oled.drawCircle(cx, cy, r, SSD1306_WHITE);
+        oled.drawCircle(cx, cy, r - 2, SSD1306_WHITE);
+
+        // Minimal Roman numerals logic (just text at compass points)
+        oled.setTextSize(1);
+        oled.setCursor(cx - 5, cy - r + 4); oled.print("XII");
+        oled.setCursor(cx - 3, cy + r - 10); oled.print("VI");
+        oled.setCursor(cx + r - 16, cy - 3); oled.print("III");
+        oled.setCursor(cx - r + 4, cy - 3); oled.print("IX");
+
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (PI / 180.0f) - HALF_PI;
+        float mAngle = m * 6.0f * (PI / 180.0f) - HALF_PI;
+        
+        // Hour hand
+        oled.drawLine(cx, cy, cx + cos(hAngle) * 14, cy + sin(hAngle) * 14, SSD1306_WHITE);
+        // Minute hand
+        oled.drawLine(cx, cy, cx + cos(mAngle) * 22, cy + sin(mAngle) * 22, SSD1306_WHITE);
+        // Second hand (tiny dot at edge to simulate mechanical movement)
+        float sAngle = s_val * 6.0f * (PI / 180.0f) - HALF_PI;
+        oled.drawPixel(cx + cos(sAngle) * 25, cy + sin(sAngle) * 25, SSD1306_WHITE);
     }
 };
 

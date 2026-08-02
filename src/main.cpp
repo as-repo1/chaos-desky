@@ -125,12 +125,12 @@ void executeButtonAction(int action) {
         case ACT_JUMP_WATCH:
             configMgr.config.oledMode = 1; // Big Clock Mode
             oledMgr.oledMode = 1;
-            configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
+            configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 14;
             configMgr.saveConfig();
             if (tftMgr.currentPage != 6) {
                 tftMgr.setPage(6); // Jump straight to Watchface Studio (Page 7, index 6)
             } else {
-                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 13;
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 15;
                 tftMgr.forceRedraw();
             }
             Serial.println("🔘 Macro Action: Jumped & Cycled Watchface Studio!");
@@ -249,11 +249,10 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 tftMgr.forceRedraw();
                 break;
 
-            case 1: // Barometer / Sensor Graph Page
-                Serial.println("➡️ Right Button [Graphs]: Cycling Graph Type...");
-                tftMgr.activeGraphType = (tftMgr.activeGraphType + 1) % 3;
-                notificationMgr.trigger("Graph", "Switched Data View", NOTIF_INFO, NOTIF_TARGET_OLED, 1);
-                tftMgr.forceRedraw();
+            case 1: // Pressure Graph Page
+            case 10: // Temp Graph Page
+            case 11: // Humidity Graph Page
+                Serial.println("➡️ Right Button: Graph pages have no secondary action.");
                 break;
 
             case 2: // Pomodoro Page
@@ -281,7 +280,7 @@ void executePageRightButtonAction(int page, SwitchAction action) {
 
             case 5: // Indoor Climate Page
                 Serial.println("➡️ Right Button [Climate]: Cycling Climate Theme");
-                tftMgr.activeClimateTheme = (tftMgr.activeClimateTheme + 1) % 5;
+                tftMgr.activeClimateTheme = (tftMgr.activeClimateTheme + 1) % 7;
                 sensorMgr.readSensors(); // Keep the sensor read too just in case
                 notificationMgr.trigger("Climate", "Theme Cycled", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 tftMgr.forceRedraw();
@@ -289,7 +288,7 @@ void executePageRightButtonAction(int page, SwitchAction action) {
 
             case 6: // Watchface Studio Page (Index 6)
                 Serial.println("➡️ Right Button [Watchface]: Cycling Watchface Style");
-                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 13;
+                watchFaceEngine.activeStyle = (watchFaceEngine.activeStyle + 1) % 15;
                 notificationMgr.trigger("Watchface", "Style Cycled", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 tftMgr.forceRedraw();
                 break;
@@ -330,15 +329,15 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 Serial.printf("➡️ Right Button Double-Click [To-Do]: Moved focus to item %d\n", tftMgr.todoSelectedIdx + 1);
                 break;
 
-            case 6: // Watchface: Switch to Casio F-91W (Index 6)
-                watchFaceEngine.activeStyle = WATCHFACE_CASIO_F91W;
+            case 6: // Watchface: Switch to Retro Flip (Index 4)
+                watchFaceEngine.activeStyle = WATCHFACE_RETRO_FLIP;
                 tftMgr.forceRedraw();
-                notificationMgr.trigger("Casio F-91W", "Iconic Watchface Active!", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
+                notificationMgr.trigger("Retro Flip", "Vintage Clock Active!", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
                 break;
 
             case 9: // OLED Display Hub: Cycle Clock Style
                 Serial.println("➡️ Right Button Double-Click [OLED Hub]: Cycling OLED Clock Style");
-                configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 8;
+                configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 14;
                 configMgr.saveConfig();
                 tftMgr.forceRedraw();
                 notificationMgr.trigger("OLED Studio", "Clock Style Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
@@ -417,6 +416,7 @@ void loop() {
 
     // 3. Periodic Pressure Sampling for Trend Sparkline (Every 15 mins)
     if (currentMs - lastPressureSampleMs >= PRESSURE_SAMPLE_MS) {
+        lastPressureSampleMs = currentMs;
         // Log sensor sample to sparkline arrays
         sensorMgr.addHistorySample(sensorMgr.data.pressureHpa, sensorMgr.data.tempC, sensorMgr.data.humidity);
     }
@@ -444,10 +444,16 @@ void loop() {
     }
     if (currentMs - lastOledRefreshMs >= oledInterval) {
         lastOledRefreshMs = currentMs;
-        timeStr = getFormattedNtpTime();
+        struct tm timeinfo;
+        int h = 0, m = 0, s_val = 0;
+        if (getLocalTime(&timeinfo)) {
+            h = timeinfo.tm_hour;
+            m = timeinfo.tm_min;
+            s_val = timeinfo.tm_sec;
+        }
         int rssi = (WiFi.status() == WL_CONNECTED) ? WiFi.RSSI() : 0;
         
-        oledMgr.draw(sensorMgr, notificationMgr, localIpStr, timeStr, rssi, configMgr.config.oledClockStyle);
-        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, notificationMgr, localIpStr, timeStr, configMgr.config.oledMode, configMgr.config.oledClockStyle);
+        oledMgr.draw(sensorMgr, notificationMgr, localIpStr, h, m, s_val, rssi, configMgr.config.oledClockStyle);
+        tftMgr.renderCurrentPage(weatherMgr.weather, sensorMgr, pomoTimer, notificationMgr, h, m, s_val, localIpStr, configMgr.config.oledMode, configMgr.config.oledClockStyle);
     }
 }

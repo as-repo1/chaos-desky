@@ -79,12 +79,12 @@ public:
         }
     }
 
-    float getProgress() {
+    float getProgress() const {
         if (durationSec == 0) return 0.0f;
         return (float)(durationSec - remainingSec) / (float)durationSec;
     }
 
-    String getFormattedTime() {
+    String getFormattedTime() const {
         unsigned long mins = remainingSec / 60;
         unsigned long secs = remainingSec % 60;
         char buf[10];
@@ -92,7 +92,7 @@ public:
         return String(buf);
     }
 
-    String getStateString() {
+    String getStateString() const {
         switch (state) {
             case POMO_WORK:   return "WORK";
             case POMO_BREAK:  return "REST";
