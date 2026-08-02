@@ -4,6 +4,21 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 
 ---
 
+## [2.4.0] - 2026-08-02 (Comprehensive UI Overhaul & Web Optimization)
+
+### ✨ Added & Enhanced
+- **TFT Watchface Studio Expansion**: Added 2 new analog watchfaces, expanding the total to 15 unique watch styles.
+- **OLED Clock Modes**: Upgraded the OLED display engine to support detailed analog clocks mirroring the TFT faces.
+- **Climate Page Redesign (7 Themes)**: Overhauled the indoor climate dashboard. Pressing the right button now cycles through 7 unique UI themes (Retro LCD, Car Dashboard, Floating Bubbles, Neon Rings, Pip-Boy, Material Cards, Tactical Radar).
+- **Historical Telemetry Graphs**: Fixed and restored the 3 historical graphing pages for Temperature, Humidity, and Comfort. 
+
+### ⚡ Optimized & Fixed
+- **Codebase Memory Profiling**: Resolved multiple memory leaks and excessive heap allocations in `sensors.h`, `display_oled.h`, and `display_tft.h`. Optimized string allocations in `pomodoro.h`.
+- **Web Dashboard Rewrite**: Stripped out redundant CSS and JavaScript from the embedded LittleFS web server. The dashboard is now highly optimized, loads much faster over local WiFi, and perfectly syncs with the 13 TFT pages and 15 watchfaces.
+- **Notification Routing Fix**: Resolved a bug where selecting the target screen for system notifications in the web portal would not save properly.
+
+---
+
 ## [2.3.0] - 2026-07-28 (Watchface Studio Precision Fine-Tuning & 3 New Iconic Faces)
 
 ### ✨ Added & Enhanced
