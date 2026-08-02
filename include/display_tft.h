@@ -493,7 +493,7 @@ private:
                 int x1 = 8 + (i * step);
                 int y1 = 112 - (int)(((v1 - minVal) / (maxVal - minVal)) * 52.0f);
                 int x2 = 8 + ((i + 1) * step);
-                int y2 = 114 - (int)(((v2 - minVal) / (maxVal - minVal)) * 52.0f);
+                int y2 = 112 - (int)(((v2 - minVal) / (maxVal - minVal)) * 52.0f);
                 tft.drawLine(x1, y1, x2, y2, graphColor);
             }
         }
