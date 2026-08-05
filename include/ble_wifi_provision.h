@@ -28,6 +28,8 @@ public:
     bool oldDeviceConnected = false;
     bool pendingReconnect = false;
     unsigned long reconnectTriggerMs = 0;
+    bool bleResetPending = false;
+    unsigned long bleResetMs = 0;
 
     void begin();
     void onConnect(BLEServer* pServer) override;

@@ -53,12 +53,20 @@ void BleWifiProvisioner::update() {
     if (!configMgr.config.featureBleEnabled) return;
 
     if (!deviceConnected && oldDeviceConnected) {
-        delay(500); // Allow BLE stack to reset
-        if (WiFi.status() != WL_CONNECTED) {
-            pServer->startAdvertising();
-            Serial.println("📡 BLE Re-advertising for WiFi config...");
+        // Non-blocking BLE stack reset wait (replaced delay(500))
+        if (bleResetPending) {
+            if (millis() - bleResetMs >= 500) {
+                bleResetPending = false;
+                if (WiFi.status() != WL_CONNECTED) {
+                    pServer->startAdvertising();
+                    Serial.println("📡 BLE Re-advertising for WiFi config...");
+                }
+                oldDeviceConnected = deviceConnected;
+            }
+        } else {
+            bleResetPending = true;
+            bleResetMs = millis();
         }
-        oldDeviceConnected = deviceConnected;
     }
     if (deviceConnected && !oldDeviceConnected) {
         oldDeviceConnected = deviceConnected;

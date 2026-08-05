@@ -16,7 +16,7 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 0;  // 0 = pause (Manual Navigation Only)
-    uint16_t enabledPagesMask = 0x03FF; // All 10 pages enabled by default (bitmask 0b1111111111)
+    uint16_t enabledPagesMask = 0x3FFF; // All 14 pages enabled by default (bitmask 0b11111111111111)
 
     // To-Do List State Persistence
     String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
@@ -32,9 +32,11 @@ struct SystemConfig {
     int pomoBreakMins      = POMODORO_BREAK_MINS;
 
     // Feature Toggles for CPU / Memory / Power Optimization
-    bool featureBleEnabled        = true; // Enable BLE WiFi Provisioning radio
-    bool featureWeatherEnabled    = true; // Enable OWM cloud HTTPS fetches
-    bool featureScreensaverEnabled= true; // Enable OLED Animated Screensaver engine
+    bool featureBleEnabled        = false; // BLE WiFi Provisioning — DISABLED by default.
+                                           // Conflicts with BLE HID Keyboard (shared BLE stack).
+                                           // Use the web dashboard to configure WiFi instead.
+    bool featureWeatherEnabled    = true;  // Enable OWM cloud HTTPS fetches
+    bool featureScreensaverEnabled= true;  // Enable OLED Animated Screensaver engine
 
     // System Change & Alert Notifications Display Target (0=TFT Only, 1=OLED Only, 2=Both Displays)
     int notifTarget = 1; // Default to 1 (OLED only) instead of 2 (Both TFT & OLED)
