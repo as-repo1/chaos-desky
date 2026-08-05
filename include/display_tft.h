@@ -15,8 +15,10 @@
 #include "notification_manager.h"
 #include "gfx_icons.h"
 #include "watchface_engine.h"
+#include "config_manager.h"
 
 extern WatchFaceEngine watchFaceEngine;
+extern ConfigManager configMgr;
 
 enum TFTTheme {
     THEME_CYBERPUNK = 0,
@@ -270,6 +272,7 @@ public:
             case 10: renderHistoryGraphPage(sensors, 1, fullRedraw); break; // Temp
             case 11: renderHistoryGraphPage(sensors, 2, fullRedraw); break; // Hum
             case 12: renderComfortIndexPage(sensors.data, fullRedraw); break; // Comfort Index
+            case 13: renderHidMacroPage(fullRedraw); break; // HID Macro
         }
     }
 
@@ -370,6 +373,10 @@ private:
             case 7: tft.print("NETWORK"); break;
             case 8: tft.print("HARDWARE"); break;
             case 9: tft.print("FLAPPY DESKY"); break;
+            case 10: tft.print("TEMP TREND"); break;
+            case 11: tft.print("HUMIDITY"); break;
+            case 12: tft.print("COMFORT"); break;
+            case 13: tft.print("HID MACRO"); break;
         }
 
         GfxIconRenderer::drawWifiSignal(tft, 108, 1, WiFi.RSSI(), COLOR_PRIMARY, COLOR_BG);
@@ -1116,6 +1123,43 @@ private:
                 tft.setTextColor(COLOR_GOOD);
                 tft.print("OK");
             }
+        }
+    }
+
+    // --- Page 13: HID Macro Page ---
+    void renderHidMacroPage(bool fullRedraw) {
+        if (fullRedraw) {
+            tft.drawRoundRect(4, 16, 120, 130, 8, ST77XX_MAGENTA); // Use a distinctive color for the hidden page
+            
+            tft.setTextColor(ST77XX_WHITE, COLOR_BG);
+            tft.setTextSize(1);
+            tft.setCursor(20, 26);
+            tft.print("HID MACRO MODE");
+            
+            tft.drawFastHLine(10, 40, 108, ST77XX_MAGENTA);
+
+            tft.setTextColor(ST77XX_CYAN, COLOR_BG);
+            tft.setCursor(10, 50);
+            tft.print("[LEFT BUTTON]");
+            tft.setTextColor(ST77XX_WHITE, COLOR_BG);
+            tft.setCursor(10, 62);
+            tft.print(configMgr.config.hidMacroLeft.substring(0, 18));
+            
+            tft.setTextColor(ST77XX_YELLOW, COLOR_BG);
+            tft.setCursor(10, 80);
+            tft.print("[RIGHT BUTTON]");
+            tft.setTextColor(ST77XX_WHITE, COLOR_BG);
+            tft.setCursor(10, 92);
+            tft.print(configMgr.config.hidMacroRight.substring(0, 18));
+            if (configMgr.config.hidMacroRight.length() > 18) {
+                tft.setCursor(10, 104);
+                tft.print(configMgr.config.hidMacroRight.substring(18, 36));
+            }
+            
+            tft.drawFastHLine(10, 120, 108, ST77XX_MAGENTA);
+            tft.setTextColor(ST77XX_GREEN, COLOR_BG);
+            tft.setCursor(10, 128);
+            tft.print("HOLD BOTH TO EXIT");
         }
     }
 

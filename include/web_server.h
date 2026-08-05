@@ -363,6 +363,37 @@ public:
             request->send(200, "application/json", "{\"status\":\"ok\"}");
         });
 
+        // REST API: GET /api/hid (Fetch HID Macros)
+        server.on("/api/hid", HTTP_GET, [this](AsyncWebServerRequest* request) {
+            StaticJsonDocument<256> doc;
+            doc["hidMacroLeft"] = configMgr.config.hidMacroLeft;
+            doc["hidMacroRight"] = configMgr.config.hidMacroRight;
+            String json;
+            serializeJson(doc, json);
+            request->send(200, "application/json", json);
+        });
+
+        // REST API: POST /api/hid (Update HID Macros)
+        server.on("/api/hid", HTTP_POST, [this](AsyncWebServerRequest* request) {
+            bool modified = false;
+            if (request->hasParam("left", true)) {
+                configMgr.config.hidMacroLeft = request->getParam("left", true)->value();
+                modified = true;
+            }
+            if (request->hasParam("right", true)) {
+                configMgr.config.hidMacroRight = request->getParam("right", true)->value();
+                modified = true;
+            }
+            if (modified) {
+                configMgr.saveConfig();
+                if (tftManager->currentPage == 13) {
+                    tftManager->forceRedraw();
+                }
+                notificationEngine->trigger("HID Macros", "Macros Updated!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
+            }
+            request->send(200, "application/json", "{\"status\":\"ok\"}");
+        });
+
         // Serve Static LittleFS Files AFTER all /api handlers!
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
 

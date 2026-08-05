@@ -115,11 +115,12 @@ public:
 class DualSwitchComboDetector {
 public:
     unsigned long bothPressedStartTime = 0;
-    bool comboTriggered = false;
-    const unsigned long comboThresholdMs = 80; // 80ms overlap threshold for instant combo trigger!
+    bool comboLongTriggered = false;
+    const unsigned long comboThresholdMs = 80;     // 80ms overlap threshold for combo validity
+    const unsigned long comboLongThresholdMs = 1500; // 1.5s for long combo (Hidden Page)
 
-    bool update(MechSwitchManager& switch1, MechSwitchManager& switch2) {
-        if (switch1.pin < 0 || switch2.pin < 0) return false;
+    int update(MechSwitchManager& switch1, MechSwitchManager& switch2) {
+        if (switch1.pin < 0 || switch2.pin < 0) return 0;
 
         bool s1Active = (digitalRead(switch1.pin) == LOW);
         bool s2Active = (digitalRead(switch2.pin) == LOW);
@@ -128,22 +129,33 @@ public:
         if (s1Active && s2Active) {
             if (bothPressedStartTime == 0) {
                 bothPressedStartTime = currentMs;
-            } else if (!comboTriggered && (currentMs - bothPressedStartTime >= comboThresholdMs)) {
-                comboTriggered = true;
-                // Suppress both individual switch managers from firing single/double/long press on release!
-                switch1.suppressNextAction = true;
-                switch2.suppressNextAction = true;
-                return true; // Simultaneous Combo Event Detected!
+                comboLongTriggered = false;
+            } else {
+                unsigned long duration = currentMs - bothPressedStartTime;
+                if (!comboLongTriggered && duration >= comboLongThresholdMs) {
+                    comboLongTriggered = true;
+                    switch1.suppressNextAction = true;
+                    switch2.suppressNextAction = true;
+                    return 2; // Long combo triggered instantly
+                }
             }
         } else {
-            if (!s1Active || !s2Active) {
+            if (bothPressedStartTime != 0) {
+                unsigned long duration = currentMs - bothPressedStartTime;
+                bool wasLong = comboLongTriggered;
+                
                 bothPressedStartTime = 0;
-            }
-            if (!s1Active && !s2Active) {
-                comboTriggered = false;
+                comboLongTriggered = false;
+                
+                if (!wasLong && duration >= comboThresholdMs && (s1Active || s2Active || (!s1Active && !s2Active))) {
+                    // Only trigger short combo on release if it wasn't a long combo
+                    switch1.suppressNextAction = true;
+                    switch2.suppressNextAction = true;
+                    return 1; // Short combo triggered on release
+                }
             }
         }
-        return false;
+        return 0;
     }
 };
 

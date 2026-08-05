@@ -381,6 +381,28 @@
                 </div>
             </section>
 
+            <!-- Card: HID Macros (Hidden Page Setup) -->
+            <section class="card" id="card-hid-macro">
+                <div class="card-header" onclick="toggleCard('card-hid-macro')">
+                    <h2>⌨️ HID Macro Keyboard Configurator</h2>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="card-body">
+                    <p class="card-desc">Configure the macros sent when the hidden HID page is active. Long-press both buttons to toggle the page on the device!</p>
+                    <div class="form-group">
+                        <label class="form-label">Left Button Macro (D25):</label>
+                        <input type="text" id="hid-left-input" placeholder="e.g. WIN+X">
+                        <small style="color:#94a3b8; display:block; margin-top:4px;">Standard modifiers: WIN, CTRL, ALT, SHIFT. Keys: ENTER, SPACE, ESC, UP, DOWN, LEFT, RIGHT, F1-F12.</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Right Button Macro (D26):</label>
+                        <input type="text" id="hid-right-input" placeholder="e.g. CTRL+ALT+F1|CTRL+ALT+F2">
+                        <small style="color:#94a3b8; display:block; margin-top:4px;">Use | to alternate between two macros on each press.</small>
+                    </div>
+                    <button onclick="saveHidMacros()" class="btn btn-primary full-width" style="margin-top:10px;">💾 Save Keyboard Macros</button>
+                </div>
+            </section>
+
             <!-- Card: Dedicated Hardware Buttons & BLE Wi-Fi Provisioning -->
             <section class="card" id="card-mech-ble">
                 <div class="card-header" onclick="toggleCard('card-mech-ble')">

@@ -64,9 +64,13 @@
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
 #define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only!)
-#define TOTAL_TFT_PAGES       13    // 13 Total TFT Carousel Pages (Page 9 = OLED Control, 10,11,12 = Climate)
+#define TOTAL_TFT_PAGES       14    // 14 Total TFT Carousel Pages (Page 9 = OLED Control, 10,11,12 = Climate, 13 = HID Macros)
 #define NUM_OLED_MODES        6     // 6 OLED Display Modes Supported
 #define TOTAL_THEMES          11    // 11 Themes Supported
+
+// HID Macro Defaults
+#define DEFAULT_MACRO_LEFT    "WIN+X"
+#define DEFAULT_MACRO_RIGHT   "CTRL+ALT+F1|CTRL+ALT+F2"
 
 // Pressure Trend History Buffer
 #define PRESSURE_HISTORY_SIZE 24   // 24 samples for sparkline graph

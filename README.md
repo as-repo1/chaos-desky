@@ -21,6 +21,7 @@
     11. **Temperature History Graph**: Dynamic historical line chart tracking temperature trends over time.
     12. **Humidity History Graph**: Dynamic historical line chart tracking ambient humidity.
     13. **Comfort Index**: Visual indication of overall air quality and comfort levels.
+    14. **Hidden HID Macro Deck (Page 13)**: Activate via long-press combo. Turns the ESP32 into a BLE HID Keyboard with customizable macros.
   - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 distinct operational modes:
     0. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
     1. **Multi-Style OLED Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Vertical Stack, Binary Gauges, Cyberpunk Frame, and Radial Horizon Arc!
@@ -46,8 +47,9 @@
     - **Page 8 (Hardware Stats)**: Single click cycles between the 11 TFT Color Themes!
     - **Page 9 (OLED Studio Hub)**: Single click cycles OLED display modes. Double click cycles OLED clock face styles.
     - **Long Press (Global Fallback)**: Immediately unleashes the synchronized animated dual screensaver!
-  - **🤝 Simultaneous Dual-Button Combo**: Press and hold both switches together to trigger global shortcut macros (configurable in web portal).
-
+  - **🤝 Simultaneous Dual-Button Combo**: 
+    - **Short Press**: Broadcasts your IP address and QR code across both display screens.
+    - **Long Press (1.5s)**: Toggles the Hidden HID Macro Keyboard mode (Page 13). Transforms the Left and Right switches into customizable Bluetooth keyboard macro triggers (configured via the Web UI).
 - 📡 **BLE Wi-Fi Provisioning & Telemetry**:
   - Open Nordic UART BLE receiver (`chaos-desky-wifi`) allowing seamless Wi-Fi setup and terminal diagnostic status inspection without OS encryption pairing errors.
   - **Configurable Alert Display Target**: Customize directly in the Web Portal whether system alerts, WiFi status, and timer notifications appear on the OLED display, the TFT screen, or simultaneously across both!

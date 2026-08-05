@@ -41,6 +41,10 @@ struct SystemConfig {
 
     // Dual-Button Simultaneous Combo Action
     int btnCombo = 7;  // ACT_WIFI_INFO
+
+    // HID Macro Configuration
+    String hidMacroLeft = DEFAULT_MACRO_LEFT;
+    String hidMacroRight = DEFAULT_MACRO_RIGHT;
 };
 
 enum CustomButtonAction {
@@ -128,6 +132,9 @@ public:
         config.notifTarget               = doc["notifTarget"] | 1;
         config.btnCombo                  = doc["btnCombo"] | 7;
 
+        config.hidMacroLeft              = doc["hidMacroLeft"] | DEFAULT_MACRO_LEFT;
+        config.hidMacroRight             = doc["hidMacroRight"] | DEFAULT_MACRO_RIGHT;
+
         Serial.println("✅ Configuration loaded successfully from LittleFS!");
         return true;
     }
@@ -172,6 +179,9 @@ public:
         doc["featureScreensaverEnabled"] = config.featureScreensaverEnabled;
         doc["notifTarget"]               = config.notifTarget;
         doc["btnCombo"]                  = config.btnCombo;
+
+        doc["hidMacroLeft"]              = config.hidMacroLeft;
+        doc["hidMacroRight"]             = config.hidMacroRight;
 
         if (serializeJson(doc, file) == 0) {
             Serial.println("❌ Failed to write JSON to /config.json!");
