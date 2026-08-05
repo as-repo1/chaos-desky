@@ -218,3 +218,8 @@ All notable changes to the **chaos-desky** project will be documented in this fi
 ### ✨ Initial Release
 - Standalone ESP32 Firmware with Dual-Display Architecture (SSD1306 OLED + ST7735 TFT).
 - OpenWeatherMap API integration, Zambretti Barometric Storm Predictor, and AsyncWebServer dashboard.
+
+### Refactoring & Codebase Polish (Phase 1)
+- Separated implementations into `.cpp` files for `config_manager`, `ble_wifi_provision`, `display_oled`, `mech_switch`, `notification_manager`, `pomodoro`, `sensors`, and `zambretti` to reduce header bloating and adhere to C++ best practices.
+- Organized the root repository: moved all patch Python scripts to `/scripts` and architecture documents to `/docs`.
+- Verified compilation and flashed firmware to the device.
