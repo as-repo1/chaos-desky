@@ -15,7 +15,6 @@
 #include "mech_switch.h"
 #include "ble_wifi_provision.h"
 #include "web_server.h"
-#include <BleKeyboard.h>
 
 // System Instances
 ConfigManager          configMgr;
@@ -28,14 +27,9 @@ NotificationManager    notificationMgr;
 MechSwitchManager      mechSwitch1Mgr; // D25: Page Navigation & Slideshow Toggle
 MechSwitchManager      mechSwitch2Mgr; // D26: TFT Interactive Control & Actions
 BleWifiProvisioner     bleWifiMgr;
-BleKeyboard            bleKeyboard("ChaosDesky HID", "Chaos", 100);
 ScreensaverEngine      screensaverEngine;
 WatchFaceEngine        watchFaceEngine;
 WebServerManager       webServerMgr(80);
-
-// HID Macro State
-bool isHiddenHidPageActive = false;
-bool rightMacroAltState = false;
 
 // Timing Variables
 unsigned long lastSensorReadMs    = 0;
@@ -91,54 +85,6 @@ void setupWiFi() {
     }
 }
 
-void executeHidMacro(String macroString) {
-    if (!bleKeyboard.isConnected()) {
-        Serial.println("⚠️ HID Macro: BLE Keyboard not connected to a host. Pair first!");
-        return;
-    }
-    
-    Serial.println("⌨️ HID Macro: Sending: " + macroString);
-    macroString.toUpperCase();
-    int lastIndex = 0;
-    
-    for (unsigned int i = 0; i <= macroString.length(); i++) {
-        if (i == macroString.length() || macroString.charAt(i) == '+') {
-            String token = macroString.substring(lastIndex, i);
-            token.trim();
-            lastIndex = i + 1;
-            
-            if (token == "WIN" || token == "GUI") bleKeyboard.press(KEY_LEFT_GUI);
-            else if (token == "CTRL")  bleKeyboard.press(KEY_LEFT_CTRL);
-            else if (token == "ALT")   bleKeyboard.press(KEY_LEFT_ALT);
-            else if (token == "SHIFT") bleKeyboard.press(KEY_LEFT_SHIFT);
-            else if (token == "ENTER") bleKeyboard.press(KEY_RETURN);
-            else if (token == "SPACE") bleKeyboard.press(' ');
-            else if (token == "TAB")   bleKeyboard.press(KEY_TAB);
-            else if (token == "ESC")   bleKeyboard.press(KEY_ESC);
-            else if (token == "UP")    bleKeyboard.press(KEY_UP_ARROW);
-            else if (token == "DOWN")  bleKeyboard.press(KEY_DOWN_ARROW);
-            else if (token == "LEFT")  bleKeyboard.press(KEY_LEFT_ARROW);
-            else if (token == "RIGHT") bleKeyboard.press(KEY_RIGHT_ARROW);
-            else if (token == "DELETE") bleKeyboard.press(KEY_DELETE);
-            else if (token == "BACKSPACE") bleKeyboard.press(KEY_BACKSPACE);
-            else if (token == "HOME")  bleKeyboard.press(KEY_HOME);
-            else if (token == "END")   bleKeyboard.press(KEY_END);
-            else if (token == "PGUP")  bleKeyboard.press(KEY_PAGE_UP);
-            else if (token == "PGDN")  bleKeyboard.press(KEY_PAGE_DOWN);
-            else if (token.startsWith("F") && token.length() <= 3) {
-                int fNum = token.substring(1).toInt();
-                if (fNum >= 1 && fNum <= 12) {
-                    bleKeyboard.press(KEY_F1 + (fNum - 1));
-                }
-            } else if (token.length() == 1) {
-                bleKeyboard.press((char)token.charAt(0));
-            }
-        }
-    }
-    delay(100); // 100ms hold — required for modifier combos on Linux/Windows
-    bleKeyboard.releaseAll();
-    Serial.println("⌨️ HID Macro: Keys released.");
-}
 
 DualSwitchComboDetector comboDetector;
 
@@ -279,14 +225,9 @@ void setup() {
     mechSwitch1Mgr.instantTrigger = true; // 🔥 Left Button triggers INSTANTLY on press (no 350ms delay)
     mechSwitch2Mgr.begin(MECH_SWITCH_2_PIN);
 
-    // Initialize BLE Keyboard FIRST — it must own BLEDevice::init().
-    // BleWifiProvisioner also calls BLEDevice::init() internally, so
-    // bleKeyboard.begin() must run first; bleWifiMgr.begin() is a no-op
-    // if featureBleEnabled=false (recommended when using HID keyboard).
-    bleKeyboard.begin();
-    Serial.println("🎮 BLE HID Keyboard started as: ChaosDesky HID");
+    // Initialize BLE keyboard removed — using wired Serial HID bridge instead.
+    // Run bleWifiMgr only if feature is enabled (off by default).
     if (configMgr.config.featureBleEnabled) {
-        Serial.println("⚠️  BLE Provisioner enabled — may conflict with HID keyboard. Consider disabling.");
         bleWifiMgr.begin();
     }
 
@@ -444,18 +385,14 @@ void loop() {
     // ==============================================================
     int comboState = comboDetector.update(mechSwitch1Mgr, mechSwitch2Mgr);
     if (comboState == 1) {
-        Serial.println("🤝 Simultaneous Dual-Button Combo Detected (Short)!");
+        Serial.println("🤝 Simultaneous Dual-Button Combo Detected!");
         executeButtonAction(configMgr.config.btnCombo);
     } else if (comboState == 2) {
-        Serial.println("🤝 Simultaneous Dual-Button Combo Detected (Long)! Toggling HID Macro Page!");
-        isHiddenHidPageActive = !isHiddenHidPageActive;
-        if (isHiddenHidPageActive) {
-            tftMgr.setPage(13); // Jump to Hidden Page
-            notificationMgr.trigger("HID Macro Mode", "Keyboard Active!", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
-        } else {
-            tftMgr.setPage(0); // Jump back to Home
-            notificationMgr.trigger("HID Macro Mode", "Exited", NOTIF_INFO, NOTIF_TARGET_USER_PREF, 3);
-        }
+        // Long combo: cycle OLED modes
+        configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 7;
+        oledMgr.oledMode = configMgr.config.oledMode;
+        configMgr.saveConfig();
+        notificationMgr.trigger("OLED Mode", "Mode " + String(configMgr.config.oledMode), NOTIF_INFO, NOTIF_TARGET_OLED, 2);
     }
 
     // ==============================================================
@@ -463,29 +400,17 @@ void loop() {
     // ==============================================================
     SwitchAction action1 = mechSwitch1Mgr.update();
     if (action1 == SWITCH_SINGLE_CLICK) {
-        if (isHiddenHidPageActive) {
-            Serial.println("⬅️ Left Button (HID Mode): Triggering Left Macro");
-            executeHidMacro(configMgr.config.hidMacroLeft);
-        } else {
-            // Single Click: Cycle forward through TFT pages
-            tftMgr.nextPage();
-            lastCarouselMs = millis();
-            Serial.printf("⬅️ Left Button Single-Click: Cycled to TFT Page %d\n", tftMgr.currentPage);
-        }
+        tftMgr.nextPage();
+        lastCarouselMs = millis();
+        Serial.printf("⬅️ Left Button Single-Click: Cycled to TFT Page %d\n", tftMgr.currentPage);
     } else if (action1 == SWITCH_DOUBLE_CLICK) {
-        if (!isHiddenHidPageActive) {
-            // Double Click: Cycle backward through TFT pages
-            tftMgr.prevPage();
-            lastCarouselMs = millis();
-            Serial.printf("⬅️ Left Button Double-Click: Cycled back to TFT Page %d\n", tftMgr.currentPage);
-        }
+        tftMgr.prevPage();
+        lastCarouselMs = millis();
+        Serial.printf("⬅️ Left Button Double-Click: Cycled back to TFT Page %d\n", tftMgr.currentPage);
     } else if (action1 == SWITCH_LONG_PRESS) {
-        if (!isHiddenHidPageActive) {
-            // Long Press: Jump to Page 0 (Home / Weather)
-            tftMgr.setPage(0);
-            lastCarouselMs = millis();
-            Serial.println("⬅️ Left Button Long-Press: Jumped to Page 0 (Home)");
-        }
+        tftMgr.setPage(0);
+        lastCarouselMs = millis();
+        Serial.println("⬅️ Left Button Long-Press: Jumped to Page 0 (Home)");
     }
 
     // ==============================================================
@@ -493,23 +418,7 @@ void loop() {
     // ==============================================================
     SwitchAction action2 = mechSwitch2Mgr.update();
     if (action2 != SWITCH_NO_ACTION) {
-        if (isHiddenHidPageActive && action2 == SWITCH_SINGLE_CLICK) {
-            Serial.println("➡️ Right Button (HID Mode): Triggering Right Macro");
-            String rightMacro = configMgr.config.hidMacroRight;
-            int pipeIndex = rightMacro.indexOf('|');
-            if (pipeIndex > 0) {
-                if (rightMacroAltState) {
-                    executeHidMacro(rightMacro.substring(pipeIndex + 1));
-                } else {
-                    executeHidMacro(rightMacro.substring(0, pipeIndex));
-                }
-                rightMacroAltState = !rightMacroAltState;
-            } else {
-                executeHidMacro(rightMacro);
-            }
-        } else if (!isHiddenHidPageActive) {
-            executePageRightButtonAction(tftMgr.currentPage, action2);
-        }
+        executePageRightButtonAction(tftMgr.currentPage, action2);
     }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)

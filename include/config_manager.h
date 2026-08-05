@@ -16,7 +16,7 @@ struct SystemConfig {
     int tftTheme           = 0;  // 0-10 themes
     int tftRotation        = 2;  // 0-3
     int carouselSpeedSec   = 0;  // 0 = pause (Manual Navigation Only)
-    uint16_t enabledPagesMask = 0x3FFF; // All 14 pages enabled by default (bitmask 0b11111111111111)
+    uint16_t enabledPagesMask = 0x1FFF; // All 13 pages enabled by default (bitmask 0b1111111111111)
 
     // To-Do List State Persistence
     String todoTitles[4] = { "Ship Desky", "Deep Pomo", "Hydration", "Telemetry" };
@@ -43,10 +43,6 @@ struct SystemConfig {
 
     // Dual-Button Simultaneous Combo Action
     int btnCombo = 7;  // ACT_WIFI_INFO
-
-    // HID Macro Configuration
-    String hidMacroLeft = DEFAULT_MACRO_LEFT;
-    String hidMacroRight = DEFAULT_MACRO_RIGHT;
 };
 
 enum CustomButtonAction {
@@ -59,8 +55,7 @@ enum CustomButtonAction {
     ACT_CYCLE_THEMES    = 6,
     ACT_WIFI_INFO       = 7,
     ACT_SCREENSAVER     = 8,
-    ACT_RESET_POMO      = 9,
-    ACT_NO_ACTION       = 10
+    ACT_RESET_POMO      = 9
 };
 
 class ConfigManager {

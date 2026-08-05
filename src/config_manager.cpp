@@ -67,8 +67,6 @@ bool ConfigManager::loadConfig() {
     config.notifTarget               = doc["notifTarget"] | 1;
     config.btnCombo                  = doc["btnCombo"] | 7;
 
-    config.hidMacroLeft              = doc["hidMacroLeft"] | DEFAULT_MACRO_LEFT;
-    config.hidMacroRight             = doc["hidMacroRight"] | DEFAULT_MACRO_RIGHT;
 
     Serial.println("✅ Configuration loaded successfully from LittleFS!");
     return true;
@@ -115,8 +113,7 @@ bool ConfigManager::saveConfig() {
     doc["notifTarget"]               = config.notifTarget;
     doc["btnCombo"]                  = config.btnCombo;
 
-    doc["hidMacroLeft"]              = config.hidMacroLeft;
-    doc["hidMacroRight"]             = config.hidMacroRight;
+
 
     if (serializeJson(doc, file) == 0) {
         Serial.println("❌ Failed to write JSON to /config.json!");

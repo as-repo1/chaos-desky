@@ -63,18 +63,14 @@
 // ==========================================
 // 📊 UI & CAROUSEL CONFIGURATION
 // ==========================================
-#define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only!)
-#define TOTAL_TFT_PAGES       14    // 14 Total TFT Carousel Pages (Page 9 = OLED Control, 10,11,12 = Climate, 13 = HID Macros)
-#define NUM_OLED_MODES        6     // 6 OLED Display Modes Supported
-#define TOTAL_THEMES          11    // 11 Themes Supported
-
-// HID Macro Defaults
-#define DEFAULT_MACRO_LEFT    "WIN+X"
-#define DEFAULT_MACRO_RIGHT   "CTRL+ALT+F1|CTRL+ALT+F2"
+#define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only)
+#define TOTAL_TFT_PAGES       13    // 13 Total TFT Carousel Pages (0-12)
+#define NUM_OLED_MODES        6     // 6 OLED Display Modes
+#define TOTAL_THEMES          11    // 11 Themes
 
 // Pressure Trend History Buffer
 #define PRESSURE_HISTORY_SIZE 24   // 24 samples for sparkline graph
-#define PRESSURE_SAMPLE_MS    (15 * 60 * 1000) // Sample pressure every 15 mins (6 hours total history)
+#define PRESSURE_SAMPLE_MS    (15 * 60 * 1000) // Sample pressure every 15 mins
 
 // Pomodoro Timer Defaults
 #define POMODORO_WORK_MINS    25
