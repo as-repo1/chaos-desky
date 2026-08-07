@@ -312,36 +312,7 @@ async function saveOptimizations() {
     showToast("⚡ Resource Optimization Profile Saved!");
 }
 
-// HID Macro Fetch
-async function loadHidMacros() {
-    try {
-        const res = await fetch('/api/hid');
-        if (res.ok) {
-            const data = await res.json();
-            const leftInput = document.getElementById('hid-left-input');
-            const rightInput = document.getElementById('hid-right-input');
-            if (leftInput && data.hidMacroLeft) leftInput.value = data.hidMacroLeft;
-            if (rightInput && data.hidMacroRight) rightInput.value = data.hidMacroRight;
-        }
-    } catch (e) {
-        console.warn("Could not load HID macros:", e);
-    }
-}
 
-// HID Macro Save
-async function saveHidMacros() {
-    const left = document.getElementById('hid-left-input')?.value || "";
-    const right = document.getElementById('hid-right-input')?.value || "";
-    const formData = new URLSearchParams();
-    formData.append('left', left);
-    formData.append('right', right);
-    await fetch('/api/hid', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-    });
-    showToast("💾 HID Keyboard Macros Saved!");
-}
 
 // Auto-refresh timers
 setInterval(updateSensors, 2000);
@@ -354,4 +325,3 @@ updateWeather();
 updatePomodoro();
 loadNotifTargetPref();
 loadTodoTasks();
-loadHidMacros();

@@ -6,8 +6,6 @@
 #include <Adafruit_BMP085.h>
 #include "config.h"
 
-#define SENSOR_HISTORY_SIZE 24
-
 struct SensorData {
     float tempC = 0.0f;
     float tempF = 0.0f;
@@ -35,6 +33,7 @@ public:
     float tempHistory[SENSOR_HISTORY_SIZE];
     float humidityHistory[SENSOR_HISTORY_SIZE];
     int historyCount = 0;
+    int historyIndex = 0;
 
     SensorManager();
 
@@ -42,6 +41,9 @@ public:
     void readSensors();
     void addHistorySample(float pressHpa, float tempC, float hum);
     float getPastPressure() const;
+    float getPressureAt(int logicalIndex) const;
+    float getTempAt(int logicalIndex) const;
+    float getHumAt(int logicalIndex) const;
 
 private:
     DHT dht;

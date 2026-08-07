@@ -61,15 +61,15 @@ float PomodoroTimer::getProgress() const {
     return (float)(durationSec - remainingSec) / (float)durationSec;
 }
 
-String PomodoroTimer::getFormattedTime() const {
+const char* PomodoroTimer::getFormattedTime() const {
     unsigned long mins = remainingSec / 60;
     unsigned long secs = remainingSec % 60;
-    char buf[10];
+    static char buf[10];
     snprintf(buf, sizeof(buf), "%02lu:%02lu", mins, secs);
-    return String(buf);
+    return buf;
 }
 
-String PomodoroTimer::getStateString() const {
+const char* PomodoroTimer::getStateString() const {
     switch (state) {
         case POMO_WORK:   return "WORK";
         case POMO_BREAK:  return "REST";

@@ -69,18 +69,32 @@ void SensorManager::addHistorySample(float pressHpa, float tempC, float hum) {
         humidityHistory[historyCount] = hum;
         historyCount++;
     } else {
-        for (int i = 0; i < SENSOR_HISTORY_SIZE - 1; i++) {
-            pressureHistory[i] = pressureHistory[i + 1];
-            tempHistory[i] = tempHistory[i + 1];
-            humidityHistory[i] = humidityHistory[i + 1];
-        }
-        pressureHistory[SENSOR_HISTORY_SIZE - 1] = pressHpa;
-        tempHistory[SENSOR_HISTORY_SIZE - 1] = tempC;
-        humidityHistory[SENSOR_HISTORY_SIZE - 1] = hum;
+        pressureHistory[historyIndex] = pressHpa;
+        tempHistory[historyIndex] = tempC;
+        humidityHistory[historyIndex] = hum;
+        historyIndex = (historyIndex + 1) % SENSOR_HISTORY_SIZE;
     }
 }
 
 float SensorManager::getPastPressure() const {
     if (historyCount == 0) return data.pressureHpa;
-    return pressureHistory[0];
+    return getPressureAt(0);
+}
+
+float SensorManager::getPressureAt(int logicalIndex) const {
+    if (logicalIndex < 0 || logicalIndex >= historyCount) return data.pressureHpa;
+    int actualIndex = (historyCount < SENSOR_HISTORY_SIZE) ? logicalIndex : (historyIndex + logicalIndex) % SENSOR_HISTORY_SIZE;
+    return pressureHistory[actualIndex];
+}
+
+float SensorManager::getTempAt(int logicalIndex) const {
+    if (logicalIndex < 0 || logicalIndex >= historyCount) return data.tempC;
+    int actualIndex = (historyCount < SENSOR_HISTORY_SIZE) ? logicalIndex : (historyIndex + logicalIndex) % SENSOR_HISTORY_SIZE;
+    return tempHistory[actualIndex];
+}
+
+float SensorManager::getHumAt(int logicalIndex) const {
+    if (logicalIndex < 0 || logicalIndex >= historyCount) return data.humidity;
+    int actualIndex = (historyCount < SENSOR_HISTORY_SIZE) ? logicalIndex : (historyIndex + logicalIndex) % SENSOR_HISTORY_SIZE;
+    return humidityHistory[actualIndex];
 }

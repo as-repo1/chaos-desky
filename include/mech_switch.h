@@ -18,7 +18,7 @@ public:
     unsigned long buttonPressTime = 0;
     unsigned long lastReleaseTime = 0;
     bool currentDebouncedState = HIGH;
-    
+    bool longPressTriggered = false;    
     int clickCount = 0;
     bool waitingForDoubleClick = false;
     bool suppressNextAction = false;

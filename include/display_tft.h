@@ -20,19 +20,7 @@
 extern WatchFaceEngine watchFaceEngine;
 extern ConfigManager configMgr;
 
-enum TFTTheme {
-    THEME_CYBERPUNK = 0,
-    THEME_MATRIX,
-    THEME_DARK_GLASS,
-    THEME_RETRO,
-    THEME_DRACULA,
-    THEME_NORD,
-    THEME_GRUVBOX,
-    THEME_MONOCHROME,
-    THEME_NOTHING_UI,
-    THEME_ONE_UI,
-    THEME_MATERIAL_YOU
-};
+
 
 class TftDisplayManager {
 public:
@@ -371,7 +359,7 @@ private:
             case 6: tft.print("WATCH"); break;
             case 7: tft.print("NETWORK"); break;
             case 8: tft.print("HARDWARE"); break;
-            case 9: tft.print("FLAPPY DESKY"); break;
+            case 9: tft.print("OLED HUB"); break;
             case 10: tft.print("TEMP TREND"); break;
             case 11: tft.print("HUMIDITY"); break;
             case 12: tft.print("COMFORT"); break;
@@ -487,18 +475,18 @@ private:
         if (fullRedraw && sm.historyCount > 1) {
             float minVal = 9999.0f, maxVal = -9999.0f;
             for (int i = 0; i < sm.historyCount; i++) {
-                float v = (graphType == 0) ? sm.pressureHistory[i] : (graphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
+                float v = (graphType == 0) ? sm.getPressureAt(i) : (graphType == 1 ? sm.getTempAt(i) : sm.getHumAt(i));
                 if (v < minVal) minVal = v;
                 if (v > maxVal) maxVal = v;
             }
-            if (maxVal - minVal < 2.0f) { maxVal += 1.0f; minVal -= 1.0f; }
+            if (maxVal - minVal < 1.0f) { maxVal += 0.5f; minVal -= 0.5f; }
 
             int step = 110 / (sm.historyCount - 1);
             for (int i = 0; i < sm.historyCount - 1; i++) {
-                float v1 = (graphType == 0) ? sm.pressureHistory[i] : (graphType == 1 ? sm.tempHistory[i] : sm.humidityHistory[i]);
-                float v2 = (graphType == 0) ? sm.pressureHistory[i+1] : (graphType == 1 ? sm.tempHistory[i+1] : sm.humidityHistory[i+1]);
+                float v1 = (graphType == 0) ? sm.getPressureAt(i) : (graphType == 1 ? sm.getTempAt(i) : sm.getHumAt(i));
+                float v2 = (graphType == 0) ? sm.getPressureAt(i+1) : (graphType == 1 ? sm.getTempAt(i+1) : sm.getHumAt(i+1));
                 
-                int x1 = 8 + (i * step);
+                int x1 = 10 + (i * step);
                 int y1 = 112 - (int)(((v1 - minVal) / (maxVal - minVal)) * 52.0f);
                 int x2 = 8 + ((i + 1) * step);
                 int y2 = 112 - (int)(((v2 - minVal) / (maxVal - minVal)) * 52.0f);
@@ -540,7 +528,7 @@ private:
         tft.setTextColor(COLOR_BG, stateColor);
         tft.setTextSize(1);
         tft.setCursor(34, 27);
-        tft.printf("%-8s", pomo.getStateString().c_str());
+        tft.printf("%-8s", pomo.getStateString());
 
         // Hero Countdown Timer
         tft.setTextSize(3);

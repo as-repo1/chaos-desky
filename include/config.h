@@ -42,10 +42,7 @@
 // ==========================================
 // 🌐 WIFI & NETWORK CONFIGURATION
 // ==========================================
-#define DEFAULT_WIFI_SSID     "Airtel_a204"
-#define DEFAULT_WIFI_PASS     "rahulkhanki"
-#define AP_SSID               "ChaosDesky-AP"
-#define AP_PASS               "12345678"
+#include "credentials.h"
 #define NTP_SERVER_1          "pool.ntp.org"
 #define NTP_SERVER_2          "time.nist.gov"
 #define GMT_OFFSET_SEC        19800 // GMT+5:30 (adjust to your timezone)
@@ -54,9 +51,6 @@
 // ==========================================
 // ☀️ OPENWEATHER API CONFIGURATION
 // ==========================================
-#define OPENWEATHER_API_KEY   "YOUR_OPENWEATHER_API_KEY"
-#define OPENWEATHER_CITY      "London"
-#define OPENWEATHER_COUNTRY   "UK"
 #define OPENWEATHER_UNITS     "metric" // "metric" (°C) or "imperial" (°F)
 #define WEATHER_UPDATE_MS     (10 * 60 * 1000) // Fetch every 10 minutes
 
@@ -66,11 +60,27 @@
 #define CAROUSEL_INTERVAL_MS  0     // Default to 0 (Manual Navigation Only)
 #define TOTAL_TFT_PAGES       13    // 13 Total TFT Carousel Pages (0-12)
 #define NUM_OLED_MODES        6     // 6 OLED Display Modes
+#define TOTAL_OLED_CLOCK_STYLES 17  // 17 Total OLED Clock Styles
 #define TOTAL_THEMES          11    // 11 Themes
 
-// Pressure Trend History Buffer
-#define PRESSURE_HISTORY_SIZE 24   // 24 samples for sparkline graph
-#define PRESSURE_SAMPLE_MS    (15 * 60 * 1000) // Sample pressure every 15 mins
+enum TFTTheme {
+    THEME_CYBERPUNK = 0,
+    THEME_MATRIX,
+    THEME_DARK_GLASS,
+    THEME_RETRO,
+    THEME_DRACULA,
+    THEME_NORD,
+    THEME_GRUVBOX,
+    THEME_MONOCHROME,
+    THEME_NOTHING_UI,
+    THEME_ONE_UI,
+    THEME_MATERIAL_YOU,
+    TOTAL_THEMES_COUNT
+};
+
+// Sensor Trend History Buffer
+#define SENSOR_HISTORY_SIZE   24   // 24 samples for sparkline graph
+#define SENSOR_SAMPLE_MS      (15 * 60 * 1000) // Sample sensors every 15 mins
 
 // Pomodoro Timer Defaults
 #define POMODORO_WORK_MINS    25

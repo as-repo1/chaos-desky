@@ -27,6 +27,7 @@ SwitchAction MechSwitchManager::update() {
 
             if (currentDebouncedState == LOW) {
                 buttonPressTime = currentMs;
+                longPressTriggered = false;
                 if (instantTrigger) {
                     detectedAction = SWITCH_SINGLE_CLICK;
                 }
@@ -58,10 +59,12 @@ SwitchAction MechSwitchManager::update() {
         }
         
         if (currentDebouncedState == LOW && (currentMs >= buttonPressTime) && (currentMs - buttonPressTime >= longPressTime)) {
-            detectedAction = SWITCH_LONG_PRESS;
-            buttonPressTime = currentMs + 86400000UL;
-            waitingForDoubleClick = false;
-            clickCount = 0;
+            if (!longPressTriggered) {
+                detectedAction = SWITCH_LONG_PRESS;
+                longPressTriggered = true;
+                waitingForDoubleClick = false;
+                clickCount = 0;
+            }
         }
     }
 

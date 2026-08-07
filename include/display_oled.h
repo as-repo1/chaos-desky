@@ -55,6 +55,9 @@ private:
     void drawOledClock_BarGraph(int h, int m, int s_val, const SensorData& s);
     void drawOledClock_RadarSweep(int h, int m, int s_val, const SensorData& s);
     void drawOledClock_VintagePocket(int h, int m, int s_val, const SensorData& s);
+    void drawOledClock_SquareClassic(int h, int m, int s_val, const SensorData& s);
+    void drawOledClock_SquareTank(int h, int m, int s_val, const SensorData& s);
+    void drawOledClock_SquarePilot(int h, int m, int s_val, const SensorData& s);
 };
 
 #endif // DISPLAY_OLED_H

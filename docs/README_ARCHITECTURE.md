@@ -23,7 +23,7 @@ To ensure silky-smooth high-frequency display animations and zero flickering whi
 | • OpenWeather API Async Client    |               | • Simultaneous Combo Detector     |
 | • NTP Time Synchronization        |               | • DHT11 & BMP180 Read Loop        |
 | • LittleFS Async Web Server API   |               | • OLED 45ms High-Speed Marquee    |
-| • BLE Wi-Fi Provisioning Server   |               | • TFT ST7735 9-Page Carousel      |
+| • BLE Wi-Fi Provisioning Server   |               | • TFT ST7735 13-Page Carousel     |
 +-----------------------------------+               | • Dedicated Nav / Action Router   |
                                                     +-----------------------------------+
 ```
@@ -49,7 +49,7 @@ graph TD
 
 ### Dedicated Dual-Key Separation of Duties (`executePageRightButtonAction`)
 To eliminate ambiguous UX and maximize memory efficiency by pruning complex macro mappings, responsibilities are cleanly divided:
-- **Left Button (D25) — Dedicated Page Navigator**: Single Clicks cycle forward through the 9 TFT pages; Double Clicks cycle backward; Long Hold instantly returns to Page 0 (Outdoor Weather Home).
+- **Left Button (D25) — Dedicated Page Navigator**: Single Clicks cycle forward through the 13 TFT pages; Double Clicks cycle backward; Long Hold instantly returns to Page 0 (Outdoor Weather Home).
 - **Right Button (D26) — Page-Specific Functional Processor**: When tapped, it queries `tftMgr.currentPage` and dispatches the ideal contextual command:
   - **Pomodoro Action Screen (Page 2)**: Toggles Start/Pause on single click; Resets timer on double click.
   - **Interactive To-Do Board (Page 4)**: Single clicks Check/Uncheck the active task in persistent memory; Double clicks move focus down the list.
@@ -64,7 +64,7 @@ To eliminate ambiguous UX and maximize memory efficiency by pruning complex macr
 | Memory Region | Allocation | Used / Capacity | Percentage | Utilization Notes |
 | :--- | :---: | :---: | :---: | :--- |
 | **DRAM (SRAM)** | Static / Heap | `62.1 KB / 327.6 KB` | **19.0%** | Dynamic JsonDocument buffers, rolling sensor arrays, QR Code rendering matrix |
-| **Flash Memory** | Code + LittleFS | `1.92 MB / 1.96 MB` | **98.1%** | 10 iconic TFT watch faces, 8 OLED clock faces, BLE WiFi stack, AsyncWebServer |
+| **Flash Memory** | Code + LittleFS | `1.92 MB / 1.96 MB` | **98.1%** | 15 iconic TFT watch faces, 17 OLED clock faces, BLE WiFi stack, AsyncWebServer |
 | **LittleFS System** | Filesystem | `18.2 KB / 1.44 MB` | **1.2%** | `index.html`, `style.css`, `app.js` web interface & persistent configuration |
 
 ---
@@ -131,10 +131,10 @@ stateDiagram-v2
 ├── include/
 │   ├── config.h                # Pins, WiFi, OpenWeather API, NTP, Theme definitions
 │   ├── config_manager.h        # LittleFS JSON config persistence & feature toggles
-│   ├── display_oled.h          # OLED SSD1306 engine featuring 8 iconic clock faces & fast 45ms marquee
-│   ├── display_tft.h           # TFT ST7735 128x160 9-page static/carousel engine
+│   ├── display_oled.h          # OLED SSD1306 engine featuring 17 iconic clock faces & fast 45ms marquee
+│   ├── display_tft.h           # TFT ST7735 128x160 13-page static/carousel engine
 │   ├── gfx_icons.h             # Vector and bitmap drawing icons for system alerts and hardware
-│   ├── watchface_engine.h      # 10 Iconic TFT watch faces (Swiss, Nixie, Casio F91, G-Shock, Pulsar)
+│   ├── watchface_engine.h      # 15 Iconic TFT watch faces (Swiss, Nixie, Casio F91, G-Shock, Pulsar)
 │   ├── screensaver.h           # Animated OLED screensavers (Matrix, DVD, Tunnel, DNA, Batman, Tux)
 │   ├── mech_switch.h           # Dual mechanical switch debounce & simultaneous combo detector (D25/D26)
 │   ├── ble_wifi_provision.h    # Nordic BLE UART server for seamless Wi-Fi credential provisioning

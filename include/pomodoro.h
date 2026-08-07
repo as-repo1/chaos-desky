@@ -29,8 +29,8 @@ public:
     void reset();
     void update();
     float getProgress() const;
-    String getFormattedTime() const;
-    String getStateString() const;
+    const char* getFormattedTime() const;
+    const char* getStateString() const;
 };
 
 #endif // POMODORO_H

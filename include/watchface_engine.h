@@ -18,12 +18,12 @@ enum WatchFaceStyle {
     WATCHFACE_CRT_TERMINAL = 6,
     WATCHFACE_ORBITAL_RINGS = 7,
     WATCHFACE_AVIATION_ALTIMETER = 8,
-    WATCHFACE_MINIMALIST_EINK = 9,
+    WATCHFACE_ANALOG_SQUARED_RETRO = 9,
     WATCHFACE_STEAMPUNK_GAUGE = 10,
     WATCHFACE_SEGMENT_LED = 11,
     WATCHFACE_CYBERPUNK_2077 = 12,
     WATCHFACE_CHRONOGRAPH = 13,
-    WATCHFACE_BAUHAUS = 14
+    WATCHFACE_ANALOG_SQUARED = 14
 };
 
 class WatchFaceEngine {
@@ -81,8 +81,8 @@ public:
             case WATCHFACE_AVIATION_ALTIMETER:
                 renderAviationAltimeter(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_MINIMALIST_EINK:
-                renderMinimalistEink(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_ANALOG_SQUARED_RETRO:
+                renderAnalogSquaredRetro(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             case WATCHFACE_STEAMPUNK_GAUGE:
                 renderSteampunkGauge(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
@@ -96,8 +96,8 @@ public:
             case WATCHFACE_CHRONOGRAPH:
                 renderChronograph(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
-            case WATCHFACE_BAUHAUS:
-                renderBauhaus(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
+            case WATCHFACE_ANALOG_SQUARED:
+                renderAnalogSquared(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
                 break;
             default:
                 renderRetroFlip(gfx, hours, mins, secs, weather, sensors, pomo, colorPrimary, colorAccent, colorText, colorBg, fullRedraw);
@@ -502,58 +502,70 @@ private:
     }
 
     // =========================================================
-    // 📰 NEW: Style 9: Minimalist E-Ink (High Contrast)
+    // 📰 NEW: Style 9: Analog Squared (Retro)
     // =========================================================
-    void renderMinimalistEink(Adafruit_GFX& gfx, int h, int m, int s,
+    void renderAnalogSquaredRetro(Adafruit_GFX& gfx, int h, int m, int s,
                          const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                          uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
         
+        int cx = 64, cy = 88;
+        int size = 48; // Half width of the square
         uint16_t bg = 0xFFFF; // White
         uint16_t fg = 0x0000; // Black
         
         if (fullRedraw) {
             gfx.fillRect(0, 16, 128, 144, bg);
             
-            // Top dividing line
-            gfx.drawLine(10, 30, 118, 30, fg);
+            // Draw a squared bezel 
+            gfx.drawRect(cx - size, cy - size, size * 2, size * 2, fg);
+            gfx.drawRect(cx - size - 2, cy - size - 2, size * 2 + 4, size * 2 + 4, fg);
+            
+            // Draw ticks inside the square
+            for (int i = 0; i < 60; i++) {
+                float angle = i * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+                float absCos = fabs(cos(angle));
+                float absSin = fabs(sin(angle));
+                float dist = size / fmax(absCos, absSin);
+                
+                int len = (i % 5 == 0) ? 6 : 2;
+                int x1 = cx + cos(angle) * (dist - len);
+                int y1 = cy + sin(angle) * (dist - len);
+                int x2 = cx + cos(angle) * dist;
+                int y2 = cy + sin(angle) * dist;
+                
+                gfx.drawLine(x1, y1, x2, y2, fg);
+            }
+            
             gfx.setTextColor(fg, bg);
             gfx.setTextSize(1);
             gfx.setCursor(10, 20);
-            gfx.print("DESKY");
+            gfx.print("RETRO SQUARED");
+        }
+
+        // Erase old hands
+        if (lastS >= 0) {
+            float ohAngle = (lastH % 12 + lastM / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            float omAngle = (lastM + lastS / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+            float osAngle = lastS * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
             
-            // Bottom dividing line
-            gfx.drawLine(10, 130, 118, 130, fg);
+            gfx.drawLine(cx, cy, cx + cos(ohAngle) * 25, cy + sin(ohAngle) * 25, bg);
+            gfx.drawLine(cx, cy, cx + cos(omAngle) * 38, cy + sin(omAngle) * 38, bg);
+            gfx.drawLine(cx, cy, cx + cos(osAngle) * 44, cy + sin(osAngle) * 44, bg);
         }
+
+        float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float mAngle = (m + s / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+        float sAngle = s * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+
+        // Hour hand
+        gfx.drawLine(cx, cy, cx + cos(hAngle) * 25, cy + sin(hAngle) * 25, fg);
+        // Minute hand 
+        gfx.drawLine(cx, cy, cx + cos(mAngle) * 38, cy + sin(mAngle) * 38, fg);
+        // Second hand
+        gfx.drawLine(cx, cy, cx + cos(sAngle) * 44, cy + sin(sAngle) * 44, 0xF800); // Red second hand for contrast
         
-        gfx.setTextColor(fg, bg);
-        
-        // Pomodoro status
-        gfx.setCursor(10, 136);
-        gfx.fillRect(10, 136, 108, 10, bg); // Clear old text
-        if ((pomo.state != POMO_IDLE)) {
-            if ((pomo.state == POMO_WORK)) gfx.printf("FOCUS: %02d:%02d", pomo.remainingSec / 60, pomo.remainingSec % 60);
-            else gfx.printf("BREAK: %02d:%02d", pomo.remainingSec / 60, pomo.remainingSec % 60);
-        } else {
-            gfx.print("IDLE");
-        }
-        
-        // Time
-        gfx.setTextSize(3);
-        gfx.setCursor(10, 50);
-        gfx.printf("%02d:%02d", h, m);
-        
-        gfx.setTextSize(2);
-        gfx.setCursor(100, 56);
-        gfx.fillRect(100, 56, 24, 16, bg);
-        gfx.printf("%02d", s);
-        
-        // Weather
-        gfx.setTextSize(1);
-        gfx.setCursor(10, 100);
-        gfx.fillRect(10, 100, 100, 20, bg);
-        gfx.printf("OUT: %.1fC", w.tempC);
-        gfx.setCursor(10, 112);
-        gfx.printf("IN: %.1fC", sensors.data.tempC);
+        // Center cap
+        gfx.fillCircle(cx, cy, 2, fg);
     }
 
     // =========================================================
@@ -688,8 +700,8 @@ private:
     void renderChronograph(Adafruit_GFX& gfx, int h, int m, int s,
                              const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        int cx = 120, cy = 120;
-        int r = 110;
+        int cx = 64, cy = 88;
+        int r = 55;
         uint16_t TFT_SILVER = 0xC618;
         uint16_t TFT_DARKGREY = 0x7BEF;
         uint16_t TFT_LIGHTGREY = 0xD69A;
@@ -704,132 +716,131 @@ private:
             // Tick marks
             for (int i = 0; i < 60; i++) {
                 float angle = i * 6.0f * (M_PI / 180.0f);
-                int len = (i % 5 == 0) ? 10 : 4;
+                int len = (i % 5 == 0) ? 5 : 2;
                 uint16_t color = (i % 5 == 0) ? 0xFFFF : TFT_LIGHTGREY;
                 gfx.drawLine(cx + cos(angle) * (r - len), cy + sin(angle) * (r - len),
                              cx + cos(angle) * r, cy + sin(angle) * r, color);
             }
 
             // Sub-dials
-            int sdR = 20;
+            int sdR = 12;
             // Sub-dial 1 (Left - Temp)
-            gfx.drawCircle(cx - 40, cy, sdR, TFT_DARKGREY);
+            gfx.drawCircle(cx - 24, cy, sdR, TFT_DARKGREY);
             gfx.setTextColor(TFT_LIGHTGREY);
             gfx.setTextSize(1);
-            gfx.setCursor(cx - 52, cy + sdR + 2); gfx.print("TEMP");
+            gfx.setCursor(cx - 36, cy + sdR + 2); gfx.print("TEMP");
 
             // Sub-dial 2 (Right - Humidity)
-            gfx.drawCircle(cx + 40, cy, sdR, TFT_DARKGREY);
-            gfx.setCursor(cx + 32, cy + sdR + 2); gfx.print("HUM");
+            gfx.drawCircle(cx + 24, cy, sdR, TFT_DARKGREY);
+            gfx.setCursor(cx + 16, cy + sdR + 2); gfx.print("HUM");
         }
         
-        int sdR = 20;
+        int sdR = 12;
         // Erase old hands
         if (lastS >= 0) {
             // Main second hand
             float osAngle = lastS * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
-            gfx.drawLine(cx - cos(osAngle) * 15, cy - sin(osAngle) * 15, cx + cos(osAngle) * 90, cy + sin(osAngle) * 90, 0x0000);
+            gfx.drawLine(cx - cos(osAngle) * 7, cy - sin(osAngle) * 7, cx + cos(osAngle) * 45, cy + sin(osAngle) * 45, 0x0000);
             
             // Minute hand
             float omAngle = (lastM + lastS / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
-            gfx.drawLine(cx, cy, cx + cos(omAngle) * 80, cy + sin(omAngle) * 80, 0x0000);
-            gfx.drawLine(cx + 1, cy, cx + 1 + cos(omAngle) * 80, cy + sin(omAngle) * 80, 0x0000);
+            gfx.drawLine(cx, cy, cx + cos(omAngle) * 40, cy + sin(omAngle) * 40, 0x0000);
+            gfx.drawLine(cx + 1, cy, cx + 1 + cos(omAngle) * 40, cy + sin(omAngle) * 40, 0x0000);
             
             // Hour hand
             float ohAngle = (lastH % 12 + lastM / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
-            gfx.drawLine(cx, cy, cx + cos(ohAngle) * 50, cy + sin(ohAngle) * 50, 0x0000);
-            gfx.drawLine(cx + 1, cy, cx + 1 + cos(ohAngle) * 50, cy + sin(ohAngle) * 50, 0x0000);
+            gfx.drawLine(cx, cy, cx + cos(ohAngle) * 25, cy + sin(ohAngle) * 25, 0x0000);
+            gfx.drawLine(cx + 1, cy, cx + 1 + cos(ohAngle) * 25, cy + sin(ohAngle) * 25, 0x0000);
             
             // Temp hand (static mostly, but we redraw it anyway)
             float otempAngle = map(sensors.data.tempC, 0, 50, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
-            gfx.drawLine(cx - 40, cy, cx - 40 + cos(otempAngle) * (sdR - 4), cy + sin(otempAngle) * (sdR - 4), 0x0000);
+            gfx.drawLine(cx - 24, cy, cx - 24 + cos(otempAngle) * (sdR - 2), cy + sin(otempAngle) * (sdR - 2), 0x0000);
             
             // Hum hand
             float ohumAngle = map(sensors.data.humidity, 0, 100, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
-            gfx.drawLine(cx + 40, cy, cx + 40 + cos(ohumAngle) * (sdR - 4), cy + sin(ohumAngle) * (sdR - 4), 0x0000);
+            gfx.drawLine(cx + 24, cy, cx + 24 + cos(ohumAngle) * (sdR - 2), cy + sin(ohumAngle) * (sdR - 2), 0x0000);
         }
 
         // Draw new hands
         float tempAngle = map(sensors.data.tempC, 0, 50, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
-        gfx.drawLine(cx - 40, cy, cx - 40 + cos(tempAngle) * (sdR - 4), cy + sin(tempAngle) * (sdR - 4), 0xF800); // Red
+        gfx.drawLine(cx - 24, cy, cx - 24 + cos(tempAngle) * (sdR - 2), cy + sin(tempAngle) * (sdR - 2), 0xF800); // Red
         
         float humAngle = map(sensors.data.humidity, 0, 100, 0, 360) * (M_PI / 180.0f) - M_PI / 2.0f;
-        gfx.drawLine(cx + 40, cy, cx + 40 + cos(humAngle) * (sdR - 4), cy + sin(humAngle) * (sdR - 4), 0x07FF); // Cyan
+        gfx.drawLine(cx + 24, cy, cx + 24 + cos(humAngle) * (sdR - 2), cy + sin(humAngle) * (sdR - 2), 0x07FF); // Cyan
         
         float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
         float mAngle = (m + s / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
         float sAngle = s * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
 
         // Draw hour hand
-        gfx.drawLine(cx, cy, cx + cos(hAngle) * 50, cy + sin(hAngle) * 50, 0xFFFF);
-        gfx.drawLine(cx + 1, cy, cx + 1 + cos(hAngle) * 50, cy + sin(hAngle) * 50, 0xFFFF);
+        gfx.drawLine(cx, cy, cx + cos(hAngle) * 25, cy + sin(hAngle) * 25, 0xFFFF);
+        gfx.drawLine(cx + 1, cy, cx + 1 + cos(hAngle) * 25, cy + sin(hAngle) * 25, 0xFFFF);
         
         // Draw minute hand
-        gfx.drawLine(cx, cy, cx + cos(mAngle) * 80, cy + sin(mAngle) * 80, 0xFFFF);
-        gfx.drawLine(cx + 1, cy, cx + 1 + cos(mAngle) * 80, cy + sin(mAngle) * 80, 0xFFFF);
+        gfx.drawLine(cx, cy, cx + cos(mAngle) * 40, cy + sin(mAngle) * 40, 0xFFFF);
+        gfx.drawLine(cx + 1, cy, cx + 1 + cos(mAngle) * 40, cy + sin(mAngle) * 40, 0xFFFF);
 
         // Draw second hand
-        gfx.drawLine(cx - cos(sAngle) * 15, cy - sin(sAngle) * 15, cx + cos(sAngle) * 90, cy + sin(sAngle) * 90, 0xF800);
-        gfx.fillCircle(cx, cy, 4, 0xF800);
+        gfx.drawLine(cx - cos(sAngle) * 7, cy - sin(sAngle) * 7, cx + cos(sAngle) * 45, cy + sin(sAngle) * 45, 0xF800);
+        gfx.fillCircle(cx, cy, 2, 0xF800);
     }
 
     // =========================================================
-    // 📐 Style 14: Bauhaus Minimal
+    // 📐 Style 14: Analog Squared (Modern)
     // =========================================================
-    void renderBauhaus(Adafruit_GFX& gfx, int h, int m, int s,
+    void renderAnalogSquared(Adafruit_GFX& gfx, int h, int m, int s,
                              const OutdoorWeatherData& w, const SensorManager& sensors, const PomodoroTimer& pomo,
                              uint16_t colorPrimary, uint16_t colorAccent, uint16_t colorText, uint16_t colorBg, bool fullRedraw) {
-        int cx = 120, cy = 120;
-        int r = 110;
+        int cx = 64, cy = 88;
+        int size = 45; // Half width of the square
         
         if (fullRedraw) {
-            gfx.fillScreen(0x18E3); // Very dark gray/blue
-            // Just minimal markers for 12, 3, 6, 9
-            gfx.fillRect(cx - 2, cy - r, 4, 15, 0xF800); // Red at 12
-            gfx.fillRect(cx + r - 15, cy - 2, 15, 4, 0xFFFF); // White
-            gfx.fillRect(cx - 2, cy + r - 15, 4, 15, 0xFFFF);
-            gfx.fillRect(cx - r, cy - 2, 15, 4, 0xFFFF);
+            gfx.fillScreen(colorBg); 
+            // Draw a squared bezel with rounded corners
+            gfx.drawRoundRect(cx - size, cy - size, size * 2, size * 2, 8, colorPrimary);
+            gfx.drawRoundRect(cx - size - 2, cy - size - 2, size * 2 + 4, size * 2 + 4, 10, colorAccent);
+            
+            // Draw ticks inside the square
+            for (int i = 0; i < 12; i++) {
+                float angle = i * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+                // calculate intersection with square
+                float absCos = fabs(cos(angle));
+                float absSin = fabs(sin(angle));
+                float dist = size / fmax(absCos, absSin);
+                
+                int x1 = cx + cos(angle) * (dist - 6);
+                int y1 = cy + sin(angle) * (dist - 6);
+                int x2 = cx + cos(angle) * (dist - 2);
+                int y2 = cy + sin(angle) * (dist - 2);
+                
+                gfx.drawLine(x1, y1, x2, y2, (i % 3 == 0) ? colorAccent : colorPrimary);
+            }
         }
 
-        // Erase old
+        // Erase old hands
         if (lastS >= 0) {
             float ohAngle = (lastH % 12 + lastM / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
             float omAngle = (lastM + lastS / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
             float osAngle = lastS * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
             
-            float hx = cos(ohAngle), hy = sin(ohAngle);
-            for(int w = -3; w <= 3; w++) {
-                gfx.drawLine(cx + hy * w, cy - hx * w, cx + hx * 60 + hy * w, cy + hy * 60 - hx * w, 0x18E3);
-            }
-            float mx = cos(omAngle), my = sin(omAngle);
-            for(int w = -1; w <= 1; w++) {
-                gfx.drawLine(cx + my * w, cy - mx * w, cx + mx * 95 + my * w, cy + my * 95 - mx * w, 0x18E3);
-            }
-            gfx.drawLine(cx, cy, cx + cos(osAngle) * 105, cy + sin(osAngle) * 105, 0x18E3);
+            gfx.drawLine(cx, cy, cx + cos(ohAngle) * 25, cy + sin(ohAngle) * 25, colorBg);
+            gfx.drawLine(cx, cy, cx + cos(omAngle) * 38, cy + sin(omAngle) * 38, colorBg);
+            gfx.drawLine(cx, cy, cx + cos(osAngle) * 42, cy + sin(osAngle) * 42, colorBg);
         }
 
         float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
         float mAngle = (m + s / 60.0f) * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
         float sAngle = s * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
 
-        // Hour hand (thick, blocky)
-        float hx = cos(hAngle), hy = sin(hAngle);
-        for(int w = -3; w <= 3; w++) {
-            gfx.drawLine(cx + hy * w, cy - hx * w, cx + hx * 60 + hy * w, cy + hy * 60 - hx * w, 0xFFFF);
-        }
-
-        // Minute hand (thinner, longer)
-        float mx = cos(mAngle), my = sin(mAngle);
-        for(int w = -1; w <= 1; w++) {
-            gfx.drawLine(cx + my * w, cy - mx * w, cx + mx * 95 + my * w, cy + my * 95 - mx * w, 0xFFFF);
-        }
-
-        // Second hand (red, very thin)
-        gfx.drawLine(cx, cy, cx + cos(sAngle) * 105, cy + sin(sAngle) * 105, 0xF800);
+        // Hour hand
+        gfx.drawLine(cx, cy, cx + cos(hAngle) * 25, cy + sin(hAngle) * 25, colorText);
+        // Minute hand 
+        gfx.drawLine(cx, cy, cx + cos(mAngle) * 38, cy + sin(mAngle) * 38, colorText);
+        // Second hand
+        gfx.drawLine(cx, cy, cx + cos(sAngle) * 42, cy + sin(sAngle) * 42, colorAccent);
         
         // Center cap
-        gfx.fillCircle(cx, cy, 6, 0xFFFF);
-        gfx.fillCircle(cx, cy, 2, 0x0000);
+        gfx.fillCircle(cx, cy, 2, colorPrimary);
     }
 };
 

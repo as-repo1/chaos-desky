@@ -169,6 +169,9 @@ void OledDisplayManager::drawMode1_BigClock(int h, int m, int s_val, const Strin
         case 11: drawOledClock_BarGraph(h, m, s_val, s); break;
         case 12: drawOledClock_RadarSweep(h, m, s_val, s); break;
         case 13: drawOledClock_VintagePocket(h, m, s_val, s); break;
+        case 14: drawOledClock_SquareClassic(h, m, s_val, s); break;
+        case 15: drawOledClock_SquareTank(h, m, s_val, s); break;
+        case 16: drawOledClock_SquarePilot(h, m, s_val, s); break;
         default: drawOledClock_DigitalHUD(h, m, s_val, ipStr, s); break;
     }
 }
@@ -388,17 +391,18 @@ void OledDisplayManager::drawMode2_Sparklines(SensorManager& sm) {
     if (sm.historyCount > 1) {
         float minP = 1200.0f, maxP = 0.0f;
         for (int i = 0; i < sm.historyCount; i++) {
-            if (sm.pressureHistory[i] < minP) minP = sm.pressureHistory[i];
-            if (sm.pressureHistory[i] > maxP) maxP = sm.pressureHistory[i];
+            float p = sm.getPressureAt(i);
+            if (p < minP) minP = p;
+            if (p > maxP) maxP = p;
         }
         if (maxP - minP < 1.0f) { maxP += 0.5f; minP -= 0.5f; }
 
         int step = 124 / (sm.historyCount - 1);
         for (int i = 0; i < sm.historyCount - 1; i++) {
             int x1 = 2 + (i * step);
-            int y1 = 30 - (int)(((sm.pressureHistory[i] - minP) / (maxP - minP)) * 16.0f);
+            int y1 = 30 - (int)(((sm.getPressureAt(i) - minP) / (maxP - minP)) * 16.0f);
             int x2 = 2 + ((i + 1) * step);
-            int y2 = 30 - (int)(((sm.pressureHistory[i + 1] - minP) / (maxP - minP)) * 16.0f);
+            int y2 = 30 - (int)(((sm.getPressureAt(i + 1) - minP) / (maxP - minP)) * 16.0f);
             oled.drawLine(x1, y1, x2, y2, SSD1306_WHITE);
         }
     }
@@ -577,4 +581,67 @@ void OledDisplayManager::drawOledClock_VintagePocket(int h, int m, int s_val, co
     oled.drawLine(cx, cy, cx + cos(mAngle) * 22, cy + sin(mAngle) * 22, SSD1306_WHITE);
     float sAngle = s_val * 6.0f * (PI / 180.0f) - HALF_PI;
     oled.drawPixel(cx + cos(sAngle) * 25, cy + sin(sAngle) * 25, SSD1306_WHITE);
+}
+
+void OledDisplayManager::drawOledClock_SquareClassic(int h, int m, int s_val, const SensorData& s) {
+    int w = 56, h_rect = 56, cx = 64, cy = 32;
+    oled.drawRect(cx - w/2, cy - h_rect/2, w, h_rect, SSD1306_WHITE);
+    // tick marks
+    for (int i = 0; i < 12; i++) {
+        float angle = i * 30.0f * (M_PI / 180.0f);
+        int tx = cx + cos(angle) * (w/2 - 4);
+        int ty = cy + sin(angle) * (h_rect/2 - 4);
+        oled.fillCircle(tx, ty, 1, SSD1306_WHITE);
+    }
+    // hands
+    float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float mAngle = m * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float sAngle = s_val * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    oled.drawLine(cx, cy, cx + cos(hAngle) * 14, cy + sin(hAngle) * 14, SSD1306_WHITE);
+    oled.drawLine(cx, cy, cx + cos(mAngle) * 22, cy + sin(mAngle) * 22, SSD1306_WHITE);
+    oled.drawLine(cx, cy, cx + cos(sAngle) * 25, cy + sin(sAngle) * 25, SSD1306_WHITE);
+}
+
+void OledDisplayManager::drawOledClock_SquareTank(int h, int m, int s_val, const SensorData& s) {
+    int w = 44, h_rect = 56, cx = 64, cy = 32;
+    oled.drawRect(cx - w/2, cy - h_rect/2, w, h_rect, SSD1306_WHITE);
+    oled.drawRect(cx - w/2 - 2, cy - h_rect/2 - 2, w + 4, h_rect + 4, SSD1306_WHITE);
+    
+    // minimal markers inside the tank
+    oled.drawFastHLine(cx - 4, cy - h_rect/2 + 4, 8, SSD1306_WHITE); // 12
+    oled.drawFastHLine(cx - 4, cy + h_rect/2 - 4, 8, SSD1306_WHITE); // 6
+    oled.drawFastVLine(cx + w/2 - 4, cy - 4, 8, SSD1306_WHITE); // 3
+    oled.drawFastVLine(cx - w/2 + 4, cy - 4, 8, SSD1306_WHITE); // 9
+
+    float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float mAngle = m * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float sAngle = s_val * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    oled.drawLine(cx, cy, cx + cos(hAngle) * 12, cy + sin(hAngle) * 12, SSD1306_WHITE);
+    oled.drawLine(cx, cy, cx + cos(mAngle) * 18, cy + sin(mAngle) * 18, SSD1306_WHITE);
+    oled.drawLine(cx, cy, cx + cos(sAngle) * 22, cy + sin(sAngle) * 22, SSD1306_WHITE);
+}
+
+void OledDisplayManager::drawOledClock_SquarePilot(int h, int m, int s_val, const SensorData& s) {
+    int cx = 64, cy = 32;
+    int w = 60, h_rect = 60;
+    oled.drawRoundRect(cx - w/2, cy - h_rect/2, w, h_rect, 4, SSD1306_WHITE);
+    
+    oled.setTextSize(1);
+    oled.setCursor(cx - 5, cy - h_rect/2 + 3); oled.print("12");
+    oled.setCursor(cx - 3, cy + h_rect/2 - 10); oled.print("6");
+    oled.setCursor(cx + w/2 - 10, cy - 3); oled.print("3");
+    oled.setCursor(cx - w/2 + 4, cy - 3); oled.print("9");
+
+    float hAngle = (h % 12 + m / 60.0f) * 30.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float mAngle = m * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    float sAngle = s_val * 6.0f * (M_PI / 180.0f) - M_PI / 2.0f;
+    
+    // Thicker hour hand
+    float hx = cos(hAngle), hy = sin(hAngle);
+    oled.drawLine(cx, cy, cx + hx * 12, cy + hy * 12, SSD1306_WHITE);
+    oled.drawLine(cx + hy, cy - hx, cx + hx * 12 + hy, cy + hy * 12 - hx, SSD1306_WHITE);
+    
+    oled.drawLine(cx, cy, cx + cos(mAngle) * 20, cy + sin(mAngle) * 20, SSD1306_WHITE);
+    oled.drawLine(cx, cy, cx + cos(sAngle) * 25, cy + sin(sAngle) * 25, SSD1306_WHITE);
+    oled.fillCircle(cx, cy, 2, SSD1306_WHITE);
 }

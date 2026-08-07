@@ -240,7 +240,17 @@ public:
 
         // REST API: GET /api/wifi/scan
         server.on("/api/wifi/scan", HTTP_GET, [](AsyncWebServerRequest* request) {
-            int n = WiFi.scanNetworks();
+            int n = WiFi.scanComplete();
+            if (n == WIFI_SCAN_FAILED) {
+                WiFi.scanNetworks(true); // Start async scan
+                request->send(202, "application/json", "{\"status\":\"scanning\"}");
+                return;
+            }
+            if (n == WIFI_SCAN_RUNNING) {
+                request->send(202, "application/json", "{\"status\":\"scanning\"}");
+                return;
+            }
+            
             StaticJsonDocument<1024> doc;
             JsonArray networks = doc.createNestedArray("networks");
 
@@ -250,6 +260,7 @@ public:
                 net["rssi"] = WiFi.RSSI(i);
                 net["enc"]  = (WiFi.encryptionType(i) != WIFI_AUTH_OPEN);
             }
+            WiFi.scanDelete(); // Free scan results memory
 
             String json;
             serializeJson(doc, json);

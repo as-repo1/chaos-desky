@@ -39,19 +39,16 @@ unsigned long lastOledRefreshMs    = 0;
 unsigned long lastPressureSampleMs = 0;
 
 String localIpStr = "0.0.0.0";
-String timeStr    = "00:00:00";
 unsigned long carouselIntervalMs = CAROUSEL_INTERVAL_MS;
 
-// Helper: Format NTP time
-String getFormattedNtpTime() {
-    struct tm timeinfo;
-    if (!getLocalTime(&timeinfo)) {
-        return "00:00:00";
-    }
-    char timeBuf[12];
-    strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", &timeinfo);
-    return String(timeBuf);
-}
+bool configDirty = false;
+unsigned long lastConfigDirtyMs = 0;
+const unsigned long CONFIG_SAVE_DEFER_MS = 5000;
+
+bool oledFlashActive = false;
+unsigned long oledFlashStartMs = 0;
+bool originalOledInverted = false;
+// Helper function removed
 
 void setupWiFi() {
     String ssid = configMgr.config.wifiSsid;
@@ -93,7 +90,8 @@ void executeButtonAction(int action) {
         case ACT_CYCLE_OLED:
             configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 7;
             oledMgr.oledMode = configMgr.config.oledMode;
-            configMgr.saveConfig();
+            configDirty = true;
+            lastConfigDirtyMs = millis();
             Serial.printf("🔘 Macro Action: Cycled OLED Mode to %d\n", configMgr.config.oledMode);
             break;
             
@@ -126,8 +124,9 @@ void executeButtonAction(int action) {
         case ACT_JUMP_WATCH:
             configMgr.config.oledMode = 1; // Big Clock Mode
             oledMgr.oledMode = 1;
-            configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 14;
-            configMgr.saveConfig();
+            configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % TOTAL_OLED_CLOCK_STYLES;
+            configDirty = true;
+            lastConfigDirtyMs = millis();
             if (tftMgr.currentPage != 6) {
                 tftMgr.setPage(6); // Jump straight to Watchface Studio (Page 7, index 6)
             } else {
@@ -139,7 +138,8 @@ void executeButtonAction(int action) {
             
         case ACT_CYCLE_THEMES:
             configMgr.config.tftTheme = (configMgr.config.tftTheme + 1) % TOTAL_THEMES;
-            configMgr.saveConfig();
+            configDirty = true;
+            lastConfigDirtyMs = millis();
             tftMgr.forceRedraw();
             notificationMgr.trigger("TFT Color Theme", "Theme Cycled!", NOTIF_INFO, NOTIF_TARGET_OLED, 2);
             break;
@@ -192,7 +192,7 @@ void setup() {
 
     // Load Persistent Config
     configMgr.begin();
-    notificationMgr.userPreference = NOTIF_TARGET_OLED; // Forced to OLED only based on user request
+    notificationMgr.userPreference = (NotificationTarget)configMgr.config.notifTarget;
 
     // Apply Loaded Configuration to Modules
     tftMgr.setRotation(configMgr.config.tftRotation);
@@ -222,7 +222,6 @@ void setup() {
 
     // Initialize Mechanical Switches
     mechSwitch1Mgr.begin(MECH_SWITCH_1_PIN);
-    mechSwitch1Mgr.instantTrigger = true; // 🔥 Left Button triggers INSTANTLY on press (no 350ms delay)
     mechSwitch2Mgr.begin(MECH_SWITCH_2_PIN);
 
     // Initialize BLE keyboard removed — using wired Serial HID bridge instead.
@@ -259,9 +258,16 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 break;
 
             case 1: // Pressure Graph Page
+                Serial.println("➡️ Right Button [Graph]: Switching to Temp Graph (P10)");
+                tftMgr.setPage(10);
+                break;
             case 10: // Temp Graph Page
+                Serial.println("➡️ Right Button [Graph]: Switching to Humidity Graph (P11)");
+                tftMgr.setPage(11);
+                break;
             case 11: // Humidity Graph Page
-                Serial.println("➡️ Right Button: Graph pages have no secondary action.");
+                Serial.println("➡️ Right Button [Graph]: Switching to Pressure Graph (P1)");
+                tftMgr.setPage(1);
                 break;
 
             case 2: // Pomodoro Page
@@ -279,7 +285,8 @@ void executePageRightButtonAction(int page, SwitchAction action) {
                 Serial.println("➡️ Right Button [To-Do]: Toggling task checkbox");
                 tftMgr.todoChecked[tftMgr.todoSelectedIdx] = !tftMgr.todoChecked[tftMgr.todoSelectedIdx];
                 configMgr.config.todoChecked[tftMgr.todoSelectedIdx] = tftMgr.todoChecked[tftMgr.todoSelectedIdx];
-                configMgr.saveConfig();
+                configDirty = true;
+                lastConfigDirtyMs = millis();
                 tftMgr.forceRedraw();
                 {
                     String msg = tftMgr.todoChecked[tftMgr.todoSelectedIdx] ? "Task Completed!" : "Task Re-Opened!";
@@ -346,8 +353,9 @@ void executePageRightButtonAction(int page, SwitchAction action) {
 
             case 9: // OLED Display Hub: Cycle Clock Style
                 Serial.println("➡️ Right Button Double-Click [OLED Hub]: Cycling OLED Clock Style");
-                configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % 14;
-                configMgr.saveConfig();
+                configMgr.config.oledClockStyle = (configMgr.config.oledClockStyle + 1) % TOTAL_OLED_CLOCK_STYLES;
+                configDirty = true;
+                lastConfigDirtyMs = millis();
                 tftMgr.forceRedraw();
                 notificationMgr.trigger("OLED Studio", "Clock Style Cycled!", NOTIF_INFO, NOTIF_TARGET_TFT, 2);
                 break;
@@ -391,7 +399,8 @@ void loop() {
         // Long combo: cycle OLED modes
         configMgr.config.oledMode = (configMgr.config.oledMode + 1) % 7;
         oledMgr.oledMode = configMgr.config.oledMode;
-        configMgr.saveConfig();
+        configDirty = true;
+        lastConfigDirtyMs = millis();
         notificationMgr.trigger("OLED Mode", "Mode " + String(configMgr.config.oledMode), NOTIF_INFO, NOTIF_TARGET_OLED, 2);
     }
 
@@ -420,6 +429,27 @@ void loop() {
     if (action2 != SWITCH_NO_ACTION) {
         executePageRightButtonAction(tftMgr.currentPage, action2);
     }
+    
+    // OLED Flash Feedback for Button Presses
+    if (comboState > 0 || action1 != SWITCH_NO_ACTION || action2 != SWITCH_NO_ACTION) {
+        if (!oledFlashActive) {
+            originalOledInverted = oledMgr.isInverted;
+        }
+        oledFlashActive = true;
+        oledFlashStartMs = millis();
+        oledMgr.setInverted(!originalOledInverted);
+    }
+    if (oledFlashActive && (millis() - oledFlashStartMs > 40)) {
+        oledMgr.setInverted(originalOledInverted);
+        oledFlashActive = false;
+    }
+    
+    // Deferred Config Save
+    if (configDirty && (millis() - lastConfigDirtyMs > CONFIG_SAVE_DEFER_MS)) {
+        configMgr.saveConfig();
+        configDirty = false;
+        Serial.println("⚙️ Config auto-saved (deferred)");
+    }
 
     // 2. Periodic Sensor Sampling (Every 2 seconds)
     if (currentMs - lastSensorReadMs >= 2000) {
@@ -428,7 +458,7 @@ void loop() {
     }
 
     // 3. Periodic Pressure Sampling for Trend Sparkline (Every 15 mins)
-    if (currentMs - lastPressureSampleMs >= PRESSURE_SAMPLE_MS) {
+    if (currentMs - lastPressureSampleMs >= SENSOR_SAMPLE_MS) {
         lastPressureSampleMs = currentMs;
         // Log sensor sample to sparkline arrays
         sensorMgr.addHistorySample(sensorMgr.data.pressureHpa, sensorMgr.data.tempC, sensorMgr.data.humidity);

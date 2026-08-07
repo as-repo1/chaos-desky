@@ -15,7 +15,7 @@ bool ConfigManager::loadConfig() {
         return false;
     }
 
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<2048> doc;
     DeserializationError error = deserializeJson(doc, file);
     file.close();
 
@@ -41,7 +41,7 @@ bool ConfigManager::loadConfig() {
     config.tftTheme        = doc["tftTheme"] | 0;
     config.tftRotation     = doc["tftRotation"] | 2;
     config.carouselSpeedSec= doc["carouselSpeedSec"] | 0;
-    config.enabledPagesMask= doc["enabledPagesMask"] | 0x03FF;
+    config.enabledPagesMask= doc["enabledPagesMask"] | 0x1FFF;
     if ((config.enabledPagesMask & 0x03FF) <= 0x01FF) {
         config.enabledPagesMask |= (1 << 9); // Auto-enable OLED Studio Page on migration
     }
@@ -61,7 +61,7 @@ bool ConfigManager::loadConfig() {
     config.pomoWorkMins    = doc["pomoWorkMins"] | POMODORO_WORK_MINS;
     config.pomoBreakMins   = doc["pomoBreakMins"] | POMODORO_BREAK_MINS;
 
-    config.featureBleEnabled         = doc["featureBleEnabled"] | true;
+    config.featureBleEnabled         = doc["featureBleEnabled"] | false;
     config.featureWeatherEnabled     = doc["featureWeatherEnabled"] | true;
     config.featureScreensaverEnabled = doc["featureScreensaverEnabled"] | true;
     config.notifTarget               = doc["notifTarget"] | 1;
@@ -79,7 +79,7 @@ bool ConfigManager::saveConfig() {
         return false;
     }
 
-    StaticJsonDocument<1024> doc;
+    StaticJsonDocument<2048> doc;
     doc["wifiSsid"]          = config.wifiSsid;
     doc["wifiPass"]          = config.wifiPass;
     doc["openWeatherKey"]    = config.openWeatherKey;

@@ -23,7 +23,7 @@
     13. **Comfort Index**: Visual air quality and comfort level indicator.
   - **0.96" I2C Monochrome OLED (SSD1306, 128x64)**: 6 distinct operational modes:
     0. **Telemetry HUD**: Live clock, IP address, Temperature & WiFi RSSI.
-    1. **Multi-Style Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Vertical Stack, Binary Gauges, Cyberpunk Frame, Radial Horizon Arc!
+    1. **Multi-Style Clock Faces**: Digital HUD, Analog Minimalist, Cyber Matrix, Retro Airport Flip, Vertical Stack, Binary Gauges, Cyberpunk Frame, Radial Horizon Arc, Square Classic, Square Tank, Square Pilot!
     2. **Sparkline Telemetry**: Historical Barometric pressure and indoor climate trend lines.
     3. **Fast-Speed Marquee Ticker**: 45ms scrolling custom desk notes and announcements.
     4. **Animated Screensaver**: Matrix Code Rain, Bouncing DVD Logo, 3D Tunnel, DNA Helix, Batman Signal, Linux Tux!
